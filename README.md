@@ -46,6 +46,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 ## Current MVP
 
 - [`docs/arc-mcp-setup.md`](./docs/arc-mcp-setup.md) — real Arc MCP setup steps for Claude Code, Claude Desktop, Cursor, VS Code, Windsurf, and HTTP MCP clients.
+- [`docs/arc-docs-map.md`](./docs/arc-docs-map.md) — practical map of Arc Testnet config, contracts, agent primitives, tutorials, tools, and the recommended build path.
 - [`docs/deploy-contracts-arc.md`](./docs/deploy-contracts-arc.md) — builder notes from Arc's deploy-contracts tutorial using Circle Contracts and Arc Testnet.
 - [`docs/builder-workflows.md`](./docs/builder-workflows.md) — practical Arc + AI builder workflows.
 - [`docs/payment-intent-demo.md`](./docs/payment-intent-demo.md) — first demo specification.
@@ -59,11 +60,13 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - Publish MCP setup checklist.
 - Publish Arc builder prompt library.
 - Publish payment-intent demo spec.
+- Publish Arc docs map with network config, core contracts, ERC-8004, ERC-8183, and event-monitoring roadmap.
 - Share build log in Arc community.
 
 ### Phase 2 — Working prototype
 
 - Build a small web UI for agent payment intents.
+- Use Arc Testnet config from the docs map: RPC, chain ID, USDC gas, and ArcScan.
 - Use Arc MCP docs to verify current testnet and wallet details.
 - Add Circle Dev-Controlled SCA Wallet notes for Arc Testnet.
 - Add optional Circle Contracts template deployment notes for receipts, credits, or payout demos.
@@ -73,6 +76,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 ### Phase 3 — Agent commerce starter kit
 
 - Add agent identity notes around Arc's ERC-8004 tutorial.
+- Add ERC-8183 job escrow notes for agentic commerce flows.
 - Add reusable components for agent cards, payment requests, receipts, and logs.
 - Add example flows for creator payouts, API payments, and AI-agent commerce.
 
@@ -113,6 +117,7 @@ It runs on every push and pull request via
 ├── index.html                       # Landing page (GitHub Pages root)
 ├── docs/                            # Builder documentation
 │   ├── arc-mcp-setup.md
+│   ├── arc-docs-map.md
 │   ├── deploy-contracts-arc.md
 │   ├── builder-workflows.md
 │   └── payment-intent-demo.md

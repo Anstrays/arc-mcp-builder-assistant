@@ -36,6 +36,7 @@ REQUIRED_FILES = [
     ".github/ISSUE_TEMPLATE/bug_report.yml",
     ".github/ISSUE_TEMPLATE/feature_request.yml",
     "docs/arc-mcp-setup.md",
+    "docs/arc-docs-map.md",
     "docs/deploy-contracts-arc.md",
     "docs/builder-workflows.md",
     "docs/payment-intent-demo.md",
