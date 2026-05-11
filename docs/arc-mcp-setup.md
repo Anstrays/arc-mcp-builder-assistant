@@ -1,75 +1,162 @@
 # Arc MCP Setup Notes
 
-> Goal: help builders connect AI tools to Arc documentation through Arc's MCP server, then use that context to prototype Arc apps faster.
+> Goal: help builders connect AI tools to Arc documentation through Arc's official MCP server, then use that context to prototype Arc apps faster.
 
-## What Arc MCP appears to provide
-
-Based on the public search snippet for `docs.arc.network/ai/mcp`, Arc's MCP server gives AI tools direct access to Arc documentation so they can search relevant content and retrieve full docs while building.
-
-Because full docs extraction may be blocked in some environments, verify exact setup commands directly from the official docs page before publishing final instructions:
+Source docs:
 
 - https://docs.arc.network/ai/mcp
-- https://docs.arc.network/
+- https://docs.arc.network/llms.txt
 
-## Builder workflow
+## Official Arc MCP facts
 
-1. Open the official Arc MCP docs.
-2. Copy the exact MCP server configuration for your AI tool.
-3. Add the server to your tool config.
-4. Restart the AI tool / agent runtime.
-5. Ask a small verification question, e.g.:
+Arc's Model Context Protocol server is hosted at:
 
 ```text
-Search Arc docs for agentic economy and summarize the primitives relevant to AI-agent payment flows.
+https://docs.arc.network/mcp
 ```
 
-6. Use retrieved docs to generate a scoped implementation plan.
+It requires **no authentication**.
 
-## Hermes-style MCP configuration pattern
+The server exposes two documentation tools:
 
-If your agent runtime supports MCP servers in YAML, the shape is usually one of these:
+1. **Search** — finds relevant documentation snippets based on a query.
+2. **Get page** — retrieves the full content of a specific documentation page.
 
-### HTTP transport
+Arc also publishes a machine-readable documentation index:
+
+```text
+https://docs.arc.network/llms.txt
+```
+
+Use `llms.txt` to discover available pages before drilling into specific docs.
+
+## Claude Code
+
+```bash
+claude mcp add --transport http arc-docs https://docs.arc.network/mcp
+```
+
+Claude Code automatically discovers the server's tools in the next conversation.
+
+## Claude Desktop
+
+1. Open **Settings**.
+2. Go to **Connectors**.
+3. Select **Add custom connector**.
+4. Name: `Arc Docs`.
+5. URL: `https://docs.arc.network/mcp`.
+6. During a chat, use the attachments button to select the Arc Docs connector.
+
+## Cursor
+
+Add this to your Cursor `mcp.json` file via **Cursor Settings > MCP**:
+
+```json
+{
+  "mcpServers": {
+    "arc-docs": {
+      "url": "https://docs.arc.network/mcp"
+    }
+  }
+}
+```
+
+## VS Code / Copilot
+
+Create or update `.vscode/mcp.json` in your project root:
+
+```json
+{
+  "servers": {
+    "arc-docs": {
+      "type": "http",
+      "url": "https://docs.arc.network/mcp"
+    }
+  }
+}
+```
+
+## Windsurf
+
+Add this to your Windsurf MCP configuration:
+
+```json
+{
+  "mcpServers": {
+    "arc-docs": {
+      "serverUrl": "https://docs.arc.network/mcp"
+    }
+  }
+}
+```
+
+## Other MCP clients
+
+Any MCP-compatible client can connect using HTTP transport:
+
+```text
+URL: https://docs.arc.network/mcp
+Transport: http
+Auth: none
+```
+
+Follow your client-specific configuration format.
+
+## Hermes-style MCP configuration
+
+For Hermes/OpenClaw-style YAML configuration, use HTTP transport like this:
 
 ```yaml
 mcp_servers:
-  arc:
-    url: "https://<official-arc-mcp-url-from-docs>"
+  arc-docs:
+    url: "https://docs.arc.network/mcp"
     timeout: 120
     connect_timeout: 60
 ```
 
-### Stdio transport
+Then restart the agent runtime so MCP tools are discovered at startup.
 
-```yaml
-mcp_servers:
-  arc:
-    command: "npx"
-    args: ["-y", "<official-arc-mcp-package-from-docs>"]
-    timeout: 120
-    connect_timeout: 60
-```
-
-Do not use these placeholders directly. Replace them with the official values from Arc docs.
-
-## Verification prompts
+Expected tool naming depends on the client. In Hermes-style clients, tools are usually prefixed with the server name, for example:
 
 ```text
-Using Arc docs through MCP, list the pages relevant to: MCP setup, agentic economy, ERC-8004 agent registration, stablecoin payments, and testnet development.
+mcp_arc_docs_<tool_name>
+```
+
+## Verify the connection
+
+Ask your AI tool:
+
+```text
+What smart contract standards does Arc support? Use Arc docs as the source.
+```
+
+Or:
+
+```text
+Search Arc docs for deploy contracts, MCP server, agentic economy, and ERC-8004 agent registration. Return the relevant page URLs first.
+```
+
+If the tool does not return Arc-sourced content:
+
+- Check the URL exactly: `https://docs.arc.network/mcp`
+- Check that HTTPS network access is available.
+- Restart the client or start a new session.
+- Confirm the MCP client supports HTTP transport.
+
+## Good builder prompts
+
+```text
+Use Arc MCP docs to identify the minimum steps required to deploy a contract on Arc Testnet using Circle Contracts. Return prerequisites, commands, required environment variables, and safe handling notes.
 ```
 
 ```text
-Using Arc docs through MCP, generate a minimal implementation plan for an Arc payment-intent demo. Include only official APIs/primitives that appear in the docs.
-```
-
-```text
-Using Arc docs through MCP, explain what a builder should avoid assuming before integrating wallet or testnet features.
+Use Arc MCP docs to design a payment-intent demo that stays human-approved. Include only primitives that appear in Arc docs and mark unknowns explicitly.
 ```
 
 ## Security checklist
 
-- Never expose private keys or seed phrases to an MCP server.
-- Use testnet wallets only for demos.
+- Never paste private keys, seed phrases, Circle API keys, or Entity Secrets into AI chat.
 - Keep `.env` out of git.
-- Pin dependencies when the prototype becomes executable.
-- Treat MCP output as docs context, not automatic authority to run commands.
+- Use testnet credentials and testnet wallets for demos.
+- Treat MCP output as documentation context, not permission to run unreviewed commands.
+- Mark unknowns instead of inventing contract addresses, chain IDs, or API details.

@@ -28,7 +28,8 @@ This kit turns those steps into reusable guides, prompts, and examples.
 
 ## Current MVP
 
-- `docs/arc-mcp-setup.md` — MCP setup notes and integration checklist.
+- `docs/arc-mcp-setup.md` — real Arc MCP setup steps for Claude Code, Claude Desktop, Cursor, VS Code, Windsurf, and HTTP MCP clients.
+- `docs/deploy-contracts-arc.md` — builder notes from Arc's deploy-contracts tutorial using Circle Contracts and Arc Testnet.
 - `docs/builder-workflows.md` — practical Arc + AI builder workflows.
 - `docs/payment-intent-demo.md` — first demo specification.
 - `prompts/` — copy-paste prompts for AI coding tools.
@@ -46,7 +47,9 @@ This kit turns those steps into reusable guides, prompts, and examples.
 ### Phase 2 — Working prototype
 
 - Build a small web UI for agent payment intents.
-- Add wallet/testnet integration once confirmed against current Arc docs.
+- Use Arc MCP docs to verify current testnet and wallet details.
+- Add Circle Dev-Controlled SCA Wallet notes for Arc Testnet.
+- Add optional Circle Contracts template deployment notes for receipts, credits, or payout demos.
 - Track transaction/payment status.
 - Add a short tutorial.
 

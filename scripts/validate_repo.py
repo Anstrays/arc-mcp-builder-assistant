@@ -6,8 +6,8 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 required = [
     'README.md', 'SECURITY.md', 'CONTRIBUTING.md', 'LICENSE', '.gitignore',
-    'docs/arc-mcp-setup.md', 'docs/builder-workflows.md', 'docs/payment-intent-demo.md',
-    'prompts/explain-arc-docs.md', 'prompts/build-payment-intent-demo.md', 'prompts/register-agent-notes.md',
+    'docs/arc-mcp-setup.md', 'docs/deploy-contracts-arc.md', 'docs/builder-workflows.md', 'docs/payment-intent-demo.md',
+    'prompts/explain-arc-docs.md', 'prompts/build-payment-intent-demo.md', 'prompts/register-agent-notes.md', 'prompts/deploy-contracts-on-arc.md',
     'examples/payment-intent-demo/index.html',
 ]
 
@@ -29,8 +29,12 @@ for path in ROOT.rglob('*'):
         continue
     text = path.read_text(errors='ignore')
     for pat in secret_patterns:
-        if pat.search(text):
+        for match in pat.finditer(text):
+            value = match.group(0)
+            if any(placeholder in value for placeholder in ('YOUR_', '<YOUR_', 'your-', 'example', 'placeholder')):
+                continue
             errors.append(f'possible secret pattern in {path.relative_to(ROOT)}')
+            break
     if path.suffix == '.html':
         if 'javascript:' in text.lower():
             errors.append(f'unsafe javascript: URL in {path.relative_to(ROOT)}')
