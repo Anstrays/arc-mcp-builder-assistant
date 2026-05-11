@@ -6,7 +6,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 required = [
     'README.md', 'SECURITY.md', 'CONTRIBUTING.md', 'LICENSE', '.gitignore',
-    'docs/arc-mcp-setup.md', 'docs/deploy-contracts-arc.md', 'docs/builder-workflows.md', 'docs/payment-intent-demo.md',
+    'docs/arc-mcp-setup.md', 'docs/arc-docs-map.md', 'docs/deploy-contracts-arc.md', 'docs/builder-workflows.md', 'docs/payment-intent-demo.md',
     'prompts/explain-arc-docs.md', 'prompts/build-payment-intent-demo.md', 'prompts/register-agent-notes.md', 'prompts/deploy-contracts-on-arc.md',
     'examples/payment-intent-demo/index.html',
 ]
