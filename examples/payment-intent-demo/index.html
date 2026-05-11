@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="referrer" content="no-referrer" />
+  <title>Arc Payment Intent Demo Mockup</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: radial-gradient(circle at top, #263bff 0, #080914 34%, #05060a 100%); color: #f7f7ff; }
+    main { width: min(920px, calc(100vw - 32px)); display: grid; gap: 18px; }
+    .card { border: 1px solid rgba(255,255,255,.14); background: rgba(10, 12, 24, .78); border-radius: 24px; padding: 24px; box-shadow: 0 24px 80px rgba(0,0,0,.35); }
+    .eyebrow { color: #8ea2ff; text-transform: uppercase; letter-spacing: .16em; font-size: 12px; font-weight: 700; }
+    h1 { margin: 8px 0 10px; font-size: clamp(32px, 6vw, 64px); line-height: .95; }
+    p { color: #cbd2ff; line-height: 1.65; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+    .intent { display: grid; gap: 12px; }
+    .row { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,.1); }
+    .label { color: #8e95bc; }
+    .value { font-weight: 700; text-align: right; }
+    button { border: 0; border-radius: 999px; padding: 14px 20px; font-weight: 800; cursor: pointer; background: #f7f7ff; color: #080914; }
+    .secondary { background: rgba(255,255,255,.1); color: #f7f7ff; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="card">
+      <div class="eyebrow">Arc Agent Commerce</div>
+      <h1>Payment Intent Demo</h1>
+      <p>An AI agent prepares a USDC payment request. The user stays in control and approves manually. This is a safe first step toward agentic commerce on Arc.</p>
+    </section>
+    <section class="grid">
+      <div class="card">
+        <div class="eyebrow">Agent</div>
+        <h2>Research Agent</h2>
+        <p>Purpose: purchase a data/API task after user approval. Agent identity and testnet integration are intentionally mocked in this v0 UI.</p>
+      </div>
+      <div class="card intent">
+        <div class="eyebrow">Payment Intent</div>
+        <div class="row"><span class="label">Asset</span><span class="value">USDC</span></div>
+        <div class="row"><span class="label">Amount</span><span class="value">5.00</span></div>
+        <div class="row"><span class="label">Recipient</span><span class="value">0xDemo...Arc</span></div>
+        <div class="row"><span class="label">Status</span><span class="value">Pending approval</span></div>
+        <div class="actions">
+          <button>Approve payment</button>
+          <button class="secondary">Cancel</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
