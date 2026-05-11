@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="referrer" content="no-referrer" />
+  <meta name="description" content="Independent builder resource for using Arc MCP/docs with AI coding tools and prototyping agentic commerce workflows." />
+  <title>Arc MCP Builder Assistant</title>
+  <style>
+    :root {
+      --bg: #06070c;
+      --panel: #0d1020;
+      --panel-2: #11162b;
+      --text: #f7f8ff;
+      --muted: #a9b1d6;
+      --line: rgba(255,255,255,.12);
+      --blue: #6b7cff;
+      --cyan: #5eead4;
+      --lime: #d9ff72;
+      --shadow: 0 30px 90px rgba(0,0,0,.38);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% -10%, rgba(107,124,255,.42), transparent 32rem),
+        radial-gradient(circle at 90% 0%, rgba(94,234,212,.18), transparent 28rem),
+        linear-gradient(180deg, #080a14 0%, var(--bg) 42%, #04050a 100%);
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    .wrap { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+    header { padding: 24px 0; position: sticky; top: 0; z-index: 2; backdrop-filter: blur(18px); background: rgba(6,7,12,.66); border-bottom: 1px solid rgba(255,255,255,.06); }
+    nav { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .brand { display: flex; gap: 10px; align-items: center; font-weight: 800; letter-spacing: -.02em; }
+    .mark { width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, var(--blue), var(--cyan)); color: #04050a; font-weight: 950; box-shadow: 0 12px 30px rgba(107,124,255,.35); }
+    .links { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+    .links a, .button { border: 1px solid var(--line); background: rgba(255,255,255,.06); padding: 10px 14px; border-radius: 999px; color: var(--muted); font-size: 14px; }
+    .button.primary { background: var(--text); color: #06070c; border-color: var(--text); font-weight: 800; }
+    .hero { padding: 92px 0 52px; }
+    .hero-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 28px; align-items: center; }
+    .eyebrow { color: var(--cyan); text-transform: uppercase; letter-spacing: .18em; font-size: 12px; font-weight: 900; }
+    h1 { margin: 14px 0 18px; font-size: clamp(44px, 7vw, 88px); line-height: .9; letter-spacing: -.075em; text-wrap: balance; }
+    .lead { color: #d9defe; font-size: clamp(18px, 2vw, 22px); line-height: 1.65; max-width: 760px; }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
+    .terminal { border: 1px solid var(--line); border-radius: 24px; background: rgba(8,10,20,.82); box-shadow: var(--shadow); overflow: hidden; }
+    .bar { display: flex; gap: 8px; padding: 14px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.04); }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #ff6b6b; }
+    .dot:nth-child(2) { background: #ffd166; }
+    .dot:nth-child(3) { background: #5eead4; }
+    pre { margin: 0; padding: 22px; overflow: auto; color: #cfd6ff; line-height: 1.55; font-size: 13px; }
+    code .green { color: var(--cyan); }
+    code .lime { color: var(--lime); }
+    section { padding: 44px 0; }
+    .section-title { font-size: clamp(30px, 4vw, 52px); line-height: 1; letter-spacing: -.045em; margin: 0 0 16px; }
+    .section-copy { color: var(--muted); line-height: 1.7; max-width: 760px; }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+    .card { border: 1px solid var(--line); background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.035)); border-radius: 24px; padding: 22px; min-height: 210px; }
+    .num { width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center; background: rgba(107,124,255,.18); color: var(--cyan); font-weight: 900; margin-bottom: 18px; }
+    h3 { margin: 0 0 10px; font-size: 21px; letter-spacing: -.025em; }
+    .card p, li { color: var(--muted); line-height: 1.6; }
+    .split { display: grid; grid-template-columns: .9fr 1.1fr; gap: 18px; align-items: start; }
+    .panel { border: 1px solid var(--line); background: var(--panel); border-radius: 28px; padding: 26px; box-shadow: var(--shadow); }
+    .checklist { margin: 0; padding-left: 18px; }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    .pill { border: 1px solid rgba(255,255,255,.12); color: #dce2ff; background: rgba(255,255,255,.05); border-radius: 999px; padding: 8px 11px; font-size: 13px; }
+    .mock { background: linear-gradient(180deg, #111735, #070912); }
+    .intent-row { display: flex; justify-content: space-between; gap: 20px; padding: 14px 0; border-bottom: 1px solid var(--line); color: var(--muted); }
+    .intent-row strong { color: var(--text); }
+    footer { padding: 56px 0 36px; color: #7f87ad; border-top: 1px solid rgba(255,255,255,.08); margin-top: 40px; }
+    @media (max-width: 860px) { .hero-grid, .split { grid-template-columns: 1fr; } .cards { grid-template-columns: 1fr; } header { position: static; } }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="wrap">
+      <a class="brand" href="#top" aria-label="Arc MCP Builder Assistant home"><span class="mark">A</span><span>Arc MCP Builder Assistant</span></a>
+      <div class="links">
+        <a href="./docs/arc-mcp-setup.md">Docs</a>
+        <a href="./prompts/explain-arc-docs.md">Prompts</a>
+        <a href="./examples/payment-intent-demo/">Demo mockup</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="eyebrow">Independent Arc builder experiment</div>
+          <h1>AI-assisted building for Arc MCP and agentic commerce.</h1>
+          <p class="lead">A lightweight resource for builders who want to use Arc's MCP/docs context with AI coding tools, then turn that context into practical stablecoin and agent payment prototypes.</p>
+          <div class="actions">
+            <a class="button primary" href="./docs/arc-mcp-setup.md">Start with MCP setup</a>
+            <a class="button" href="./docs/payment-intent-demo.md">Read demo spec</a>
+          </div>
+        </div>
+        <div class="terminal" aria-label="Prompt example">
+          <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+          <pre><code><span class="green">prompt</span>: Use Arc MCP/docs context to design
+        a minimal payment-intent demo.
+
+<span class="lime">scenario</span>: an AI agent creates a USDC
+          payment request, the user reviews it,
+          then approves manually.
+
+<span class="green">return</span>: docs pages, primitives, risks,
+        and a 1-day build plan.</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <h2 class="section-title">What this ships first</h2>
+        <p class="section-copy">The first version is intentionally small: docs, prompts, and a simple UI mockup. It is designed to become public proof-of-work before expanding into a testnet-connected prototype.</p>
+        <div class="cards">
+          <article class="card"><div class="num">1</div><h3>MCP setup notes</h3><p>Checklist for connecting AI tools to Arc docs through the official MCP surface and verifying retrieved context.</p></article>
+          <article class="card"><div class="num">2</div><h3>Prompt library</h3><p>Reusable prompts for docs exploration, payment-intent planning, and ERC-8004 agent registration notes.</p></article>
+          <article class="card"><div class="num">3</div><h3>Payment-intent demo</h3><p>A safe first agentic commerce flow: an agent prepares a USDC request, while the human keeps approval control.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap split">
+        <div>
+          <h2 class="section-title">Why this fits Arc</h2>
+          <p class="section-copy">Arc's public narrative points toward stablecoin-native finance, agentic economy apps, autonomous agents, onchain identity, and predictable payment infrastructure. This kit turns that narrative into builder-facing workflows.</p>
+          <div class="pill-row">
+            <span class="pill">MCP</span><span class="pill">AI coding tools</span><span class="pill">Stablecoin payments</span><span class="pill">Agentic commerce</span><span class="pill">ERC-8004 notes</span><span class="pill">Builder docs</span>
+          </div>
+        </div>
+        <div class="panel mock">
+          <div class="eyebrow">Demo concept</div>
+          <h3>Agent Payment Intent</h3>
+          <div class="intent-row"><span>Agent</span><strong>Research Agent</strong></div>
+          <div class="intent-row"><span>Asset</span><strong>USDC</strong></div>
+          <div class="intent-row"><span>Amount</span><strong>5.00</strong></div>
+          <div class="intent-row"><span>Status</span><strong>Pending human approval</strong></div>
+          <p>No custody, no private keys, no autonomous mainnet spending in v0. The first prototype keeps user approval explicit.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap panel">
+        <h2 class="section-title">Roadmap</h2>
+        <ul class="checklist">
+          <li>Publish the MCP setup checklist and prompt library.</li>
+          <li>Verify exact Arc MCP configuration against current official docs.</li>
+          <li>Turn the payment-intent mockup into a working local app.</li>
+          <li>Add Arc Testnet integration after chain/wallet details are confirmed.</li>
+          <li>Add agent identity notes around Arc's ERC-8004 tutorial.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">Independent early-stage builder resource. Not an official Arc product or endorsement.</div>
+  </footer>
+</body>
+</html>
