@@ -40,6 +40,9 @@
     .actions { display: flex; flex-wrap: wrap; gap: 12px; }
     .breadcrumb { margin: 0 0 4px; font-size: 13px; color: #8e95bc; }
     .breadcrumb a { color: #cbd2ff; text-decoration: underline; text-underline-offset: 3px; }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0s !important; transition: none !important; }
+    }
   </style>
 </head>
 <body>

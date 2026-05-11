@@ -124,6 +124,10 @@
       header { position: static; }
       .footer-row { flex-direction: column; align-items: flex-start; }
     }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { animation-duration: 0s !important; transition: none !important; }
+    }
   </style>
 </head>
 <body>

@@ -105,16 +105,20 @@ python3 -m http.server 8080
 ```
 
 The validator checks for required files, obvious credential patterns,
-and basic HTML safety / accessibility / SEO invariants on every page in
-the site (`index.html` and `examples/payment-intent-demo/index.html`).
-It runs on every push and pull request via
-[`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
+basic HTML safety / accessibility / SEO invariants on every page in the
+site (`index.html`, `404.html`, and
+`examples/payment-intent-demo/index.html`), and the integrity of
+`robots.txt` and `sitemap.xml`. It runs on every push and pull request
+via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 
 ## Repository structure
 
 ```text
 .
 ├── index.html                       # Landing page (GitHub Pages root)
+├── 404.html                         # Branded GitHub Pages "Not found" page
+├── robots.txt                       # Crawler directives + sitemap pointer
+├── sitemap.xml                      # XML sitemap for the deployed site
 ├── docs/                            # Builder documentation
 │   ├── arc-mcp-setup.md
 │   ├── arc-docs-map.md

@@ -25,6 +25,9 @@ ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_FILES = [
     "README.md",
     "index.html",
+    "404.html",
+    "robots.txt",
+    "sitemap.xml",
     "LICENSE",
     "SECURITY.md",
     "CONTRIBUTING.md",
@@ -50,8 +53,15 @@ REQUIRED_FILES = [
 # Every HTML file in the repo is checked with these full invariants.
 HTML_FILES_TO_VALIDATE = [
     "index.html",
+    "404.html",
     "examples/payment-intent-demo/index.html",
 ]
+
+CANONICAL_BASE_URL = "https://anstrays.github.io/arc-mcp-builder-assistant/"
+SITEMAP_REQUIRED_LOCATIONS = (
+    CANONICAL_BASE_URL,
+    CANONICAL_BASE_URL + "examples/payment-intent-demo/",
+)
 
 SECRET_PATTERNS = [
     re.compile(r"ghp_[A-Za-z0-9_]{20,}"),
@@ -205,10 +215,37 @@ def validate_html() -> None:
         validate_html_file(relative)
 
 
+def validate_robots_txt() -> None:
+    relative = "robots.txt"
+    text = (ROOT / relative).read_text(encoding="utf-8")
+    lowered = text.lower()
+    if "user-agent:" not in lowered:
+        fail(f"{relative}: missing User-agent directive")
+    if "sitemap:" not in lowered:
+        fail(f"{relative}: missing Sitemap directive")
+    if CANONICAL_BASE_URL + "sitemap.xml" not in text:
+        fail(
+            f"{relative}: Sitemap directive must point at "
+            f"{CANONICAL_BASE_URL}sitemap.xml"
+        )
+
+
+def validate_sitemap_xml() -> None:
+    relative = "sitemap.xml"
+    text = (ROOT / relative).read_text(encoding="utf-8")
+    if "<urlset" not in text or "sitemaps.org/schemas/sitemap" not in text:
+        fail(f"{relative}: must be a sitemap 0.9 urlset document")
+    for location in SITEMAP_REQUIRED_LOCATIONS:
+        if f"<loc>{location}</loc>" not in text:
+            fail(f"{relative}: missing <loc>{location}</loc>")
+
+
 def main() -> None:
     validate_required_files()
     validate_no_secrets()
     validate_html()
+    validate_robots_txt()
+    validate_sitemap_xml()
     print("validation passed", file=sys.stdout)
 
 
