@@ -233,7 +233,7 @@
     <section id="docs">
       <div class="wrap">
         <h2 class="section-title">Docs and community files</h2>
-        <p class="section-copy">Every page is plain Markdown. Links open the source files in the GitHub repo so they stay reviewable.</p>
+        <p class="section-copy">Every page is plain Markdown. Links open reviewable source files that work on GitHub Pages and in the repository.</p>
         <div class="cards">
           <article class="card">
             <h3>MCP setup</h3>
@@ -262,8 +262,13 @@
           </article>
           <article class="card">
             <h3>Prompt library</h3>
-            <p>Copy-paste prompts for explaining Arc docs, planning the payment-intent demo, contract deployment, and ERC-8004 agent notes.</p>
-            <span class="meta"><a href="https://github.com/Anstrays/arc-mcp-builder-assistant/tree/main/prompts" target="_blank" rel="noopener noreferrer">prompts/ on GitHub →</a></span>
+            <p>Source-grounded prompts for MCP setup, Arc docs mapping, payment intents, ERC-8004 identity, ERC-8183 jobs, and contract templates.</p>
+            <span class="meta"><a href="./docs/prompt-library.md">docs/prompt-library.md →</a></span>
+          </article>
+          <article class="card">
+            <h3>Agent identity notes</h3>
+            <p>ERC-8004 registry notes for adding onchain agent identity without weakening the human-approved payment boundary.</p>
+            <span class="meta"><a href="./docs/agent-identity-erc8004.md">docs/agent-identity-erc8004.md →</a></span>
           </article>
           <article class="card">
             <h3>Security &amp; conduct</h3>
@@ -282,13 +287,13 @@
       <div class="wrap panel">
         <h2 class="section-title">Roadmap</h2>
         <ul class="checklist">
-          <li>Publish the MCP setup checklist and prompt library.</li>
-          <li>Arc MCP setup verified: HTTP server at <code>https://docs.arc.network/mcp</code>, no auth required.</li>
-          <li>Publish Arc docs map: Testnet config, USDC/EURC contracts, ERC-8004 registries, ERC-8183 job escrow, providers, and tutorials.</li>
-          <li>Add contract-template notes from Arc deploy-contracts tutorial for ERC-20, ERC-721, ERC-1155, and Airdrop.</li>
-          <li>Turn the payment-intent mockup into a working local app.</li>
-          <li>Add Arc Testnet integration after chain/wallet details are confirmed.</li>
-          <li>Add agent identity notes around Arc's ERC-8004 tutorial.</li>
+          <li>Done: published the MCP setup checklist and prompt library.</li>
+          <li>Done: Arc MCP setup verified: HTTP server at <code>https://docs.arc.network/mcp</code>, no auth required.</li>
+          <li>Done: published Arc docs map: Testnet config, USDC/EURC contracts, ERC-8004 registries, ERC-8183 job escrow, providers, and tutorials.</li>
+          <li>Done: added contract-template notes from Arc deploy-contracts tutorial for ERC-20, ERC-721, ERC-1155, and Airdrop.</li>
+          <li>Done: added agent identity notes around Arc's ERC-8004 tutorial.</li>
+          <li>Next: turn the payment-intent mockup into a working local app.</li>
+          <li>Later: add Arc Testnet integration after chain/wallet details are confirmed.</li>
         </ul>
       </div>
     </section>
