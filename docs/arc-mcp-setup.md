@@ -30,6 +30,16 @@ https://docs.arc.network/llms.txt
 
 Use `llms.txt` to discover available pages before drilling into specific docs.
 
+## Setup checklist
+
+- [ ] Confirm your AI client supports HTTP MCP servers.
+- [ ] Add `https://docs.arc.network/mcp` as an HTTP MCP server named `arc-docs`.
+- [ ] Restart the client or open a fresh session so tools are discovered.
+- [ ] Ask the agent to search for `Arc MCP server`, `Connect to Arc`, and `ERC-8004`.
+- [ ] Confirm returned answers cite `docs.arc.network` pages.
+- [ ] Keep private keys, Circle API keys, Entity Secrets, seed phrases, and OTP codes out of prompts.
+- [ ] Use [`prompt-library.md`](./prompt-library.md) to force source citations and unknowns before implementation.
+
 ## Claude Code
 
 ```bash

@@ -48,20 +48,23 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/arc-mcp-setup.md`](./docs/arc-mcp-setup.md) — real Arc MCP setup steps for Claude Code, Claude Desktop, Cursor, VS Code, Windsurf, and HTTP MCP clients.
 - [`docs/arc-docs-map.md`](./docs/arc-docs-map.md) — practical map of Arc Testnet config, contracts, agent primitives, tutorials, tools, and the recommended build path.
 - [`docs/deploy-contracts-arc.md`](./docs/deploy-contracts-arc.md) — builder notes from Arc's deploy-contracts tutorial using Circle Contracts and Arc Testnet.
+- [`docs/agent-identity-erc8004.md`](./docs/agent-identity-erc8004.md) — ERC-8004 agent identity notes and trust-boundary guidance.
 - [`docs/builder-workflows.md`](./docs/builder-workflows.md) — practical Arc + AI builder workflows.
 - [`docs/payment-intent-demo.md`](./docs/payment-intent-demo.md) — first demo specification.
-- [`prompts/`](./prompts/) — copy-paste prompts for AI coding tools.
+- [`docs/prompt-library.md`](./docs/prompt-library.md) and [`prompts/`](./prompts/) — copy-paste prompts for AI coding tools.
 - [`examples/payment-intent-demo/`](./examples/payment-intent-demo/) — tiny static mockup for the first payment-intent flow, including trust-boundary and review-state UI copy.
 
 ## Roadmap
 
 ### Phase 1 — Documentation kit
 
-- Publish MCP setup checklist.
-- Publish Arc builder prompt library.
-- Publish payment-intent demo spec.
-- Publish Arc docs map with network config, core contracts, ERC-8004, ERC-8183, and event-monitoring roadmap.
-- Share build log in Arc community.
+- [x] Publish MCP setup checklist.
+- [x] Publish Arc builder prompt library.
+- [x] Publish payment-intent demo spec.
+- [x] Publish Arc docs map with network config, core contracts, ERC-8004, ERC-8183, and event-monitoring roadmap.
+- [x] Add contract-template notes from Arc's deploy-contracts tutorial for ERC-20, ERC-721, ERC-1155, and Airdrop.
+- [x] Add agent identity notes around Arc's ERC-8004 tutorial.
+- [ ] Share build log in Arc community.
 
 ### Phase 2 — Working prototype
 
