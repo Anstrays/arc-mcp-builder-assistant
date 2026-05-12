@@ -51,7 +51,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/builder-workflows.md`](./docs/builder-workflows.md) — practical Arc + AI builder workflows.
 - [`docs/payment-intent-demo.md`](./docs/payment-intent-demo.md) — first demo specification.
 - [`prompts/`](./prompts/) — copy-paste prompts for AI coding tools.
-- [`examples/payment-intent-demo/`](./examples/payment-intent-demo/) — tiny static mockup for the first payment-intent flow.
+- [`examples/payment-intent-demo/`](./examples/payment-intent-demo/) — tiny static mockup for the first payment-intent flow, including trust-boundary and review-state UI copy.
 
 ## Roadmap
 
@@ -107,8 +107,9 @@ python3 -m http.server 8080
 The validator checks for required files, obvious credential patterns,
 basic HTML safety / accessibility / SEO invariants on every page in the
 site (`index.html`, `404.html`, and
-`examples/payment-intent-demo/index.html`), and the integrity of
-`robots.txt` and `sitemap.xml`. It runs on every push and pull request
+`examples/payment-intent-demo/index.html`), reduced-motion CSS coverage,
+payment-demo safety copy, and the integrity of `robots.txt` and
+`sitemap.xml`. It runs on every push and pull request
 via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 
 ## Repository structure

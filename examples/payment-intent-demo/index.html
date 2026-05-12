@@ -38,6 +38,11 @@
     button { border: 0; border-radius: 999px; padding: 14px 20px; font-weight: 800; cursor: pointer; background: #f7f7ff; color: #080914; }
     .secondary { background: rgba(255,255,255,.1); color: #f7f7ff; }
     .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .mini-list { margin: 12px 0 0; padding-left: 18px; color: #cbd2ff; line-height: 1.6; }
+    .status-log { display: grid; gap: 10px; margin-top: 14px; }
+    .status-log div { border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 12px; color: #cbd2ff; background: rgba(255,255,255,.045); }
+    .status-log strong { color: #f7f7ff; }
+    .warning { border-color: rgba(94,234,212,.32); background: rgba(94,234,212,.08); }
     .breadcrumb { margin: 0 0 4px; font-size: 13px; color: #8e95bc; }
     .breadcrumb a { color: #cbd2ff; text-decoration: underline; text-underline-offset: 3px; }
     @media (prefers-reduced-motion: reduce) {
@@ -51,7 +56,7 @@
     <section class="card" aria-labelledby="demo-title">
       <div class="eyebrow">Arc Agent Commerce</div>
       <h1 id="demo-title">Payment Intent Demo</h1>
-      <p>An AI agent prepares a USDC payment request. The user stays in control and approves manually. This is a safe first step toward agentic commerce on Arc.</p>
+      <p>An AI agent prepares a USDC payment request. The human keeps approval control and approves manually. This is a safe first step toward agentic commerce on Arc.</p>
       <p>This is a non-interactive mockup intended for review and feedback. It does not connect to a wallet, broadcast transactions, or talk to any backend. See <a href="../../docs/payment-intent-demo.md">docs/payment-intent-demo.md</a> for the spec.</p>
     </section>
     <section class="grid">
@@ -71,6 +76,26 @@
         <div class="actions">
           <button type="button" aria-label="Approve payment (mockup only, no transaction is sent)">Approve payment</button>
           <button type="button" class="secondary" aria-label="Cancel payment (mockup only)">Cancel</button>
+        </div>
+      </article>
+    </section>
+    <section class="grid" aria-label="Demo review details">
+      <article class="card warning" aria-labelledby="boundaries-title">
+        <div class="eyebrow">Trust boundaries</div>
+        <h2 id="boundaries-title">What the agent cannot do</h2>
+        <ul class="mini-list">
+          <li>Cannot spend funds or sign transactions.</li>
+          <li>Cannot change the recipient after human review starts.</li>
+          <li>Cannot hide amount, memo, expiry, or status fields.</li>
+        </ul>
+      </article>
+      <article class="card" aria-labelledby="timeline-title">
+        <div class="eyebrow">Execution timeline</div>
+        <h2 id="timeline-title">Review-first flow</h2>
+        <div class="status-log">
+          <div><strong>Prepared</strong> · Agent drafts the payment intent from docs-grounded context.</div>
+          <div><strong>Review</strong> · Human checks amount, recipient, memo, and purpose.</div>
+          <div><strong>Approve later</strong> · Wallet integration is a future testnet-only step.</div>
         </div>
       </article>
     </section>

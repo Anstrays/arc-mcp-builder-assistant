@@ -62,6 +62,13 @@ SITEMAP_REQUIRED_LOCATIONS = (
     CANONICAL_BASE_URL,
     CANONICAL_BASE_URL + "examples/payment-intent-demo/",
 )
+REDUCED_MOTION_REQUIRED_SNIPPET = "prefers-reduced-motion: reduce"
+DEMO_SAFETY_MARKERS = (
+    "does not connect to a wallet",
+    "broadcast transactions",
+    "talk to any backend",
+    "human keeps approval control",
+)
 
 SECRET_PATTERNS = [
     re.compile(r"ghp_[A-Za-z0-9_]{20,}"),
@@ -215,6 +222,21 @@ def validate_html() -> None:
         validate_html_file(relative)
 
 
+def validate_reduced_motion_css() -> None:
+    for relative in HTML_FILES_TO_VALIDATE:
+        html = (ROOT / relative).read_text(encoding="utf-8")
+        if REDUCED_MOTION_REQUIRED_SNIPPET not in html:
+            fail(f"{relative}: missing prefers-reduced-motion CSS rule")
+
+
+def validate_demo_safety_copy() -> None:
+    relative = "examples/payment-intent-demo/index.html"
+    html = (ROOT / relative).read_text(encoding="utf-8").lower()
+    for marker in DEMO_SAFETY_MARKERS:
+        if marker not in html:
+            fail(f"{relative}: missing safety copy marker: {marker}")
+
+
 def validate_robots_txt() -> None:
     relative = "robots.txt"
     text = (ROOT / relative).read_text(encoding="utf-8")
@@ -244,6 +266,8 @@ def main() -> None:
     validate_required_files()
     validate_no_secrets()
     validate_html()
+    validate_reduced_motion_css()
+    validate_demo_safety_copy()
     validate_robots_txt()
     validate_sitemap_xml()
     print("validation passed", file=sys.stdout)

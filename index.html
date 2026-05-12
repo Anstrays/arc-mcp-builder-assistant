@@ -114,13 +114,18 @@
     .mock { background: linear-gradient(180deg, #111735, #070912); }
     .intent-row { display: flex; justify-content: space-between; gap: 20px; padding: 14px 0; border-bottom: 1px solid var(--line); color: var(--muted); }
     .intent-row strong { color: var(--text); }
+    .path-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 24px; }
+    .path-step { border: 1px solid var(--line); background: rgba(255,255,255,.045); border-radius: 22px; padding: 18px; }
+    .path-step strong { display: block; color: var(--text); margin-bottom: 8px; }
+    .path-step span { color: var(--muted); line-height: 1.55; font-size: 14px; }
+    .notice { border: 1px solid rgba(94,234,212,.28); background: rgba(94,234,212,.08); border-radius: 22px; padding: 18px; color: #d9fffb; margin-top: 18px; }
     footer { padding: 56px 0 36px; color: #7f87ad; border-top: 1px solid rgba(255,255,255,.08); margin-top: 40px; font-size: 14px; }
     .footer-row { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; }
     .footer-links { display: inline-flex; gap: 18px; flex-wrap: wrap; }
     .footer-links a:hover { color: var(--text); }
     @media (max-width: 860px) {
       .hero-grid, .split { grid-template-columns: 1fr; }
-      .cards { grid-template-columns: 1fr; }
+      .cards, .path-grid { grid-template-columns: 1fr; }
       header { position: static; }
       .footer-row { flex-direction: column; align-items: flex-start; }
     }
@@ -137,6 +142,7 @@
       <a class="brand" href="#top" aria-label="Arc MCP Builder Assistant home"><span class="mark" aria-hidden="true">A</span><span>Arc MCP Builder Assistant</span></a>
       <div class="links">
         <a href="#workflows">Workflows</a>
+        <a href="#build-path">Build path</a>
         <a href="#docs">Docs</a>
         <a href="#roadmap">Roadmap</a>
         <a class="repo-link" href="https://github.com/Anstrays/arc-mcp-builder-assistant" target="_blank" rel="noopener noreferrer" aria-label="View Arc MCP Builder Assistant on GitHub">
@@ -206,6 +212,21 @@
           <div class="intent-row"><span>Status</span><strong>Pending human approval</strong></div>
           <p>No custody, no private keys, no autonomous mainnet spending in v0. The first prototype keeps user approval explicit.</p>
         </div>
+      </div>
+    </section>
+
+    <section id="build-path">
+      <div class="wrap panel">
+        <div class="eyebrow">Builder path</div>
+        <h2 class="section-title">From docs context to a safe Arc testnet prototype.</h2>
+        <p class="section-copy">The app now shows the intended implementation sequence instead of leaving the demo as a loose mockup. Each step keeps private keys and autonomous spending out of scope until the testnet flow is reviewed.</p>
+        <div class="path-grid" aria-label="Recommended build path">
+          <div class="path-step"><strong>1 · Ground the agent</strong><span>Connect an AI coding tool to Arc MCP, then ask it to cite the docs it used before scaffolding code.</span></div>
+          <div class="path-step"><strong>2 · Create intent data</strong><span>Represent amount, asset, recipient, memo, expiry, and status as reviewable JSON before any wallet action.</span></div>
+          <div class="path-step"><strong>3 · Require human approval</strong><span>Keep signing manual. The agent can prepare context, but the user confirms every transaction.</span></div>
+          <div class="path-step"><strong>4 · Observe and document</strong><span>Track status through ArcScan or app logs, then publish the findings back into the docs and prompts.</span></div>
+        </div>
+        <p class="notice"><strong>Safety default:</strong> v0 is non-custodial and review-first. No backend custody, no private-key handling, and no autonomous mainnet spending.</p>
       </div>
     </section>
 
