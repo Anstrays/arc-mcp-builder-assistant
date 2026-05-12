@@ -35,7 +35,8 @@
     .row { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,.1); }
     .label { color: #8e95bc; }
     .value { font-weight: 700; text-align: right; }
-    button { border: 0; border-radius: 999px; padding: 14px 20px; font-weight: 800; cursor: pointer; background: #f7f7ff; color: #080914; }
+    button { border: 0; border-radius: 999px; padding: 14px 20px; font-weight: 800; cursor: default; background: #f7f7ff; color: #080914; }
+    button:disabled { opacity: .72; }
     .secondary { background: rgba(255,255,255,.1); color: #f7f7ff; }
     .actions { display: flex; flex-wrap: wrap; gap: 12px; }
     .mini-list { margin: 12px 0 0; padding-left: 18px; color: #cbd2ff; line-height: 1.6; }
@@ -73,10 +74,11 @@
         <div class="row"><span class="label">Recipient</span><span class="value">0xDemo&hellip;Arc</span></div>
         <div class="row"><span class="label">Memo</span><span class="value">Research task #42</span></div>
         <div class="row"><span class="label">Status</span><span class="value">Pending approval</span></div>
-        <div class="actions">
-          <button type="button" aria-label="Approve payment (mockup only, no transaction is sent)">Approve payment</button>
-          <button type="button" class="secondary" aria-label="Cancel payment (mockup only)">Cancel</button>
+        <div class="actions" aria-describedby="mock-controls-note">
+          <button type="button" disabled aria-label="Approve payment unavailable in static mockup; no transaction is sent">Approve payment</button>
+          <button type="button" disabled class="secondary" aria-label="Cancel payment unavailable in static mockup">Cancel</button>
         </div>
+        <p id="mock-controls-note">Controls are intentionally disabled in this static mockup. A future testnet version must keep signing explicit and user-approved.</p>
       </article>
     </section>
     <section class="grid" aria-label="Demo review details">

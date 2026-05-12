@@ -58,16 +58,21 @@ HTML_FILES_TO_VALIDATE = [
 ]
 
 CANONICAL_BASE_URL = "https://anstrays.github.io/arc-mcp-builder-assistant/"
+SITE_BASE_PATH = "/arc-mcp-builder-assistant/"
 SITEMAP_REQUIRED_LOCATIONS = (
     CANONICAL_BASE_URL,
     CANONICAL_BASE_URL + "examples/payment-intent-demo/",
 )
-REDUCED_MOTION_REQUIRED_SNIPPET = "prefers-reduced-motion: reduce"
+REDUCED_MOTION_MEDIA_RE = re.compile(
+    r"@media\s*\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)",
+    re.IGNORECASE,
+)
 DEMO_SAFETY_MARKERS = (
     "does not connect to a wallet",
     "broadcast transactions",
     "talk to any backend",
     "human keeps approval control",
+    "controls are intentionally disabled",
 )
 
 SECRET_PATTERNS = [
@@ -225,8 +230,56 @@ def validate_html() -> None:
 def validate_reduced_motion_css() -> None:
     for relative in HTML_FILES_TO_VALIDATE:
         html = (ROOT / relative).read_text(encoding="utf-8")
-        if REDUCED_MOTION_REQUIRED_SNIPPET not in html:
+        if not REDUCED_MOTION_MEDIA_RE.search(html):
             fail(f"{relative}: missing prefers-reduced-motion CSS rule")
+        if "transition: none" not in html:
+            fail(f"{relative}: reduced-motion rule must disable transitions")
+    index_html = (ROOT / "index.html").read_text(encoding="utf-8")
+    if "scroll-behavior: auto" not in index_html:
+        fail("index.html: reduced-motion rule must disable smooth scrolling")
+
+
+def _resolved_local_link_target(source_relative: str, href: str) -> Path | None:
+    href = href.strip()
+    if (
+        not href
+        or href.startswith("#")
+        or href.startswith(("http://", "https://", "mailto:", "tel:", "data:"))
+    ):
+        return None
+
+    href_without_fragment = href.split("#", 1)[0]
+    if href_without_fragment.startswith(SITE_BASE_PATH):
+        href_without_fragment = href_without_fragment[len(SITE_BASE_PATH):]
+        target = ROOT / href_without_fragment
+    elif href_without_fragment.startswith("/"):
+        target = ROOT / href_without_fragment.lstrip("/")
+    else:
+        target = ROOT / source_relative
+        target = target.parent / href_without_fragment
+
+    if href.endswith("/"):
+        target = target / "index.html"
+    return target.resolve()
+
+
+def validate_local_links() -> None:
+    root_resolved = ROOT.resolve()
+    for relative in HTML_FILES_TO_VALIDATE:
+        html = (ROOT / relative).read_text(encoding="utf-8")
+        inspector = HtmlInspector()
+        inspector.feed(html)
+        for tag, attrs in inspector.elements:
+            if tag != "a":
+                continue
+            href = attrs.get("href", "")
+            target = _resolved_local_link_target(relative, href)
+            if target is None:
+                continue
+            if root_resolved not in (target, *target.parents):
+                fail(f"{relative}: local link escapes repository root: {href}")
+            if not target.is_file():
+                fail(f"{relative}: broken local link: {href}")
 
 
 def validate_demo_safety_copy() -> None:
@@ -267,6 +320,7 @@ def main() -> None:
     validate_no_secrets()
     validate_html()
     validate_reduced_motion_css()
+    validate_local_links()
     validate_demo_safety_copy()
     validate_robots_txt()
     validate_sitemap_xml()

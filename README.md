@@ -107,7 +107,7 @@ python3 -m http.server 8080
 The validator checks for required files, obvious credential patterns,
 basic HTML safety / accessibility / SEO invariants on every page in the
 site (`index.html`, `404.html`, and
-`examples/payment-intent-demo/index.html`), reduced-motion CSS coverage,
+`examples/payment-intent-demo/index.html`), local links, reduced-motion CSS coverage,
 payment-demo safety copy, and the integrity of `robots.txt` and
 `sitemap.xml`. It runs on every push and pull request
 via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
