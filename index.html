@@ -3,9 +3,25 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Arc MCP Builder Assistant · AI-assisted Arc builder kit for MCP, agents, and stablecoin payments</title>
+  <meta name="description" content="Independent Arc builder resource that turns Arc's MCP/docs surface into reusable AI-coding prompts and a safe payment-intent demo for agentic commerce on Arc Testnet." />
+  <meta name="keywords" content="Arc, Arc Network, MCP, Model Context Protocol, AI coding tools, agentic commerce, stablecoin payments, USDC, ERC-8004, Circle Contracts, Arc Testnet, builder kit, payment intent" />
+  <meta name="author" content="Arc MCP Builder Assistant contributors" />
+  <meta name="robots" content="index,follow" />
+  <meta name="theme-color" content="#06070c" />
+  <meta name="color-scheme" content="dark" />
   <meta name="referrer" content="no-referrer" />
-  <meta name="description" content="Independent builder resource for using Arc MCP/docs with AI coding tools and prototyping agentic commerce workflows." />
-  <title>Arc MCP Builder Assistant</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests" />
+  <link rel="canonical" href="https://anstrays.github.io/arc-mcp-builder-assistant/" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%236b7cff'/%3E%3Cstop offset='1' stop-color='%235eead4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-size='38' font-weight='900' fill='%2304050a'%3EA%3C/text%3E%3C/svg%3E" />
+  <meta property="og:title" content="Arc MCP Builder Assistant" />
+  <meta property="og:description" content="Independent builder kit for using Arc's MCP/docs context with AI coding tools and prototyping agentic commerce on Arc Testnet." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://anstrays.github.io/arc-mcp-builder-assistant/" />
+  <meta property="og:site_name" content="Arc MCP Builder Assistant" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Arc MCP Builder Assistant" />
+  <meta name="twitter:description" content="Independent builder kit for using Arc's MCP/docs context with AI coding tools and prototyping agentic commerce on Arc Testnet." />
   <style>
     :root {
       --bg: #06070c;
@@ -32,14 +48,41 @@
       min-height: 100vh;
     }
     a { color: inherit; text-decoration: none; }
+    a:focus-visible,
+    button:focus-visible,
+    .button:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      background: var(--cyan);
+      color: #04050a;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-weight: 800;
+      z-index: 10;
+    }
+    .skip-link:focus { left: 12px; top: 12px; }
     .wrap { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
     header { padding: 24px 0; position: sticky; top: 0; z-index: 2; backdrop-filter: blur(18px); background: rgba(6,7,12,.66); border-bottom: 1px solid rgba(255,255,255,.06); }
     nav { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
     .brand { display: flex; gap: 10px; align-items: center; font-weight: 800; letter-spacing: -.02em; }
     .mark { width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, var(--blue), var(--cyan)); color: #04050a; font-weight: 950; box-shadow: 0 12px 30px rgba(107,124,255,.35); }
-    .links { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+    .links { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
     .links a, .button { border: 1px solid var(--line); background: rgba(255,255,255,.06); padding: 10px 14px; border-radius: 999px; color: var(--muted); font-size: 14px; }
     .button.primary { background: var(--text); color: #06070c; border-color: var(--text); font-weight: 800; }
+    .repo-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text);
+      font-weight: 700;
+    }
+    .repo-link svg { width: 16px; height: 16px; fill: currentColor; }
     .hero { padding: 92px 0 52px; }
     .hero-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 28px; align-items: center; }
     .eyebrow { color: var(--cyan); text-transform: uppercase; letter-spacing: .18em; font-size: 12px; font-weight: 900; }
@@ -58,7 +101,8 @@
     .section-title { font-size: clamp(30px, 4vw, 52px); line-height: 1; letter-spacing: -.045em; margin: 0 0 16px; }
     .section-copy { color: var(--muted); line-height: 1.7; max-width: 760px; }
     .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
-    .card { border: 1px solid var(--line); background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.035)); border-radius: 24px; padding: 22px; min-height: 210px; }
+    .card { border: 1px solid var(--line); background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.035)); border-radius: 24px; padding: 22px; min-height: 210px; display: flex; flex-direction: column; }
+    .card .meta { color: var(--cyan); font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; margin-top: auto; padding-top: 16px; }
     .num { width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center; background: rgba(107,124,255,.18); color: var(--cyan); font-weight: 900; margin-bottom: 18px; }
     h3 { margin: 0 0 10px; font-size: 21px; letter-spacing: -.025em; }
     .card p, li { color: var(--muted); line-height: 1.6; }
@@ -70,20 +114,41 @@
     .mock { background: linear-gradient(180deg, #111735, #070912); }
     .intent-row { display: flex; justify-content: space-between; gap: 20px; padding: 14px 0; border-bottom: 1px solid var(--line); color: var(--muted); }
     .intent-row strong { color: var(--text); }
-    footer { padding: 56px 0 36px; color: #7f87ad; border-top: 1px solid rgba(255,255,255,.08); margin-top: 40px; }
-    @media (max-width: 860px) { .hero-grid, .split { grid-template-columns: 1fr; } .cards { grid-template-columns: 1fr; } header { position: static; } }
+    .path-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 24px; }
+    .path-step { border: 1px solid var(--line); background: rgba(255,255,255,.045); border-radius: 22px; padding: 18px; }
+    .path-step strong { display: block; color: var(--text); margin-bottom: 8px; }
+    .path-step span { color: var(--muted); line-height: 1.55; font-size: 14px; }
+    .notice { border: 1px solid rgba(94,234,212,.28); background: rgba(94,234,212,.08); border-radius: 22px; padding: 18px; color: #d9fffb; margin-top: 18px; }
+    footer { padding: 56px 0 36px; color: #7f87ad; border-top: 1px solid rgba(255,255,255,.08); margin-top: 40px; font-size: 14px; }
+    .footer-row { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; }
+    .footer-links { display: inline-flex; gap: 18px; flex-wrap: wrap; }
+    .footer-links a:hover { color: var(--text); }
+    @media (max-width: 860px) {
+      .hero-grid, .split { grid-template-columns: 1fr; }
+      .cards, .path-grid { grid-template-columns: 1fr; }
+      header { position: static; }
+      .footer-row { flex-direction: column; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { animation-duration: 0s !important; transition: none !important; }
+    }
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#top">Skip to content</a>
   <header>
-    <nav class="wrap">
-      <a class="brand" href="#top" aria-label="Arc MCP Builder Assistant home"><span class="mark">A</span><span>Arc MCP Builder Assistant</span></a>
+    <nav class="wrap" aria-label="Primary navigation">
+      <a class="brand" href="#top" aria-label="Arc MCP Builder Assistant home"><span class="mark" aria-hidden="true">A</span><span>Arc MCP Builder Assistant</span></a>
       <div class="links">
-        <a href="./docs/arc-mcp-setup.md">MCP setup</a>
-        <a href="./docs/arc-docs-map.md">Docs map</a>
-        <a href="./docs/deploy-contracts-arc.md">Deploy contracts</a>
-        <a href="./prompts/explain-arc-docs.md">Prompts</a>
-        <a href="./examples/payment-intent-demo/">Demo mockup</a>
+        <a href="#workflows">Workflows</a>
+        <a href="#build-path">Build path</a>
+        <a href="#docs">Docs</a>
+        <a href="#roadmap">Roadmap</a>
+        <a class="repo-link" href="https://github.com/Anstrays/arc-mcp-builder-assistant" target="_blank" rel="noopener noreferrer" aria-label="View Arc MCP Builder Assistant on GitHub">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.11.79-.25.79-.56v-2c-3.2.69-3.87-1.37-3.87-1.37-.52-1.34-1.27-1.7-1.27-1.7-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.76 2.69 1.25 3.34.95.1-.74.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.45.11-3.02 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.78 0c2.21-1.49 3.18-1.18 3.18-1.18.62 1.57.23 2.73.11 3.02.74.81 1.18 1.84 1.18 3.1 0 4.43-2.7 5.41-5.26 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
+          GitHub
+        </a>
       </div>
     </nav>
   </header>
@@ -99,10 +164,11 @@
             <a class="button primary" href="./docs/arc-mcp-setup.md">Start with MCP setup</a>
             <a class="button" href="./docs/arc-docs-map.md">Read Arc docs map</a>
             <a class="button" href="./docs/payment-intent-demo.md">Read demo spec</a>
+            <a class="button" href="./examples/payment-intent-demo/">View demo mockup</a>
           </div>
         </div>
         <div class="terminal" aria-label="Prompt example">
-          <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+          <div class="bar" aria-hidden="true"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
           <pre><code><span class="green">prompt</span>: Use Arc MCP/docs context to design
         a minimal payment-intent demo.
 
@@ -116,14 +182,14 @@
       </div>
     </section>
 
-    <section>
+    <section id="workflows">
       <div class="wrap">
         <h2 class="section-title">What this ships first</h2>
         <p class="section-copy">The first version is intentionally small: docs, prompts, and a simple UI mockup. It is designed to become public proof-of-work before expanding into a testnet-connected prototype.</p>
         <div class="cards">
-          <article class="card"><div class="num">1</div><h3>MCP setup notes</h3><p>Checklist for connecting AI tools to Arc docs through the official MCP surface and verifying retrieved context.</p></article>
-          <article class="card"><div class="num">2</div><h3>Arc docs map</h3><p>Network config, core contract addresses, ERC-8004 agent identity, ERC-8183 job escrow, and event-monitoring roadmap.</p></article>
-          <article class="card"><div class="num">3</div><h3>Payment-intent demo</h3><p>A safe first agentic commerce flow: an agent prepares a USDC request, while the human keeps approval control.</p></article>
+          <article class="card"><div class="num" aria-hidden="true">1</div><h3>MCP setup notes</h3><p>Checklist for connecting AI tools to Arc docs through the official MCP surface and verifying retrieved context.</p></article>
+          <article class="card"><div class="num" aria-hidden="true">2</div><h3>Arc docs map</h3><p>Network config, core contract addresses, ERC-8004 agent identity, ERC-8183 job escrow, and event-monitoring roadmap.</p></article>
+          <article class="card"><div class="num" aria-hidden="true">3</div><h3>Payment-intent demo</h3><p>A safe first agentic commerce flow: an agent prepares a USDC request, while the human keeps approval control.</p></article>
         </div>
       </div>
     </section>
@@ -149,7 +215,70 @@
       </div>
     </section>
 
-    <section>
+    <section id="build-path">
+      <div class="wrap panel">
+        <div class="eyebrow">Builder path</div>
+        <h2 class="section-title">From docs context to a safe Arc testnet prototype.</h2>
+        <p class="section-copy">The app now shows the intended implementation sequence instead of leaving the demo as a loose mockup. Each step keeps private keys and autonomous spending out of scope until the testnet flow is reviewed.</p>
+        <div class="path-grid" aria-label="Recommended build path">
+          <div class="path-step"><strong>1 · Ground the agent</strong><span>Connect an AI coding tool to Arc MCP, then ask it to cite the docs it used before scaffolding code.</span></div>
+          <div class="path-step"><strong>2 · Create intent data</strong><span>Represent amount, asset, recipient, memo, expiry, and status as reviewable JSON before any wallet action.</span></div>
+          <div class="path-step"><strong>3 · Require human approval</strong><span>Keep signing manual. The agent can prepare context, but the user confirms every transaction.</span></div>
+          <div class="path-step"><strong>4 · Observe and document</strong><span>Track status through ArcScan or app logs, then publish the findings back into the docs and prompts.</span></div>
+        </div>
+        <p class="notice"><strong>Safety default:</strong> v0 is non-custodial and review-first. No backend custody, no private-key handling, and no autonomous mainnet spending.</p>
+      </div>
+    </section>
+
+    <section id="docs">
+      <div class="wrap">
+        <h2 class="section-title">Docs and community files</h2>
+        <p class="section-copy">Every page is plain Markdown. Links open the source files in the GitHub repo so they stay reviewable.</p>
+        <div class="cards">
+          <article class="card">
+            <h3>MCP setup</h3>
+            <p>Connect Claude Code, Claude Desktop, Cursor, VS Code, Windsurf, and HTTP MCP clients to Arc's <code>docs.arc.network/mcp</code> server.</p>
+            <span class="meta"><a href="./docs/arc-mcp-setup.md">docs/arc-mcp-setup.md →</a></span>
+          </article>
+          <article class="card">
+            <h3>Arc docs map</h3>
+            <p>Practical map of Arc Testnet config, contracts, agent primitives (ERC-8004, ERC-8183), tutorials, tools, and the recommended build path.</p>
+            <span class="meta"><a href="./docs/arc-docs-map.md">docs/arc-docs-map.md →</a></span>
+          </article>
+          <article class="card">
+            <h3>Deploy contracts on Arc</h3>
+            <p>Builder notes from Arc's deploy-contracts tutorial with Circle Contracts on Arc Testnet (ERC-20, ERC-721, ERC-1155, Airdrop).</p>
+            <span class="meta"><a href="./docs/deploy-contracts-arc.md">docs/deploy-contracts-arc.md →</a></span>
+          </article>
+          <article class="card">
+            <h3>Builder workflows</h3>
+            <p>Four practical Arc + AI workflows: docs-aware coding, payment intents, agent identity, and a builder content loop.</p>
+            <span class="meta"><a href="./docs/builder-workflows.md">docs/builder-workflows.md →</a></span>
+          </article>
+          <article class="card">
+            <h3>Payment-intent demo spec</h3>
+            <p>Thesis, user story, MVP flow, data model, non-goals, and open Arc docs questions to verify before testnet integration.</p>
+            <span class="meta"><a href="./docs/payment-intent-demo.md">docs/payment-intent-demo.md →</a></span>
+          </article>
+          <article class="card">
+            <h3>Prompt library</h3>
+            <p>Copy-paste prompts for explaining Arc docs, planning the payment-intent demo, contract deployment, and ERC-8004 agent notes.</p>
+            <span class="meta"><a href="https://github.com/Anstrays/arc-mcp-builder-assistant/tree/main/prompts" target="_blank" rel="noopener noreferrer">prompts/ on GitHub →</a></span>
+          </article>
+          <article class="card">
+            <h3>Security &amp; conduct</h3>
+            <p>What never to commit, demo safety rules, code of conduct, and how to file a private security report.</p>
+            <span class="meta">
+              <a href="./SECURITY.md">SECURITY.md</a> ·
+              <a href="./CONTRIBUTING.md">CONTRIBUTING.md</a> ·
+              <a href="./CODE_OF_CONDUCT.md">CODE_OF_CONDUCT.md</a>
+            </span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="roadmap">
       <div class="wrap panel">
         <h2 class="section-title">Roadmap</h2>
         <ul class="checklist">
@@ -166,7 +295,28 @@
   </main>
 
   <footer>
-    <div class="wrap">Independent early-stage builder resource. Not an official Arc product or endorsement.</div>
+    <div class="wrap footer-row">
+      <span>Independent early-stage builder resource. Not an official Arc product or endorsement.</span>
+      <span class="footer-links">
+        <a href="https://github.com/Anstrays/arc-mcp-builder-assistant" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="./LICENSE">License</a>
+        <a href="./SECURITY.md">Security</a>
+        <a href="./CODE_OF_CONDUCT.md">Code of Conduct</a>
+      </span>
+    </div>
   </footer>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareSourceCode",
+    "name": "Arc MCP Builder Assistant",
+    "description": "Independent Arc builder kit that turns Arc's MCP/docs surface into reusable AI-coding prompts and a safe payment-intent demo for agentic commerce on Arc Testnet.",
+    "codeRepository": "https://github.com/Anstrays/arc-mcp-builder-assistant",
+    "programmingLanguage": ["HTML", "Markdown"],
+    "license": "https://opensource.org/licenses/MIT",
+    "url": "https://anstrays.github.io/arc-mcp-builder-assistant/"
+  }
+  </script>
 </body>
 </html>
