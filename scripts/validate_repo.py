@@ -59,9 +59,12 @@ REQUIRED_FILES = [
     "examples/payment-intent-demo/index.html",
     "examples/payment-intent-playground/index.html",
     "examples/payment-intent-playground/playground.js",
+    "examples/job-escrow-simulator/index.html",
+    "examples/job-escrow-simulator/simulator.js",
     "assets/screenshots/landing.png",
     "assets/screenshots/security-viewer.png",
     "assets/screenshots/payment-intent-playground.png",
+    "assets/screenshots/job-escrow-simulator.png",
 ]
 
 # Every HTML file in the repo is checked with these full invariants.
@@ -71,6 +74,7 @@ HTML_FILES_TO_VALIDATE = [
     "docs/view.html",
     "examples/payment-intent-demo/index.html",
     "examples/payment-intent-playground/index.html",
+    "examples/job-escrow-simulator/index.html",
 ]
 
 CANONICAL_BASE_URL = "https://anstrays.github.io/arc-mcp-builder-assistant/"
@@ -80,6 +84,7 @@ SITEMAP_REQUIRED_LOCATIONS = (
     CANONICAL_BASE_URL + "docs/view.html",
     CANONICAL_BASE_URL + "examples/payment-intent-demo/",
     CANONICAL_BASE_URL + "examples/payment-intent-playground/",
+    CANONICAL_BASE_URL + "examples/job-escrow-simulator/",
 )
 REDUCED_MOTION_MEDIA_RE = re.compile(
     r"@media\s*\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)",

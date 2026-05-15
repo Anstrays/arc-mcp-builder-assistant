@@ -60,6 +60,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/mcp-query-examples.md`](./docs/mcp-query-examples.md) — prompts that force AI tools to separate retrieved Arc facts, implementation suggestions, and unknowns.
 - [`docs/arc-house-submission.md`](./docs/arc-house-submission.md) — ready-to-edit builder update for Arc community or Arc House-style submissions.
 - [`examples/payment-intent-playground/`](./examples/payment-intent-playground/) — local-only interactive playground for editing a payment request, inspecting live JSON, and simulating approval/submission states.
+- [`examples/job-escrow-simulator/`](./examples/job-escrow-simulator/) — local-only ERC-8183-style job escrow simulator for posting, accepting, funding, submitting, and approving a payout.
 - [`examples/payment-intent-demo/`](./examples/payment-intent-demo/) — tiny static mockup for the first payment-intent flow, including trust-boundary and review-state UI copy.
 
 ## Screenshots
@@ -71,6 +72,8 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 ![Styled security policy viewer screenshot](./assets/screenshots/security-viewer.png)
 
 ![Payment intent playground screenshot](./assets/screenshots/payment-intent-playground.png)
+
+![Job escrow simulator screenshot](./assets/screenshots/job-escrow-simulator.png)
 
 ## Roadmap
 
@@ -84,6 +87,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - [x] Add agent identity notes around Arc's ERC-8004 tutorial.
 - [x] Add builder readiness checklist, MCP query examples, agent-commerce use cases, job escrow demo spec, and Arc House submission draft.
 - [x] Turn the payment-intent mockup into a local interactive playground with reviewable JSON and status transitions.
+- [x] Turn the job escrow spec into a local simulator with reviewable JSON and human-approved payout state.
 - [x] Add a styled Markdown docs viewer for GitHub Pages so docs links render like pages instead of raw text.
 - [x] Route community-health pages through the styled viewer and add committed screenshots for reviewer proof.
 - [ ] Share build log in Arc community.
@@ -102,7 +106,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 ### Phase 3 — Agent commerce starter kit
 
 - Add agent identity notes around Arc's ERC-8004 tutorial.
-- Turn the job escrow spec into a local simulator after the payment-intent playground is working.
+- Extend the local job escrow simulator with richer failure states after the payment-intent playground is wired to verified testnet status.
 - Add reusable components for agent cards, payment requests, receipts, and logs.
 - Add example flows for creator payouts, API payments, and AI-agent commerce.
 
@@ -161,7 +165,8 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 ├── prompts/                         # Copy-paste prompts for AI coding tools
 ├── examples/
 │   ├── payment-intent-demo/         # Static UI mockup of the v0 demo flow
-│   └── payment-intent-playground/   # Local-only interactive intent playground
+│   ├── payment-intent-playground/   # Local-only interactive intent playground
+│   └── job-escrow-simulator/        # Local-only ERC-8183-style escrow flow simulator
 ├── assets/screenshots/              # Committed preview proof for reviewers
 ├── scripts/
 │   └── validate_repo.py             # CI / local validation script
