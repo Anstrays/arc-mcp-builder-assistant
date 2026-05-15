@@ -76,6 +76,14 @@
     h3 { margin: 26px 0 10px; font-size: 1.25rem; }
     p, li { color: var(--muted); }
     ul, ol { padding-left: 1.4rem; }
+    li ul, li ol { margin-top: 6px; }
+    .task { display: inline-flex; gap: 8px; align-items: flex-start; }
+    .task input { margin-top: .42em; accent-color: var(--accent); }
+    .table-wrap { overflow-x: auto; margin: 18px 0; border: 1px solid var(--line); border-radius: 18px; }
+    table { width: 100%; border-collapse: collapse; min-width: 560px; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; }
+    th { color: var(--text); background: rgba(124,247,212,.08); font-size: .88rem; text-transform: uppercase; letter-spacing: .06em; }
+    tr:last-child td { border-bottom: 0; }
     pre {
       overflow-x: auto;
       padding: 18px;
@@ -93,6 +101,7 @@
     .doc-list { display: grid; gap: 8px; margin-top: 14px; }
     .doc-list a { color: var(--muted); padding: 8px 10px; border-radius: 12px; border: 1px solid transparent; }
     .doc-list a[aria-current="page"] { color: var(--text); border-color: rgba(124,247,212,.32); background: rgba(124,247,212,.08); }
+    .doc-group { margin: 16px 0 0; color: var(--accent); font-size: .72rem; font-weight: 950; text-transform: uppercase; letter-spacing: .14em; }
     .error { color: var(--warn); }
     @media (max-width: 900px) {
       main { grid-template-columns: 1fr; }
@@ -118,7 +127,7 @@
   </header>
   <main>
     <article class="panel" id="content">
-      <p class="eyebrow">Styled Markdown docs</p>
+      <p class="eyebrow">Styled Markdown reader</p>
       <h1 id="doc-title">Loading docs…</h1>
       <p class="meta" id="doc-meta">Rendering checked-in Markdown as a readable GitHub Pages page.</p>
       <div class="doc-actions">
@@ -127,9 +136,9 @@
       </div>
       <div id="doc-body" aria-live="polite"></div>
     </article>
-    <aside aria-label="Available docs">
-      <p class="eyebrow">Docs</p>
-      <strong>Choose a page</strong>
+    <aside aria-label="Available pages">
+      <p class="eyebrow">Pages</p>
+      <strong>Choose a readable page</strong>
       <div class="doc-list" id="doc-list"></div>
     </aside>
   </main>

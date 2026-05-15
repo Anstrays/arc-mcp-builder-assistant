@@ -59,6 +59,9 @@ REQUIRED_FILES = [
     "examples/payment-intent-demo/index.html",
     "examples/payment-intent-playground/index.html",
     "examples/payment-intent-playground/playground.js",
+    "assets/screenshots/landing.png",
+    "assets/screenshots/security-viewer.png",
+    "assets/screenshots/payment-intent-playground.png",
 ]
 
 # Every HTML file in the repo is checked with these full invariants.
@@ -302,17 +305,33 @@ def validate_local_links() -> None:
                 fail(f"{relative}: broken local link: {href}")
 
 
-def validate_no_raw_docs_links() -> None:
-    """Keep user-facing HTML docs links on the styled viewer, not raw Markdown."""
-    raw_docs_link_re = re.compile(r"href=[\"']([^\"']*docs/[^\"']+\.md(?:#[^\"']*)?)[\"']", re.IGNORECASE)
+def validate_no_raw_markdown_links() -> None:
+    """Keep user-facing HTML Markdown links on the styled viewer, not raw files."""
+    raw_markdown_link_re = re.compile(r"href=[\"']([^\"']+\.md(?:#[^\"']*)?)[\"']", re.IGNORECASE)
     for relative in HTML_FILES_TO_VALIDATE:
         if relative == "docs/view.html":
             # The viewer intentionally exposes one explicit "Open raw Markdown" action.
             continue
         html = (ROOT / relative).read_text(encoding="utf-8")
-        for href in raw_docs_link_re.findall(html):
+        for href in raw_markdown_link_re.findall(html):
             if "docs/view.html#" not in href:
-                fail(f"{relative}: link to raw docs Markdown should use docs/view.html: {href}")
+                fail(f"{relative}: link to raw Markdown should use docs/view.html: {href}")
+
+
+def validate_docs_viewer_registry() -> None:
+    """Ensure every public Markdown page is reachable through the styled viewer."""
+    viewer = (ROOT / "docs/viewer.js").read_text(encoding="utf-8")
+    expected_page_ids = [
+        path.replace("docs/", "")
+        for path in REQUIRED_FILES
+        if path.startswith("docs/") and path.endswith(".md")
+    ] + ["security.md", "contributing.md", "code-of-conduct.md"]
+    for page_id in expected_page_ids:
+        if f"id: '{page_id}'" not in viewer:
+            fail(f"docs/viewer.js: missing styled viewer page id: {page_id}")
+    for source_path in ("../SECURITY.md", "../CONTRIBUTING.md", "../CODE_OF_CONDUCT.md"):
+        if f"path: '{source_path}'" not in viewer:
+            fail(f"docs/viewer.js: missing community source path: {source_path}")
 
 
 def validate_demo_safety_copy() -> None:
@@ -354,7 +373,8 @@ def main() -> None:
     validate_html()
     validate_reduced_motion_css()
     validate_local_links()
-    validate_no_raw_docs_links()
+    validate_no_raw_markdown_links()
+    validate_docs_viewer_registry()
     validate_demo_safety_copy()
     validate_robots_txt()
     validate_sitemap_xml()

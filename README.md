@@ -21,6 +21,7 @@ This repository is intentionally scoped as a builder enablement kit, not an offi
 
 - [Why this matters](#why-this-matters)
 - [Current MVP](#current-mvp)
+- [Screenshots](#screenshots)
 - [Roadmap](#roadmap)
 - [Suggested use](#suggested-use)
 - [Local development](#local-development)
@@ -45,7 +46,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 
 ## Current MVP
 
-- [`docs/view.html`](./docs/view.html) — styled GitHub Pages docs reader so landing-page links open readable pages instead of raw Markdown text.
+- [`docs/view.html`](./docs/view.html) — styled GitHub Pages Markdown reader so landing-page docs and community-health links open readable pages instead of raw text.
 - [`docs/arc-mcp-setup.md`](./docs/arc-mcp-setup.md) — real Arc MCP setup steps for Claude Code, Claude Desktop, Cursor, VS Code, Windsurf, and HTTP MCP clients.
 - [`docs/arc-docs-map.md`](./docs/arc-docs-map.md) — practical map of Arc Testnet config, contracts, agent primitives, tutorials, tools, and the recommended build path.
 - [`docs/deploy-contracts-arc.md`](./docs/deploy-contracts-arc.md) — builder notes from Arc's deploy-contracts tutorial using Circle Contracts and Arc Testnet.
@@ -61,6 +62,16 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`examples/payment-intent-playground/`](./examples/payment-intent-playground/) — local-only interactive playground for editing a payment request, inspecting live JSON, and simulating approval/submission states.
 - [`examples/payment-intent-demo/`](./examples/payment-intent-demo/) — tiny static mockup for the first payment-intent flow, including trust-boundary and review-state UI copy.
 
+## Screenshots
+
+These screenshots are committed so reviewers can quickly see the live-site UX without clicking through every page.
+
+![Landing page screenshot](./assets/screenshots/landing.png)
+
+![Styled security policy viewer screenshot](./assets/screenshots/security-viewer.png)
+
+![Payment intent playground screenshot](./assets/screenshots/payment-intent-playground.png)
+
 ## Roadmap
 
 ### Phase 1 — Documentation kit
@@ -74,6 +85,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [x] Add builder readiness checklist, MCP query examples, agent-commerce use cases, job escrow demo spec, and Arc House submission draft.
 - [x] Turn the payment-intent mockup into a local interactive playground with reviewable JSON and status transitions.
 - [x] Add a styled Markdown docs viewer for GitHub Pages so docs links render like pages instead of raw text.
+- [x] Route community-health pages through the styled viewer and add committed screenshots for reviewer proof.
 - [ ] Share build log in Arc community.
 
 ### Phase 2 — Working prototype
@@ -119,11 +131,10 @@ python3 -m http.server 8080
 ```
 
 The validator checks for required files, obvious credential patterns,
-basic HTML safety / accessibility / SEO invariants on every page in the
-site (`index.html`, `404.html`, and
-`examples/payment-intent-demo/index.html`), local links, reduced-motion CSS coverage,
-payment-demo safety copy, and the integrity of `robots.txt` and
-`sitemap.xml`. It runs on every push and pull request
+basic HTML safety / accessibility / SEO invariants on every public HTML page,
+local links, reduced-motion CSS coverage, payment-demo safety copy, styled-viewer
+coverage for public Markdown pages, no raw Markdown links in user-facing HTML,
+and the integrity of `robots.txt` and `sitemap.xml`. It runs on every push and pull request
 via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 
 ## Repository structure
@@ -151,6 +162,7 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 ├── examples/
 │   ├── payment-intent-demo/         # Static UI mockup of the v0 demo flow
 │   └── payment-intent-playground/   # Local-only interactive intent playground
+├── assets/screenshots/              # Committed preview proof for reviewers
 ├── scripts/
 │   └── validate_repo.py             # CI / local validation script
 ├── .github/                         # Workflows, issue & PR templates
