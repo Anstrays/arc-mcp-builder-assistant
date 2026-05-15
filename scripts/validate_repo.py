@@ -302,6 +302,19 @@ def validate_local_links() -> None:
                 fail(f"{relative}: broken local link: {href}")
 
 
+def validate_no_raw_docs_links() -> None:
+    """Keep user-facing HTML docs links on the styled viewer, not raw Markdown."""
+    raw_docs_link_re = re.compile(r"href=[\"']([^\"']*docs/[^\"']+\.md(?:#[^\"']*)?)[\"']", re.IGNORECASE)
+    for relative in HTML_FILES_TO_VALIDATE:
+        if relative == "docs/view.html":
+            # The viewer intentionally exposes one explicit "Open raw Markdown" action.
+            continue
+        html = (ROOT / relative).read_text(encoding="utf-8")
+        for href in raw_docs_link_re.findall(html):
+            if "docs/view.html#" not in href:
+                fail(f"{relative}: link to raw docs Markdown should use docs/view.html: {href}")
+
+
 def validate_demo_safety_copy() -> None:
     relative = "examples/payment-intent-demo/index.html"
     html = (ROOT / relative).read_text(encoding="utf-8").lower()
@@ -341,6 +354,7 @@ def main() -> None:
     validate_html()
     validate_reduced_motion_css()
     validate_local_links()
+    validate_no_raw_docs_links()
     validate_demo_safety_copy()
     validate_robots_txt()
     validate_sitemap_xml()
