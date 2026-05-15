@@ -45,6 +45,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 
 ## Current MVP
 
+- [`docs/view.html`](./docs/view.html) — styled GitHub Pages docs reader so landing-page links open readable pages instead of raw Markdown text.
 - [`docs/arc-mcp-setup.md`](./docs/arc-mcp-setup.md) — real Arc MCP setup steps for Claude Code, Claude Desktop, Cursor, VS Code, Windsurf, and HTTP MCP clients.
 - [`docs/arc-docs-map.md`](./docs/arc-docs-map.md) — practical map of Arc Testnet config, contracts, agent primitives, tutorials, tools, and the recommended build path.
 - [`docs/deploy-contracts-arc.md`](./docs/deploy-contracts-arc.md) — builder notes from Arc's deploy-contracts tutorial using Circle Contracts and Arc Testnet.
@@ -72,6 +73,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [x] Add agent identity notes around Arc's ERC-8004 tutorial.
 - [x] Add builder readiness checklist, MCP query examples, agent-commerce use cases, job escrow demo spec, and Arc House submission draft.
 - [x] Turn the payment-intent mockup into a local interactive playground with reviewable JSON and status transitions.
+- [x] Add a styled Markdown docs viewer for GitHub Pages so docs links render like pages instead of raw text.
 - [ ] Share build log in Arc community.
 
 ### Phase 2 — Working prototype
@@ -133,6 +135,8 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 ├── robots.txt                       # Crawler directives + sitemap pointer
 ├── sitemap.xml                      # XML sitemap for the deployed site
 ├── docs/                            # Builder documentation
+│   ├── view.html                    # Styled GitHub Pages Markdown docs reader
+│   ├── viewer.js                    # Dependency-free local Markdown renderer
 │   ├── arc-mcp-setup.md
 │   ├── arc-docs-map.md
 │   ├── deploy-contracts-arc.md

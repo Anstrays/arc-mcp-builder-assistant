@@ -50,6 +50,8 @@ REQUIRED_FILES = [
     "docs/job-escrow-demo.md",
     "docs/mcp-query-examples.md",
     "docs/arc-house-submission.md",
+    "docs/view.html",
+    "docs/viewer.js",
     "prompts/explain-arc-docs.md",
     "prompts/build-payment-intent-demo.md",
     "prompts/register-agent-notes.md",
@@ -63,6 +65,7 @@ REQUIRED_FILES = [
 HTML_FILES_TO_VALIDATE = [
     "index.html",
     "404.html",
+    "docs/view.html",
     "examples/payment-intent-demo/index.html",
     "examples/payment-intent-playground/index.html",
 ]
@@ -71,6 +74,7 @@ CANONICAL_BASE_URL = "https://anstrays.github.io/arc-mcp-builder-assistant/"
 SITE_BASE_PATH = "/arc-mcp-builder-assistant/"
 SITEMAP_REQUIRED_LOCATIONS = (
     CANONICAL_BASE_URL,
+    CANONICAL_BASE_URL + "docs/view.html",
     CANONICAL_BASE_URL + "examples/payment-intent-demo/",
     CANONICAL_BASE_URL + "examples/payment-intent-playground/",
 )
