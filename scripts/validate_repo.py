@@ -55,6 +55,8 @@ REQUIRED_FILES = [
     "prompts/register-agent-notes.md",
     "prompts/deploy-contracts-on-arc.md",
     "examples/payment-intent-demo/index.html",
+    "examples/payment-intent-playground/index.html",
+    "examples/payment-intent-playground/playground.js",
 ]
 
 # Every HTML file in the repo is checked with these full invariants.
@@ -62,6 +64,7 @@ HTML_FILES_TO_VALIDATE = [
     "index.html",
     "404.html",
     "examples/payment-intent-demo/index.html",
+    "examples/payment-intent-playground/index.html",
 ]
 
 CANONICAL_BASE_URL = "https://anstrays.github.io/arc-mcp-builder-assistant/"
@@ -69,6 +72,7 @@ SITE_BASE_PATH = "/arc-mcp-builder-assistant/"
 SITEMAP_REQUIRED_LOCATIONS = (
     CANONICAL_BASE_URL,
     CANONICAL_BASE_URL + "examples/payment-intent-demo/",
+    CANONICAL_BASE_URL + "examples/payment-intent-playground/",
 )
 REDUCED_MOTION_MEDIA_RE = re.compile(
     r"@media\s*\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)",
@@ -200,7 +204,12 @@ def validate_html_file(relative: str) -> None:
             if script_type and script_type not in INERT_SCRIPT_TYPES:
                 fail(f"{relative}: executable script type is not allowed: {script_type}")
             if attrs.get("src"):
-                fail(f"{relative}: external scripts are not allowed")
+                src = attrs.get("src", "").strip()
+                if src.startswith(("http://", "https://", "//")):
+                    fail(f"{relative}: remote scripts are not allowed: {src}")
+                target = _resolved_local_link_target(relative, src)
+                if target is None or not target.is_file():
+                    fail(f"{relative}: local script is missing: {src}")
         for key in attrs:
             if key.lower().startswith("on"):
                 fail(f"{relative}: inline event handler is not allowed on <{tag}>: {key}")

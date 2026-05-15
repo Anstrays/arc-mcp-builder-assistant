@@ -57,6 +57,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/job-escrow-demo.md`](./docs/job-escrow-demo.md) — ERC-8183-style flow for posting jobs, funding escrow, reviewing agent output, and releasing stablecoin payouts.
 - [`docs/mcp-query-examples.md`](./docs/mcp-query-examples.md) — prompts that force AI tools to separate retrieved Arc facts, implementation suggestions, and unknowns.
 - [`docs/arc-house-submission.md`](./docs/arc-house-submission.md) — ready-to-edit builder update for Arc community or Arc House-style submissions.
+- [`examples/payment-intent-playground/`](./examples/payment-intent-playground/) — local-only interactive playground for editing a payment request, inspecting live JSON, and simulating approval/submission states.
 - [`examples/payment-intent-demo/`](./examples/payment-intent-demo/) — tiny static mockup for the first payment-intent flow, including trust-boundary and review-state UI copy.
 
 ## Roadmap
@@ -70,11 +71,13 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [x] Add contract-template notes from Arc's deploy-contracts tutorial for ERC-20, ERC-721, ERC-1155, and Airdrop.
 - [x] Add agent identity notes around Arc's ERC-8004 tutorial.
 - [x] Add builder readiness checklist, MCP query examples, agent-commerce use cases, job escrow demo spec, and Arc House submission draft.
+- [x] Turn the payment-intent mockup into a local interactive playground with reviewable JSON and status transitions.
 - [ ] Share build log in Arc community.
 
 ### Phase 2 — Working prototype
 
 - Build a small web UI for agent payment intents.
+- Use the local playground as the review-first baseline before wallet integration.
 - Use Arc Testnet config from the docs map: RPC, chain ID, USDC gas, and ArcScan.
 - Use Arc MCP docs to verify current testnet and wallet details.
 - Add Circle Dev-Controlled SCA Wallet notes for Arc Testnet.
@@ -142,7 +145,8 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 │   └── arc-house-submission.md
 ├── prompts/                         # Copy-paste prompts for AI coding tools
 ├── examples/
-│   └── payment-intent-demo/         # Static UI mockup of the v0 demo flow
+│   ├── payment-intent-demo/         # Static UI mockup of the v0 demo flow
+│   └── payment-intent-playground/   # Local-only interactive intent playground
 ├── scripts/
 │   └── validate_repo.py             # CI / local validation script
 ├── .github/                         # Workflows, issue & PR templates

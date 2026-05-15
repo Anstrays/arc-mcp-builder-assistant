@@ -13,6 +13,7 @@ Use this page as a ready-to-edit submission note for Arc community posts, Arc Ho
 - Arc docs map covering testnet config, stablecoin/payment context, ERC-8004 agent identity, ERC-8183/job escrow notes, providers, and tutorials.
 - Prompt library for docs-grounded Arc building.
 - Static payment-intent demo mockup with explicit human approval boundaries.
+- Local-only interactive payment-intent playground with editable fields, reviewable JSON, and approval/submission status transitions.
 - Builder readiness checklist, MCP query examples, agent-commerce use cases, and job escrow demo spec.
 - Lightweight repo validator and GitHub Actions workflow for safe static-site changes.
 
@@ -37,10 +38,11 @@ Arc docs/MCP → grounded AI prompts → payment intent → human approval → t
 - Live site: https://anstrays.github.io/arc-mcp-builder-assistant/
 - Repository: https://github.com/Anstrays/arc-mcp-builder-assistant
 - Demo mockup: https://anstrays.github.io/arc-mcp-builder-assistant/examples/payment-intent-demo/
+- Interactive playground: https://anstrays.github.io/arc-mcp-builder-assistant/examples/payment-intent-playground/
 
 ## Next build task
 
-Turn the static payment-intent mockup into a local interactive playground with reviewable JSON, status transitions, and a clear path to Arc Testnet integration.
+Wire the local payment-intent playground to verified Arc Testnet wallet/status details after the chain, provider, and transaction assumptions are re-checked through Arc MCP/docs.
 
 ## Ask from the community
 

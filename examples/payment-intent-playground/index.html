@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Arc Payment Intent Playground · Arc MCP Builder Assistant</title>
+  <meta name="description" content="Interactive local-only Arc payment-intent playground with reviewable JSON, explicit human approval states, and no wallet connection." />
+  <meta name="author" content="Arc MCP Builder Assistant contributors" />
+  <meta name="robots" content="index,follow" />
+  <meta name="theme-color" content="#05060a" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests" />
+  <link rel="canonical" href="https://anstrays.github.io/arc-mcp-builder-assistant/examples/payment-intent-playground/" />
+  <meta property="og:title" content="Arc Payment Intent Playground" />
+  <meta property="og:description" content="Local-only interactive playground for AI-prepared, human-approved USDC payment intents on Arc." />
+  <meta property="og:type" content="website" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #05060a;
+      --panel: rgba(10, 12, 24, .82);
+      --panel-2: rgba(255,255,255,.055);
+      --text: #f7f7ff;
+      --muted: #cbd2ff;
+      --soft: #8e95bc;
+      --line: rgba(255,255,255,.14);
+      --blue: #8ea2ff;
+      --cyan: #5eead4;
+      --lime: #d9ff72;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: radial-gradient(circle at top left, rgba(38,59,255,.76) 0, #080914 34%, var(--bg) 100%); color: var(--text); padding: 32px 0; }
+    main { width: min(1180px, calc(100vw - 32px)); margin: 0 auto; display: grid; gap: 18px; }
+    a { color: inherit; }
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    select:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 8px; }
+    .breadcrumb { margin: 0 0 4px; font-size: 13px; color: var(--soft); }
+    .breadcrumb a { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+    .card { border: 1px solid var(--line); background: var(--panel); border-radius: 24px; padding: 24px; box-shadow: 0 24px 80px rgba(0,0,0,.35); }
+    .eyebrow { color: var(--blue); text-transform: uppercase; letter-spacing: .16em; font-size: 12px; font-weight: 800; }
+    h1 { margin: 8px 0 10px; font-size: clamp(34px, 6vw, 72px); line-height: .95; letter-spacing: -.05em; }
+    h2 { margin: 8px 0 12px; font-size: clamp(24px, 3vw, 36px); letter-spacing: -.035em; }
+    p { color: var(--muted); line-height: 1.65; }
+    .grid { display: grid; grid-template-columns: minmax(280px, .95fr) minmax(320px, 1.05fr); gap: 18px; align-items: start; }
+    .form-grid { display: grid; gap: 14px; }
+    label { display: grid; gap: 7px; color: var(--muted); font-size: 14px; }
+    input, textarea, select { width: 100%; border: 1px solid var(--line); border-radius: 14px; background: rgba(0,0,0,.24); color: var(--text); padding: 12px 13px; font: inherit; }
+    textarea { min-height: 86px; resize: vertical; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
+    button { border: 0; border-radius: 999px; padding: 13px 18px; font-weight: 900; cursor: pointer; background: var(--text); color: #080914; }
+    button.secondary { background: rgba(255,255,255,.1); color: var(--text); border: 1px solid var(--line); }
+    button.warn { background: rgba(255,121,121,.18); color: #ffd2d2; border: 1px solid rgba(255,121,121,.35); }
+    .pill-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .pill { border: 1px solid var(--line); background: rgba(255,255,255,.06); color: #dce2ff; border-radius: 999px; padding: 8px 11px; font-size: 13px; }
+    .status { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(94,234,212,.3); background: rgba(94,234,212,.08); color: #d9fffb; border-radius: 999px; padding: 9px 12px; font-weight: 800; }
+    .status::before { content: ""; width: 9px; height: 9px; border-radius: 999px; background: var(--cyan); box-shadow: 0 0 18px rgba(94,234,212,.8); }
+    .json-preview { white-space: pre-wrap; overflow: auto; border: 1px solid rgba(255,255,255,.1); border-radius: 16px; padding: 14px; background: rgba(0,0,0,.28); color: #d9fffb; font-size: 13px; line-height: 1.55; min-height: 280px; }
+    .status-log { display: grid; gap: 10px; margin-top: 14px; }
+    .status-log div { border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 12px; color: var(--muted); background: var(--panel-2); }
+    .status-log strong { color: var(--text); }
+    .notice { border-color: rgba(94,234,212,.32); background: rgba(94,234,212,.08); }
+    .danger { border-color: rgba(255,121,121,.32); background: rgba(255,121,121,.08); }
+    .mini-list { margin: 12px 0 0; padding-left: 18px; color: var(--muted); line-height: 1.6; }
+    @media (max-width: 860px) {
+      body { padding: 18px 0; }
+      .grid, .two { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0s !important; transition: none !important; }
+    }
+  </style>
+  <script src="./playground.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="breadcrumb"><a href="../../index.html">&larr; Back to Arc MCP Builder Assistant</a></p>
+    <section class="card" aria-labelledby="playground-title">
+      <div class="eyebrow">Local-only interactive prototype</div>
+      <h1 id="playground-title">Payment Intent Playground</h1>
+      <p>Create a reviewable USDC payment intent from agent-provided context, inspect the JSON, and move it through explicit human approval states. This demo runs only in the browser. It does not connect to a wallet, broadcast transactions, talk to any backend, or request private keys.</p>
+      <div class="pill-row" aria-label="Safety properties">
+        <span class="pill">No wallet connection</span>
+        <span class="pill">No backend calls</span>
+        <span class="pill">Human keeps approval control</span>
+        <span class="pill">Reviewable JSON first</span>
+      </div>
+    </section>
+
+    <section class="grid" aria-label="Payment intent builder">
+      <article class="card" aria-labelledby="form-title">
+        <div class="eyebrow">Intent form</div>
+        <h2 id="form-title">Agent request</h2>
+        <form id="intent-form" class="form-grid">
+          <label>Agent name
+            <input id="agent" name="agent" autocomplete="off" value="Research Agent" />
+          </label>
+          <label>Recipient
+            <input id="recipient" name="recipient" autocomplete="off" value="0xDemo000000000000000000000000000000000Arc" />
+          </label>
+          <div class="two">
+            <label>Asset
+              <select id="asset" name="asset">
+                <option value="USDC">USDC</option>
+                <option value="EURC">EURC</option>
+              </select>
+            </label>
+            <label>Amount
+              <input id="amount" name="amount" inputmode="decimal" value="5.00" />
+            </label>
+          </div>
+          <label>Memo
+            <textarea id="memo" name="memo">Paid data/API task for Arc market research report.</textarea>
+          </label>
+          <label>Expiry
+            <input id="expiry" name="expiry" type="datetime-local" value="2026-05-30T00:00" />
+          </label>
+          <div class="actions" aria-label="Intent state controls">
+            <button type="button" id="prepare">Prepare intent</button>
+            <button type="button" id="approve" class="secondary">Approve manually</button>
+            <button type="button" id="submit" class="secondary">Mark submitted</button>
+            <button type="button" id="reset" class="warn">Reset</button>
+          </div>
+        </form>
+      </article>
+
+      <article class="card" aria-labelledby="json-title">
+        <div class="eyebrow">Review before wallet action</div>
+        <h2 id="json-title">Intent JSON</h2>
+        <p>Status: <span id="status-pill" class="status">draft</span></p>
+        <pre id="intent-json" class="json-preview" aria-live="polite"></pre>
+      </article>
+    </section>
+
+    <section class="grid" aria-label="Status and safety details">
+      <article class="card notice" aria-labelledby="timeline-title">
+        <div class="eyebrow">Local status timeline</div>
+        <h2 id="timeline-title">What happened</h2>
+        <div id="status-log" class="status-log" aria-live="polite"></div>
+      </article>
+      <article class="card danger" aria-labelledby="boundaries-title">
+        <div class="eyebrow">Trust boundaries</div>
+        <h2 id="boundaries-title">Still not a wallet app</h2>
+        <ul class="mini-list">
+          <li>The agent can prepare and explain an intent, not spend funds.</li>
+          <li>Every approval state in this playground is local UI state.</li>
+          <li>Real Arc Testnet integration must re-check chain, wallet, and contract details through current Arc docs/MCP.</li>
+          <li>Use the <a href="../../docs/arc-builder-readiness-checklist.md">builder readiness checklist</a> before adding any transaction path.</li>
+        </ul>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
