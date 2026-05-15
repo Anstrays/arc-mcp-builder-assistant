@@ -43,6 +43,7 @@
     .status-log { display: grid; gap: 10px; margin-top: 14px; }
     .status-log div { border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 12px; color: #cbd2ff; background: rgba(255,255,255,.045); }
     .status-log strong { color: #f7f7ff; }
+    .json-preview { white-space: pre-wrap; overflow: auto; border: 1px solid rgba(255,255,255,.1); border-radius: 16px; padding: 14px; background: rgba(0,0,0,.24); color: #d9fffb; font-size: 13px; line-height: 1.55; }
     .warning { border-color: rgba(94,234,212,.32); background: rgba(94,234,212,.08); }
     .breadcrumb { margin: 0 0 4px; font-size: 13px; color: #8e95bc; }
     .breadcrumb a { color: #cbd2ff; text-decoration: underline; text-underline-offset: 3px; }
@@ -99,6 +100,30 @@
           <div><strong>Review</strong> · Human checks amount, recipient, memo, and purpose.</div>
           <div><strong>Approve later</strong> · Wallet integration is a future testnet-only step.</div>
         </div>
+      </article>
+      <article class="card" aria-labelledby="json-title">
+        <div class="eyebrow">Reviewable JSON</div>
+        <h2 id="json-title">Intent object</h2>
+        <pre class="json-preview" aria-label="Static payment intent JSON">{
+  &quot;agent&quot;: &quot;Research Agent&quot;,
+  &quot;recipient&quot;: &quot;0xDemo...Arc&quot;,
+  &quot;asset&quot;: &quot;USDC&quot;,
+  &quot;amount&quot;: &quot;5.00&quot;,
+  &quot;memo&quot;: &quot;Research task #42&quot;,
+  &quot;expiry&quot;: &quot;2026-05-30T00:00:00Z&quot;,
+  &quot;status&quot;: &quot;pending_human_approval&quot;
+}</pre>
+        <p>Future versions should let the user inspect this object before any wallet prompt appears.</p>
+      </article>
+      <article class="card" aria-labelledby="next-title">
+        <div class="eyebrow">Next prototype</div>
+        <h2 id="next-title">From mockup to playground</h2>
+        <ul class="mini-list">
+          <li>Add editable fields for agent, recipient, amount, memo, and expiry.</li>
+          <li>Show live JSON and local-only status transitions.</li>
+          <li>Use the <a href="../../docs/arc-builder-readiness-checklist.md">builder readiness checklist</a> before testnet integration.</li>
+          <li>Extend the pattern into the <a href="../../docs/job-escrow-demo.md">job escrow demo</a>.</li>
+        </ul>
       </article>
     </section>
   </main>

@@ -144,6 +144,7 @@
         <a href="#workflows">Workflows</a>
         <a href="#build-path">Build path</a>
         <a href="#docs">Docs</a>
+        <a href="#playbooks">Playbooks</a>
         <a href="#roadmap">Roadmap</a>
         <a class="repo-link" href="https://github.com/Anstrays/arc-mcp-builder-assistant" target="_blank" rel="noopener noreferrer" aria-label="View Arc MCP Builder Assistant on GitHub">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.11.79-.25.79-.56v-2c-3.2.69-3.87-1.37-3.87-1.37-.52-1.34-1.27-1.7-1.27-1.7-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.76 2.69 1.25 3.34.95.1-.74.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.45.11-3.02 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.78 0c2.21-1.49 3.18-1.18 3.18-1.18.62 1.57.23 2.73.11 3.02.74.81 1.18 1.84 1.18 3.1 0 4.43-2.7 5.41-5.26 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
@@ -164,6 +165,7 @@
             <a class="button primary" href="./docs/arc-mcp-setup.md">Start with MCP setup</a>
             <a class="button" href="./docs/arc-docs-map.md">Read Arc docs map</a>
             <a class="button" href="./docs/payment-intent-demo.md">Read demo spec</a>
+            <a class="button" href="./docs/mcp-query-examples.md">Use MCP prompts</a>
             <a class="button" href="./examples/payment-intent-demo/">View demo mockup</a>
           </div>
         </div>
@@ -200,7 +202,7 @@
           <h2 class="section-title">Why this fits Arc</h2>
           <p class="section-copy">Arc's public narrative points toward stablecoin-native finance, agentic economy apps, autonomous agents, onchain identity, and predictable payment infrastructure. This kit turns that narrative into builder-facing workflows.</p>
           <div class="pill-row">
-            <span class="pill">MCP</span><span class="pill">AI coding tools</span><span class="pill">USDC gas</span><span class="pill">Stablecoin payments</span><span class="pill">ERC-8004 agents</span><span class="pill">ERC-8183 jobs</span><span class="pill">Event monitoring</span>
+            <span class="pill">MCP verified</span><span class="pill">Docs-grounded</span><span class="pill">No custody</span><span class="pill">Human approval</span><span class="pill">Testnet-first</span><span class="pill">ERC-8004 agents</span><span class="pill">ERC-8183 jobs</span><span class="pill">Event monitoring</span>
           </div>
         </div>
         <div class="panel mock">
@@ -227,6 +229,18 @@
           <div class="path-step"><strong>4 · Observe and document</strong><span>Track status through ArcScan or app logs, then publish the findings back into the docs and prompts.</span></div>
         </div>
         <p class="notice"><strong>Safety default:</strong> v0 is non-custodial and review-first. No backend custody, no private-key handling, and no autonomous mainnet spending.</p>
+        <div class="terminal" aria-label="Architecture diagram" style="margin-top: 18px;">
+          <div class="bar" aria-hidden="true"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+          <pre><code>User review/approval
+  ↓
+AI coding tool or agent
+  ↓ uses cited context
+Arc MCP docs
+  ↓
+Payment intent / job escrow object
+  ↓ later, after verification
+Arc Testnet · USDC · ArcScan status</code></pre>
+        </div>
       </div>
     </section>
 
@@ -271,6 +285,31 @@
             <span class="meta"><a href="./docs/agent-identity-erc8004.md">docs/agent-identity-erc8004.md →</a></span>
           </article>
           <article class="card">
+            <h3>Builder readiness checklist</h3>
+            <p>Pre-submit checklist for docs grounding, payment safety, UX states, repo quality, and public proof-of-work.</p>
+            <span class="meta"><a href="./docs/arc-builder-readiness-checklist.md">docs/arc-builder-readiness-checklist.md →</a></span>
+          </article>
+          <article class="card">
+            <h3>Agent commerce use cases</h3>
+            <p>Practical Arc use cases: API-call payments, creator payouts, job escrow, AI service marketplace, and report agents.</p>
+            <span class="meta"><a href="./docs/agent-commerce-use-cases.md">docs/agent-commerce-use-cases.md →</a></span>
+          </article>
+          <article class="card">
+            <h3>Job escrow demo</h3>
+            <p>ERC-8183-style flow for posting a job, funding escrow, agent submission, human review, and stablecoin payout.</p>
+            <span class="meta"><a href="./docs/job-escrow-demo.md">docs/job-escrow-demo.md →</a></span>
+          </article>
+          <article class="card">
+            <h3>MCP query examples</h3>
+            <p>Copy-paste prompts for testnet config, payment intents, ERC-8004 identity, ERC-8183 escrow, and safety review.</p>
+            <span class="meta"><a href="./docs/mcp-query-examples.md">docs/mcp-query-examples.md →</a></span>
+          </article>
+          <article class="card">
+            <h3>Arc House submission draft</h3>
+            <p>A ready-to-edit public builder update with links, safety boundaries, next task, and community asks.</p>
+            <span class="meta"><a href="./docs/arc-house-submission.md">docs/arc-house-submission.md →</a></span>
+          </article>
+          <article class="card">
             <h3>Security &amp; conduct</h3>
             <p>What never to commit, demo safety rules, code of conduct, and how to file a private security report.</p>
             <span class="meta">
@@ -279,6 +318,31 @@
               <a href="./CODE_OF_CONDUCT.md">CODE_OF_CONDUCT.md</a>
             </span>
           </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="playbooks">
+      <div class="wrap split">
+        <div>
+          <div class="eyebrow">Builder playbooks</div>
+          <h2 class="section-title">Make the project useful for other Arc builders.</h2>
+          <p class="section-copy">The new docs turn the site from a static map into a starter kit: reusable prompts, readiness checks, practical agent-commerce examples, and a submission draft for public build updates.</p>
+          <div class="pill-row">
+            <a class="pill" href="./docs/mcp-query-examples.md">MCP query examples</a>
+            <a class="pill" href="./docs/arc-builder-readiness-checklist.md">Readiness checklist</a>
+            <a class="pill" href="./docs/arc-house-submission.md">Arc House draft</a>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Next product shape</h3>
+          <ol class="checklist">
+            <li>Ground the agent with cited Arc MCP context.</li>
+            <li>Create a reviewable payment or job object.</li>
+            <li>Require explicit human approval before wallet action.</li>
+            <li>Track status through logs, ArcScan, or a local simulator.</li>
+            <li>Publish what was verified, what failed, and what is still unknown.</li>
+          </ol>
         </div>
       </div>
     </section>
@@ -292,7 +356,8 @@
           <li>Done: published Arc docs map: Testnet config, USDC/EURC contracts, ERC-8004 registries, ERC-8183 job escrow, providers, and tutorials.</li>
           <li>Done: added contract-template notes from Arc deploy-contracts tutorial for ERC-20, ERC-721, ERC-1155, and Airdrop.</li>
           <li>Done: added agent identity notes around Arc's ERC-8004 tutorial.</li>
-          <li>Next: turn the payment-intent mockup into a working local app.</li>
+          <li>Done: added builder readiness checklist, MCP query examples, agent-commerce use cases, job escrow demo spec, and Arc House submission draft.</li>
+          <li>Next: turn the payment-intent mockup into a working local app with reviewable JSON and status transitions.</li>
           <li>Later: add Arc Testnet integration after chain/wallet details are confirmed.</li>
         </ul>
       </div>

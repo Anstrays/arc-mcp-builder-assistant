@@ -52,6 +52,11 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/builder-workflows.md`](./docs/builder-workflows.md) — practical Arc + AI builder workflows.
 - [`docs/payment-intent-demo.md`](./docs/payment-intent-demo.md) — first demo specification.
 - [`docs/prompt-library.md`](./docs/prompt-library.md) and [`prompts/`](./prompts/) — copy-paste prompts for AI coding tools.
+- [`docs/arc-builder-readiness-checklist.md`](./docs/arc-builder-readiness-checklist.md) — pre-submit checklist for docs grounding, payment safety, UX states, repo quality, and public proof-of-work.
+- [`docs/agent-commerce-use-cases.md`](./docs/agent-commerce-use-cases.md) — practical use cases for API-call payments, creator payouts, job escrow, AI-service marketplace flows, and report agents.
+- [`docs/job-escrow-demo.md`](./docs/job-escrow-demo.md) — ERC-8183-style flow for posting jobs, funding escrow, reviewing agent output, and releasing stablecoin payouts.
+- [`docs/mcp-query-examples.md`](./docs/mcp-query-examples.md) — prompts that force AI tools to separate retrieved Arc facts, implementation suggestions, and unknowns.
+- [`docs/arc-house-submission.md`](./docs/arc-house-submission.md) — ready-to-edit builder update for Arc community or Arc House-style submissions.
 - [`examples/payment-intent-demo/`](./examples/payment-intent-demo/) — tiny static mockup for the first payment-intent flow, including trust-boundary and review-state UI copy.
 
 ## Roadmap
@@ -64,6 +69,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [x] Publish Arc docs map with network config, core contracts, ERC-8004, ERC-8183, and event-monitoring roadmap.
 - [x] Add contract-template notes from Arc's deploy-contracts tutorial for ERC-20, ERC-721, ERC-1155, and Airdrop.
 - [x] Add agent identity notes around Arc's ERC-8004 tutorial.
+- [x] Add builder readiness checklist, MCP query examples, agent-commerce use cases, job escrow demo spec, and Arc House submission draft.
 - [ ] Share build log in Arc community.
 
 ### Phase 2 — Working prototype
@@ -79,7 +85,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 ### Phase 3 — Agent commerce starter kit
 
 - Add agent identity notes around Arc's ERC-8004 tutorial.
-- Add ERC-8183 job escrow notes for agentic commerce flows.
+- Turn the job escrow spec into a local simulator after the payment-intent playground is working.
 - Add reusable components for agent cards, payment requests, receipts, and logs.
 - Add example flows for creator payouts, API payments, and AI-agent commerce.
 
@@ -128,7 +134,12 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 │   ├── arc-docs-map.md
 │   ├── deploy-contracts-arc.md
 │   ├── builder-workflows.md
-│   └── payment-intent-demo.md
+│   ├── payment-intent-demo.md
+│   ├── arc-builder-readiness-checklist.md
+│   ├── agent-commerce-use-cases.md
+│   ├── job-escrow-demo.md
+│   ├── mcp-query-examples.md
+│   └── arc-house-submission.md
 ├── prompts/                         # Copy-paste prompts for AI coding tools
 ├── examples/
 │   └── payment-intent-demo/         # Static UI mockup of the v0 demo flow
