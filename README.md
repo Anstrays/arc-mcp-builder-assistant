@@ -57,6 +57,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/arc-builder-readiness-checklist.md`](./docs/arc-builder-readiness-checklist.md) — pre-submit checklist for docs grounding, payment safety, UX states, repo quality, and public proof-of-work.
 - [`docs/agent-commerce-use-cases.md`](./docs/agent-commerce-use-cases.md) — practical use cases for API-call payments, creator payouts, job escrow, AI-service marketplace flows, and report agents.
 - [`docs/job-escrow-demo.md`](./docs/job-escrow-demo.md) — ERC-8183-style flow for posting jobs, funding escrow, reviewing agent output, and releasing stablecoin payouts.
+- [`docs/arc-testnet-integration-runbook.md`](./docs/arc-testnet-integration-runbook.md) — conservative runbook for moving from local payment/job simulators to a testnet-aware flow with human wallet approval, receipt objects, and failure-state UX.
 - [`docs/mcp-query-examples.md`](./docs/mcp-query-examples.md) — prompts that force AI tools to separate retrieved Arc facts, implementation suggestions, and unknowns.
 - [`docs/arc-house-submission.md`](./docs/arc-house-submission.md) — ready-to-edit builder update for Arc community or Arc House-style submissions.
 - [`examples/payment-intent-playground/`](./examples/payment-intent-playground/) — local-only interactive playground for editing a payment request, inspecting live JSON, and simulating approval/submission states.
@@ -90,6 +91,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - [x] Turn the job escrow spec into a local simulator with reviewable JSON and human-approved payout state.
 - [x] Add a styled Markdown docs viewer for GitHub Pages so docs links render like pages instead of raw text.
 - [x] Route community-health pages through the styled viewer and add committed screenshots for reviewer proof.
+- [x] Add an Arc Testnet integration runbook with intent/receipt data models, chain checks, and wallet failure states.
 - [ ] Share build log in Arc community.
 
 ### Phase 2 — Working prototype
@@ -100,6 +102,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - Use Arc MCP docs to verify current testnet and wallet details.
 - Add Circle Dev-Controlled SCA Wallet notes for Arc Testnet.
 - Add optional Circle Contracts template deployment notes for receipts, credits, or payout demos.
+- Use the testnet integration runbook as the gate before any wallet or RPC work.
 - Track transaction/payment status.
 - Add a short tutorial.
 
@@ -160,6 +163,7 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 │   ├── arc-builder-readiness-checklist.md
 │   ├── agent-commerce-use-cases.md
 │   ├── job-escrow-demo.md
+│   ├── arc-testnet-integration-runbook.md
 │   ├── mcp-query-examples.md
 │   └── arc-house-submission.md
 ├── prompts/                         # Copy-paste prompts for AI coding tools
