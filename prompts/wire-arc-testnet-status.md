@@ -24,7 +24,7 @@ Return:
 2. Repo files that need changes.
 3. Payment-intent data model changes.
 4. Receipt/status data model changes.
-5. Validation rules for chain, asset, amount, recipient, memo, expiry, and status transitions.
+5. Validation rules for chain, asset kind/decimals, amount, recipient, memo, expiry, and status transitions.
 6. Wallet/RPC failure states and UI copy.
 7. A 1-day implementation plan.
 8. A test plan that can run before real wallet submission.

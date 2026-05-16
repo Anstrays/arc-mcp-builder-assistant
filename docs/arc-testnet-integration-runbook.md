@@ -24,7 +24,7 @@ Before writing or changing code, ask the coding assistant to retrieve and cite c
 - Arc MCP server and docs retrieval.
 - Arc Testnet chain configuration.
 - Arc Testnet contract addresses.
-- Gas and fees: USDC is the native gas token.
+- Gas and fees: USDC is the native gas token; Arc docs currently describe the native gas token as 18 decimals.
 - App Kit, Unified Balance, Bridge, or Circle Wallet notes if the flow depends on them.
 - Contract event monitoring if the prototype emits receipts, escrow events, or payout events.
 
@@ -60,7 +60,8 @@ Start with a small JSON object that the user can inspect before any wallet actio
   "chainId": 5042002,
   "asset": {
     "symbol": "USDC",
-    "decimals": 6
+    "decimals": 18,
+    "kind": "native-gas-token"
   },
   "amount": "5.00",
   "recipient": "0x0000000000000000000000000000000000000000",
@@ -77,7 +78,7 @@ Validation rules:
 - `network` must be `arc-testnet`.
 - `chainId` must be `5042002`.
 - `asset.symbol` must be `USDC` for the first prototype.
-- `asset.decimals` must be `6` for ERC-20 USDC amounts.
+- `asset.kind` and `asset.decimals` must be sourced from the current Arc/Circle docs before implementation. For Arc's native gas token, Arc docs currently describe USDC as 18 decimals; do not assume ERC-20 6-decimal USDC unless a specific contract address and docs citation are used.
 - `amount` must be a decimal string, not a floating-point number.
 - `recipient` must be shown to the user before signing.
 - `memo` must be visible in the review UI.
