@@ -100,6 +100,8 @@ Do not add wallet connection, backend calls, private-key handling, or transactio
 
 ## Arc Testnet integration prompt
 
+Standalone file: [`prompts/wire-arc-testnet-status.md`](../prompts/wire-arc-testnet-status.md).
+
 ```text
 Plan the first Arc Testnet integration for this payment-intent app.
 
