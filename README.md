@@ -61,6 +61,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/arc-house-submission.md`](./docs/arc-house-submission.md) — ready-to-edit builder update for Arc community or Arc House-style submissions.
 - [`examples/payment-intent-playground/`](./examples/payment-intent-playground/) — local-only interactive playground for editing a payment request, inspecting live JSON, and simulating approval/submission states.
 - [`examples/job-escrow-simulator/`](./examples/job-escrow-simulator/) — local-only ERC-8183-style job escrow simulator for posting, accepting, funding, submitting, and approving a payout.
+- [`examples/x402-local-challenge-server/`](./examples/x402-local-challenge-server/) — dependency-free local HTTP 402 challenge server with a swappable verifier boundary for future Circle/x402 settlement work.
 - [`examples/payment-intent-demo/`](./examples/payment-intent-demo/) — tiny static mockup for the first payment-intent flow, including trust-boundary and review-state UI copy.
 
 ## Screenshots
@@ -127,18 +128,24 @@ validator) and a web browser are required.
 
 ```bash
 # Validate the repo the same way CI does.
+python3 scripts/test_x402_boundary.py
 python3 scripts/validate_repo.py
 
 # Preview the static site locally (matches GitHub Pages behavior).
 python3 -m http.server 8080
 # then open http://localhost:8080/
+
+# Run the local-only x402 challenge boundary demo.
+python3 examples/x402-local-challenge-server/server.py --port 8087
+# then request http://localhost:8087/protected
 ```
 
 The validator checks for required files, obvious credential patterns,
 basic HTML safety / accessibility / SEO invariants on every public HTML page,
 local links, reduced-motion CSS coverage, payment-demo safety copy, styled-viewer
-coverage for public Markdown pages, no raw Markdown links in user-facing HTML,
-and the integrity of `robots.txt` and `sitemap.xml`. It runs on every push and pull request
+coverage for public Markdown pages, the local-only x402 verifier boundary,
+no raw Markdown links in user-facing HTML, and the integrity of `robots.txt`
+and `sitemap.xml`. It runs on every push and pull request
 via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 
 ## Repository structure
@@ -166,9 +173,11 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 ├── examples/
 │   ├── payment-intent-demo/         # Static UI mockup of the v0 demo flow
 │   ├── payment-intent-playground/   # Local-only interactive intent playground
-│   └── job-escrow-simulator/        # Local-only ERC-8183-style escrow flow simulator
+│   ├── job-escrow-simulator/        # Local-only ERC-8183-style escrow flow simulator
+│   └── x402-local-challenge-server/ # Local-only 402 challenge/verifier boundary demo
 ├── assets/screenshots/              # Committed preview proof for reviewers
 ├── scripts/
+│   ├── test_x402_boundary.py        # Regression tests for the local x402 boundary
 │   └── validate_repo.py             # CI / local validation script
 ├── .github/                         # Workflows, issue & PR templates
 ├── CODE_OF_CONDUCT.md
