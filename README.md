@@ -56,6 +56,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/prompt-library.md`](./docs/prompt-library.md) and [`prompts/`](./prompts/) — copy-paste prompts for AI coding tools, including the standalone Arc Testnet status prompt.
 - [`docs/arc-builder-readiness-checklist.md`](./docs/arc-builder-readiness-checklist.md) — pre-submit checklist for docs grounding, payment safety, UX states, repo quality, and public proof-of-work.
 - [`docs/arc-testnet-integration-runbook.md`](./docs/arc-testnet-integration-runbook.md) — safe sequence for the next real Arc Testnet payment-intent integration.
+- [`docs/arc-wallet-integration-notes.md`](./docs/arc-wallet-integration-notes.md) — Circle Wallets vs browser-wallet decision notes for the next Phase 2 integration slice.
 - [`docs/agent-commerce-use-cases.md`](./docs/agent-commerce-use-cases.md) — practical use cases for API-call payments, creator payouts, job escrow, AI-service marketplace flows, and report agents.
 - [`docs/job-escrow-demo.md`](./docs/job-escrow-demo.md) — ERC-8183-style flow for posting jobs, funding escrow, reviewing agent output, and releasing stablecoin payouts.
 - [`docs/mcp-query-examples.md`](./docs/mcp-query-examples.md) — prompts that force AI tools to separate retrieved Arc facts, implementation suggestions, and unknowns.

@@ -48,6 +48,7 @@ REQUIRED_FILES = [
     "docs/prompt-library.md",
     "docs/arc-builder-readiness-checklist.md",
     "docs/arc-testnet-integration-runbook.md",
+    "docs/arc-wallet-integration-notes.md",
     "docs/agent-commerce-use-cases.md",
     "docs/job-escrow-demo.md",
     "docs/mcp-query-examples.md",
