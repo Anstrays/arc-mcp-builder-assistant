@@ -8,6 +8,7 @@ const PAGES = [
   { id: 'agent-identity-erc8004.md', path: './agent-identity-erc8004.md', githubPath: 'docs/agent-identity-erc8004.md', label: 'Agent identity notes', group: 'Builder kit' },
   { id: 'arc-builder-readiness-checklist.md', path: './arc-builder-readiness-checklist.md', githubPath: 'docs/arc-builder-readiness-checklist.md', label: 'Builder readiness checklist', group: 'Playbooks' },
   { id: 'arc-testnet-integration-runbook.md', path: './arc-testnet-integration-runbook.md', githubPath: 'docs/arc-testnet-integration-runbook.md', label: 'Arc Testnet integration runbook', group: 'Playbooks' },
+  { id: 'arc-wallet-integration-notes.md', path: './arc-wallet-integration-notes.md', githubPath: 'docs/arc-wallet-integration-notes.md', label: 'Arc wallet integration notes', group: 'Playbooks' },
   { id: 'agent-commerce-use-cases.md', path: './agent-commerce-use-cases.md', githubPath: 'docs/agent-commerce-use-cases.md', label: 'Agent commerce use cases', group: 'Playbooks' },
   { id: 'job-escrow-demo.md', path: './job-escrow-demo.md', githubPath: 'docs/job-escrow-demo.md', label: 'Job escrow demo', group: 'Playbooks' },
   { id: 'mcp-query-examples.md', path: './mcp-query-examples.md', githubPath: 'docs/mcp-query-examples.md', label: 'MCP query examples', group: 'Playbooks' },
