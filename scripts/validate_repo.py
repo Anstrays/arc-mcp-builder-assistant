@@ -59,6 +59,7 @@ REQUIRED_FILES = [
     "prompts/build-payment-intent-demo.md",
     "prompts/register-agent-notes.md",
     "prompts/deploy-contracts-on-arc.md",
+    "prompts/wire-arc-testnet-status.md",
     "examples/payment-intent-demo/index.html",
     "examples/payment-intent-playground/index.html",
     "examples/payment-intent-playground/playground.js",

@@ -116,6 +116,8 @@ Do not implement until chain and wallet details are explicitly confirmed.
 
 ## Read-only Arc Testnet status prompt
 
+Standalone file: [`prompts/wire-arc-testnet-status.md`](../prompts/wire-arc-testnet-status.md).
+
 ```text
 Use official Arc docs and this repository's Arc Testnet integration runbook to add the smallest safe network-status step.
 
