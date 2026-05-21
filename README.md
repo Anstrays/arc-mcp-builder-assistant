@@ -55,6 +55,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/payment-intent-demo.md`](./docs/payment-intent-demo.md) — first demo specification.
 - [`docs/prompt-library.md`](./docs/prompt-library.md) and [`prompts/`](./prompts/) — copy-paste prompts for AI coding tools.
 - [`docs/arc-builder-readiness-checklist.md`](./docs/arc-builder-readiness-checklist.md) — pre-submit checklist for docs grounding, payment safety, UX states, repo quality, and public proof-of-work.
+- [`docs/arc-testnet-integration-runbook.md`](./docs/arc-testnet-integration-runbook.md) — safe sequence for the next real Arc Testnet payment-intent integration.
 - [`docs/agent-commerce-use-cases.md`](./docs/agent-commerce-use-cases.md) — practical use cases for API-call payments, creator payouts, job escrow, AI-service marketplace flows, and report agents.
 - [`docs/job-escrow-demo.md`](./docs/job-escrow-demo.md) — ERC-8183-style flow for posting jobs, funding escrow, reviewing agent output, and releasing stablecoin payouts.
 - [`docs/mcp-query-examples.md`](./docs/mcp-query-examples.md) — prompts that force AI tools to separate retrieved Arc facts, implementation suggestions, and unknowns.
@@ -93,6 +94,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - [x] Add a styled Markdown docs viewer for GitHub Pages so docs links render like pages instead of raw text.
 - [x] Route community-health pages through the styled viewer and add committed screenshots for reviewer proof.
 - [x] Add a public build log and refreshed Arc House submission draft.
+- [x] Add Arc Testnet integration runbook and read-only RPC status helper.
 - [ ] Share build log in Arc community.
 
 ### Phase 2 — Working prototype
@@ -101,6 +103,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - Use the local playground as the review-first baseline before wallet integration.
 - Use Arc Testnet config from the docs map: RPC, chain ID, USDC gas, and ArcScan.
 - Use Arc MCP docs to verify current testnet and wallet details.
+- Start with the read-only `scripts/check_arc_testnet_status.py` helper before adding wallet signing.
 - Add Circle Dev-Controlled SCA Wallet notes for Arc Testnet.
 - Add optional Circle Contracts template deployment notes for receipts, credits, or payout demos.
 - Track transaction/payment status.
@@ -132,6 +135,9 @@ validator) and a web browser are required.
 # Validate the repo the same way CI does.
 python3 scripts/test_x402_boundary.py
 python3 scripts/validate_repo.py
+
+# Optional read-only Arc Testnet status check.
+python3 scripts/check_arc_testnet_status.py
 
 # Preview the static site locally (matches GitHub Pages behavior).
 python3 -m http.server 8080
@@ -167,6 +173,7 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 │   ├── builder-workflows.md
 │   ├── payment-intent-demo.md
 │   ├── arc-builder-readiness-checklist.md
+│   ├── arc-testnet-integration-runbook.md
 │   ├── agent-commerce-use-cases.md
 │   ├── job-escrow-demo.md
 │   ├── mcp-query-examples.md
@@ -180,6 +187,7 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 │   └── x402-local-challenge-server/ # Local-only 402 challenge/verifier boundary demo
 ├── assets/screenshots/              # Committed preview proof for reviewers
 ├── scripts/
+│   ├── check_arc_testnet_status.py  # Read-only Arc Testnet RPC status check
 │   ├── test_x402_boundary.py        # Regression tests for the local x402 boundary
 │   └── validate_repo.py             # CI / local validation script
 ├── .github/                         # Workflows, issue & PR templates

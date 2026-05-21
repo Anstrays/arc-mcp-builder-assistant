@@ -47,6 +47,7 @@ REQUIRED_FILES = [
     "docs/payment-intent-demo.md",
     "docs/prompt-library.md",
     "docs/arc-builder-readiness-checklist.md",
+    "docs/arc-testnet-integration-runbook.md",
     "docs/agent-commerce-use-cases.md",
     "docs/job-escrow-demo.md",
     "docs/mcp-query-examples.md",
@@ -66,6 +67,7 @@ REQUIRED_FILES = [
     "examples/x402-local-challenge-server/README.md",
     "examples/x402-local-challenge-server/.env.example",
     "examples/x402-local-challenge-server/server.py",
+    "scripts/check_arc_testnet_status.py",
     "scripts/test_x402_boundary.py",
     "assets/screenshots/landing.png",
     "assets/screenshots/security-viewer.png",
@@ -374,6 +376,31 @@ def validate_x402_boundary_demo() -> None:
             fail(f"examples/x402-local-challenge-server/README.md: missing safety marker: {marker}")
 
 
+def validate_arc_testnet_status_helper() -> None:
+    """Keep the first Arc Testnet helper read-only and source-fact grounded."""
+    relative = "scripts/check_arc_testnet_status.py"
+    helper = (ROOT / relative).read_text(encoding="utf-8")
+    required_markers = (
+        "EXPECTED_CHAIN_ID_DECIMAL = 5042002",
+        "EXPECTED_CHAIN_ID_HEX = hex(EXPECTED_CHAIN_ID_DECIMAL)",
+        'DEFAULT_RPC_URL = "https://rpc.testnet.arc.network"',
+        'DEFAULT_EXPLORER_URL = "https://testnet.arcscan.app"',
+        '"nativeGasAsset": "USDC"',
+        '"nativeGasDecimals": 18',
+        '"erc20UsdcAddress": "0x3600000000000000000000000000000000000000"',
+        '"erc20UsdcDecimals": 6',
+        '"rpcChainIdMatchesArcTestnet": expected',
+        '"signingRequiresWalletChainGateAndHumanApproval": True',
+    )
+    for marker in required_markers:
+        if marker not in helper:
+            fail(f"{relative}: missing Arc Testnet status marker: {marker}")
+    forbidden_markers = ("PRIVATE_KEY", "seed phrase", "safeToUseForSigning")
+    for marker in forbidden_markers:
+        if marker in helper:
+            fail(f"{relative}: forbidden wallet/signing marker: {marker}")
+
+
 def validate_robots_txt() -> None:
     relative = "robots.txt"
     text = (ROOT / relative).read_text(encoding="utf-8")
@@ -409,6 +436,7 @@ def main() -> None:
     validate_docs_viewer_registry()
     validate_demo_safety_copy()
     validate_x402_boundary_demo()
+    validate_arc_testnet_status_helper()
     validate_robots_txt()
     validate_sitemap_xml()
     print("validation passed", file=sys.stdout)
