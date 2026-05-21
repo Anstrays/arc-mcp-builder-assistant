@@ -7,12 +7,14 @@ Use this checklist before sharing an Arc demo, opening a PR, or submitting the p
 - [ ] Arc MCP server or current Arc docs were checked before implementation.
 - [ ] The prompt or issue asks the AI tool to cite the Arc docs it used.
 - [ ] Chain IDs, RPC URLs, explorers, contract addresses, and token assumptions are copied from current docs, not memory.
+- [ ] For Arc Testnet work, [`arc-testnet-integration-runbook.md`](./arc-testnet-integration-runbook.md) was checked and any stale constants were re-verified.
 - [ ] Open questions are listed instead of guessed.
 
 ## 2. Payment safety
 
 - [ ] No private keys, seed phrases, entity secrets, API keys, or wallet credentials are committed.
 - [ ] The demo is testnet-first unless a human explicitly chooses otherwise.
+- [ ] Wallet signing is blocked unless the connected chain is Arc Testnet (`5042002`).
 - [ ] The agent can prepare intent data, but a human approves every wallet action.
 - [ ] Spending limits and recipient details are visible before approval.
 - [ ] The UI says whether it is a mockup, local simulation, testnet transaction, or production flow.
@@ -22,6 +24,7 @@ Use this checklist before sharing an Arc demo, opening a PR, or submitting the p
 - [ ] Every payment intent has an agent, recipient, asset, amount, memo, expiry, and status.
 - [ ] Users can inspect the raw JSON before any signing step.
 - [ ] Status is observable through logs, ArcScan, or an app event timeline.
+- [ ] The UI distinguishes native USDC gas precision from ERC-20 USDC transfer precision.
 - [ ] Failure states are documented: rejected, expired, insufficient funds, wrong chain, and unknown transaction.
 
 ## 4. Repository quality

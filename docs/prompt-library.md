@@ -114,6 +114,26 @@ Use official Arc docs and return:
 Do not implement until chain and wallet details are explicitly confirmed.
 ```
 
+## Read-only Arc Testnet status prompt
+
+```text
+Use official Arc docs and this repository's Arc Testnet integration runbook to add the smallest safe network-status step.
+
+Scope:
+- only read-only RPC calls such as eth_chainId and eth_blockNumber;
+- no wallet connection;
+- no private-key handling;
+- no transaction preparation or broadcast;
+- fail closed if the chain ID is not Arc Testnet.
+
+Return:
+1. docs URLs used;
+2. exact chain/RPC/explorer facts;
+3. files changed;
+4. validation steps;
+5. manual smoke test commands.
+```
+
 ## ERC-8004 agent identity prompt
 
 ```text
