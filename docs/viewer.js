@@ -11,6 +11,7 @@ const PAGES = [
   { id: 'job-escrow-demo.md', path: './job-escrow-demo.md', githubPath: 'docs/job-escrow-demo.md', label: 'Job escrow demo', group: 'Playbooks' },
   { id: 'mcp-query-examples.md', path: './mcp-query-examples.md', githubPath: 'docs/mcp-query-examples.md', label: 'MCP query examples', group: 'Playbooks' },
   { id: 'arc-house-submission.md', path: './arc-house-submission.md', githubPath: 'docs/arc-house-submission.md', label: 'Arc House submission draft', group: 'Playbooks' },
+  { id: 'build-log.md', path: './build-log.md', githubPath: 'docs/build-log.md', label: 'Build log', group: 'Playbooks' },
   { id: 'security.md', path: '../SECURITY.md', githubPath: 'SECURITY.md', label: 'Security policy', group: 'Community' },
   { id: 'contributing.md', path: '../CONTRIBUTING.md', githubPath: 'CONTRIBUTING.md', label: 'Contributing guide', group: 'Community' },
   { id: 'code-of-conduct.md', path: '../CODE_OF_CONDUCT.md', githubPath: 'CODE_OF_CONDUCT.md', label: 'Code of conduct', group: 'Community' },

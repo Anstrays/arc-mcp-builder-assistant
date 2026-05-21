@@ -51,6 +51,7 @@ REQUIRED_FILES = [
     "docs/job-escrow-demo.md",
     "docs/mcp-query-examples.md",
     "docs/arc-house-submission.md",
+    "docs/build-log.md",
     "docs/view.html",
     "docs/viewer.js",
     "prompts/explain-arc-docs.md",
