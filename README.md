@@ -59,6 +59,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/job-escrow-demo.md`](./docs/job-escrow-demo.md) — ERC-8183-style flow for posting jobs, funding escrow, reviewing agent output, and releasing stablecoin payouts.
 - [`docs/mcp-query-examples.md`](./docs/mcp-query-examples.md) — prompts that force AI tools to separate retrieved Arc facts, implementation suggestions, and unknowns.
 - [`docs/arc-house-submission.md`](./docs/arc-house-submission.md) — ready-to-edit builder update for Arc community or Arc House-style submissions.
+- [`docs/build-log.md`](./docs/build-log.md) — public milestone note and community-update draft for sharing the current local-first builder kit.
 - [`examples/payment-intent-playground/`](./examples/payment-intent-playground/) — local-only interactive playground for editing a payment request, inspecting live JSON, and simulating approval/submission states.
 - [`examples/job-escrow-simulator/`](./examples/job-escrow-simulator/) — local-only ERC-8183-style job escrow simulator for posting, accepting, funding, submitting, and approving a payout.
 - [`examples/x402-local-challenge-server/`](./examples/x402-local-challenge-server/) — dependency-free local HTTP 402 challenge server with a swappable verifier boundary for future Circle/x402 settlement work.
@@ -91,6 +92,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - [x] Turn the job escrow spec into a local simulator with reviewable JSON and human-approved payout state.
 - [x] Add a styled Markdown docs viewer for GitHub Pages so docs links render like pages instead of raw text.
 - [x] Route community-health pages through the styled viewer and add committed screenshots for reviewer proof.
+- [x] Add a public build log and refreshed Arc House submission draft.
 - [ ] Share build log in Arc community.
 
 ### Phase 2 — Working prototype
@@ -168,7 +170,8 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 │   ├── agent-commerce-use-cases.md
 │   ├── job-escrow-demo.md
 │   ├── mcp-query-examples.md
-│   └── arc-house-submission.md
+│   ├── arc-house-submission.md
+│   └── build-log.md
 ├── prompts/                         # Copy-paste prompts for AI coding tools
 ├── examples/
 │   ├── payment-intent-demo/         # Static UI mockup of the v0 demo flow
