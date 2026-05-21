@@ -27,5 +27,8 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Test local x402 boundary
+        run: python scripts/test_x402_boundary.py
+
       - name: Validate repository files
         run: python scripts/validate_repo.py

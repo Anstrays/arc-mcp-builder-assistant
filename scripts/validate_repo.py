@@ -9,6 +9,7 @@ GitHub Pages site cannot accidentally regress on:
 - safe HTML (no executable scripts, no inline event handlers, no broken
   anchors, external links carry rel=noopener noreferrer, images carry
   alt text)
+
 - presence of the SEO/meta basics (lang, viewport, description, charset)
 
 It is intentionally dependency-free so it can run in CI without setup.
@@ -61,6 +62,10 @@ REQUIRED_FILES = [
     "examples/payment-intent-playground/playground.js",
     "examples/job-escrow-simulator/index.html",
     "examples/job-escrow-simulator/simulator.js",
+    "examples/x402-local-challenge-server/README.md",
+    "examples/x402-local-challenge-server/.env.example",
+    "examples/x402-local-challenge-server/server.py",
+    "scripts/test_x402_boundary.py",
     "assets/screenshots/landing.png",
     "assets/screenshots/security-viewer.png",
     "assets/screenshots/payment-intent-playground.png",
@@ -134,6 +139,7 @@ class HtmlInspector(HTMLParser):
         self.has_charset = False
         self.has_viewport = False
         self.has_description = False
+
         self.script_type_stack: list[str] = []
         self.script_text_segments: list[str] = []
         self._in_inert_script = False
@@ -153,6 +159,7 @@ class HtmlInspector(HTMLParser):
                 self.has_viewport = True
             if name == "description" and attr.get("content"):
                 self.has_description = True
+
         if tag == "script":
             script_type = attr.get("type", "").lower()
             self.script_type_stack.append(script_type)
@@ -248,8 +255,6 @@ def validate_html_file(relative: str) -> None:
         fail(f"{relative}: missing <meta name=\"viewport\">")
     if not inspector.has_description:
         fail(f"{relative}: missing a non-empty <meta name=\"description\">")
-
-
 def validate_html() -> None:
     for relative in HTML_FILES_TO_VALIDATE:
         validate_html_file(relative)
@@ -347,6 +352,27 @@ def validate_demo_safety_copy() -> None:
             fail(f"{relative}: missing safety copy marker: {marker}")
 
 
+def validate_x402_boundary_demo() -> None:
+    """Keep the x402 example explicitly local-only and verifier-shaped."""
+    server = (ROOT / "examples/x402-local-challenge-server/server.py").read_text(encoding="utf-8")
+    readme = (ROOT / "examples/x402-local-challenge-server/README.md").read_text(encoding="utf-8").lower()
+    required_server_markers = (
+        "class PaymentVerifier(Protocol)",
+        "class LocalDemoVerifier",
+        "HTTPStatus.PAYMENT_REQUIRED",
+        '"transactionBroadcast": False',
+        '"mainnetEnabled": config.mainnet_enabled',
+        'network="arc-testnet"',
+        'asset="USDC"',
+    )
+    for marker in required_server_markers:
+        if marker not in server:
+            fail(f"examples/x402-local-challenge-server/server.py: missing marker: {marker}")
+    for marker in ("local-only", "never opens a wallet", "transactionbroadcast", "mainnetenabled"):
+        if marker not in readme:
+            fail(f"examples/x402-local-challenge-server/README.md: missing safety marker: {marker}")
+
+
 def validate_robots_txt() -> None:
     relative = "robots.txt"
     text = (ROOT / relative).read_text(encoding="utf-8")
@@ -381,6 +407,7 @@ def main() -> None:
     validate_no_raw_markdown_links()
     validate_docs_viewer_registry()
     validate_demo_safety_copy()
+    validate_x402_boundary_demo()
     validate_robots_txt()
     validate_sitemap_xml()
     print("validation passed", file=sys.stdout)
