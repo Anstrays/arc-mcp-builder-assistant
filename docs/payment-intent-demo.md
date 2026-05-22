@@ -19,9 +19,13 @@ As a user, I want an AI agent to prepare a clear USDC payment request so I can r
    - memo
    - reason
    - expiry
-4. User reviews the payment intent.
+4. User reviews the payment intent and the Arc Testnet read-only status panel:
+   - expected chain ID `5042002` / `0x4cef52`
+   - RPC URL
+   - no wallet connection
+   - no transaction broadcast
 5. User clicks approve.
-6. Wallet/testnet transaction is submitted.
+6. Future wallet/testnet transaction path is submitted only after chain gating and manual wallet confirmation.
 7. App displays status and receipt.
 
 ## Data model draft
