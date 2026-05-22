@@ -6,6 +6,22 @@ const prepareButton = document.querySelector('#prepare');
 const approveButton = document.querySelector('#approve');
 const submitButton = document.querySelector('#submit');
 const resetButton = document.querySelector('#reset');
+const arcChainId = document.querySelector('#arc-chain-id');
+const arcRpcUrl = document.querySelector('#arc-rpc-url');
+const arcReadonlyState = document.querySelector('#arc-readonly-state');
+const arcSafetyJson = document.querySelector('#arc-safety-json');
+
+const ARC_TESTNET_STATUS = Object.freeze({
+  network: 'Arc Testnet',
+  expectedChainIdDecimal: 5042002,
+  expectedChainIdHex: '0x4cef52',
+  rpcUrl: 'https://rpc.testnet.arc.network',
+  nativeGasAsset: 'USDC',
+  walletConnected: false,
+  backendCalls: false,
+  transactionBroadcast: false,
+  signingRequiresWalletChainGateAndHumanApproval: true,
+});
 
 const initialEvents = [
   ['draft', 'Playground loaded with local-only defaults.'],
@@ -37,6 +53,15 @@ function appendEvent(status, message) {
   currentStatus = status;
   events = [[status, message], ...events].slice(0, 8);
   render();
+}
+
+function renderArcStatusPanel() {
+  arcChainId.textContent = `${ARC_TESTNET_STATUS.expectedChainIdDecimal} (${ARC_TESTNET_STATUS.expectedChainIdHex})`;
+  arcRpcUrl.textContent = ARC_TESTNET_STATUS.rpcUrl;
+  arcReadonlyState.textContent = ARC_TESTNET_STATUS.transactionBroadcast
+    ? 'Broadcast enabled'
+    : 'Read-only / no broadcast';
+  arcSafetyJson.textContent = JSON.stringify(ARC_TESTNET_STATUS, null, 2);
 }
 
 function render() {
@@ -77,4 +102,5 @@ resetButton.addEventListener('click', () => {
   render();
 });
 
+renderArcStatusPanel();
 render();

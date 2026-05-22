@@ -70,6 +70,7 @@ REQUIRED_FILES = [
     "examples/x402-local-challenge-server/.env.example",
     "examples/x402-local-challenge-server/server.py",
     "scripts/check_arc_testnet_status.py",
+    "scripts/test_payment_intent_playground.py",
     "scripts/test_x402_boundary.py",
     "assets/screenshots/landing.png",
     "assets/screenshots/security-viewer.png",
@@ -403,6 +404,39 @@ def validate_arc_testnet_status_helper() -> None:
             fail(f"{relative}: forbidden wallet/signing marker: {marker}")
 
 
+def validate_payment_intent_playground_status_panel() -> None:
+    """Keep the interactive playground status panel local-only and Arc-grounded."""
+    html_relative = "examples/payment-intent-playground/index.html"
+    js_relative = "examples/payment-intent-playground/playground.js"
+    html = (ROOT / html_relative).read_text(encoding="utf-8")
+    js = (ROOT / js_relative).read_text(encoding="utf-8")
+    for marker in (
+        'id="arc-status-panel"',
+        'id="arc-chain-id"',
+        'id="arc-rpc-url"',
+        'id="arc-readonly-state"',
+        "Arc Testnet status",
+        "Read-only RPC probe",
+    ):
+        if marker not in html:
+            fail(f"{html_relative}: missing Arc status panel marker: {marker}")
+    for marker in (
+        "const ARC_TESTNET_STATUS",
+        "expectedChainIdDecimal: 5042002",
+        "expectedChainIdHex: '0x4cef52'",
+        "rpcUrl: 'https://rpc.testnet.arc.network'",
+        "walletConnected: false",
+        "transactionBroadcast: false",
+        "signingRequiresWalletChainGateAndHumanApproval: true",
+        "renderArcStatusPanel()",
+    ):
+        if marker not in js:
+            fail(f"{js_relative}: missing Arc status panel marker: {marker}")
+    for marker in ("fetch(", "XMLHttpRequest", "WebSocket", "ethereum.request", "sendTransaction", "signTransaction", "PRIVATE_KEY"):
+        if marker in js:
+            fail(f"{js_relative}: forbidden network/wallet marker: {marker}")
+
+
 def validate_robots_txt() -> None:
     relative = "robots.txt"
     text = (ROOT / relative).read_text(encoding="utf-8")
@@ -439,6 +473,7 @@ def main() -> None:
     validate_demo_safety_copy()
     validate_x402_boundary_demo()
     validate_arc_testnet_status_helper()
+    validate_payment_intent_playground_status_panel()
     validate_robots_txt()
     validate_sitemap_xml()
     print("validation passed", file=sys.stdout)

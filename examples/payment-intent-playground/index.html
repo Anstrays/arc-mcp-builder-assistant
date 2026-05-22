@@ -61,15 +61,20 @@
     .status { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(94,234,212,.3); background: rgba(94,234,212,.08); color: #d9fffb; border-radius: 999px; padding: 9px 12px; font-weight: 800; }
     .status::before { content: ""; width: 9px; height: 9px; border-radius: 999px; background: var(--cyan); box-shadow: 0 0 18px rgba(94,234,212,.8); }
     .json-preview { white-space: pre-wrap; overflow: auto; border: 1px solid rgba(255,255,255,.1); border-radius: 16px; padding: 14px; background: rgba(0,0,0,.28); color: #d9fffb; font-size: 13px; line-height: 1.55; min-height: 280px; }
+    .json-preview.compact { min-height: 170px; }
     .status-log { display: grid; gap: 10px; margin-top: 14px; }
     .status-log div { border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 12px; color: var(--muted); background: var(--panel-2); }
     .status-log strong { color: var(--text); }
     .notice { border-color: rgba(94,234,212,.32); background: rgba(94,234,212,.08); }
     .danger { border-color: rgba(255,121,121,.32); background: rgba(255,121,121,.08); }
+    .metric-grid { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 14px 0; }
+    .metric { border: 1px solid rgba(255,255,255,.1); border-radius: 16px; background: var(--panel-2); padding: 13px; }
+    .metric span { display: block; color: var(--soft); font-size: 12px; text-transform: uppercase; letter-spacing: .12em; font-weight: 800; }
+    .metric strong { display: block; margin-top: 7px; color: var(--text); overflow-wrap: anywhere; }
     .mini-list { margin: 12px 0 0; padding-left: 18px; color: var(--muted); line-height: 1.6; }
     @media (max-width: 860px) {
       body { padding: 18px 0; }
-      .grid, .two { grid-template-columns: 1fr; }
+      .grid, .two, .metric-grid { grid-template-columns: 1fr; }
     }
     @media (prefers-reduced-motion: reduce) {
       * { animation-duration: 0s !important; transition: none !important; }
@@ -135,6 +140,27 @@
         <p>Status: <span id="status-pill" class="status">draft</span></p>
         <pre id="intent-json" class="json-preview" aria-live="polite"></pre>
       </article>
+    </section>
+
+    <section class="card notice" id="arc-status-panel" aria-labelledby="arc-status-title">
+      <div class="eyebrow">Read-only RPC probe</div>
+      <h2 id="arc-status-title">Arc Testnet status</h2>
+      <p>This panel keeps the playground grounded in the expected Arc Testnet configuration while staying browser-local. It does not connect to a wallet, call a backend, or broadcast transactions.</p>
+      <div class="metric-grid" aria-label="Arc Testnet constants">
+        <div class="metric">
+          <span>Expected chain ID</span>
+          <strong id="arc-chain-id">5042002 (0x4cef52)</strong>
+        </div>
+        <div class="metric">
+          <span>RPC URL</span>
+          <strong id="arc-rpc-url">https://rpc.testnet.arc.network</strong>
+        </div>
+        <div class="metric">
+          <span>Network mode</span>
+          <strong id="arc-readonly-state">Read-only / no broadcast</strong>
+        </div>
+      </div>
+      <pre id="arc-safety-json" class="json-preview compact" aria-live="polite"></pre>
     </section>
 
     <section class="grid" aria-label="Status and safety details">
