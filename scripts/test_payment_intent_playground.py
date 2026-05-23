@@ -46,6 +46,49 @@ def test_arc_testnet_status_panel_is_visible_and_read_only() -> None:
         assert_contains(js, marker, JS)
 
 
+def test_wallet_action_controls_are_disabled_with_explicit_guard_reasons() -> None:
+    html = read(HTML)
+    js = read(JS)
+
+    for marker in (
+        'id="wallet-guard-panel"',
+        'id="wallet-action-button"',
+        'disabled aria-disabled="true"',
+        'id="wallet-guard-reasons"',
+        'Wallet action unavailable',
+    ):
+        assert_contains(html, marker, HTML)
+
+    for marker in (
+        "function getWalletGuardReasons(intent)",
+        "Wrong chain: expected Arc Testnet chain ID 5042002 (0x4cef52).",
+        "RPC unavailable: no live browser RPC probe is enabled in this local-only demo.",
+        "Unverified docs/constants: re-check Arc MCP/docs before any signing PR.",
+        "Missing recipient: enter a 0x-prefixed Arc Testnet recipient before review.",
+        "Invalid amount or decimals: use a positive USDC amount with at most 6 decimal places.",
+        "Expired intent: choose a future expiry before enabling wallet review.",
+        "User approval required: real signing must open an external wallet confirmation.",
+        "renderWalletGuardPanel(intent)",
+    ):
+        assert_contains(js, marker, JS)
+
+
+def test_intent_json_includes_arc_network_readiness_fields() -> None:
+    js = read(JS)
+    for marker in (
+        "networkReadiness: {",
+        "chainId: ARC_TESTNET_STATUS.expectedChainIdDecimal",
+        "chainIdHex: ARC_TESTNET_STATUS.expectedChainIdHex",
+        "rpcUrl: ARC_TESTNET_STATUS.rpcUrl",
+        "explorerUrl: ARC_TESTNET_STATUS.explorerUrl",
+        "assetAddress: ARC_TESTNET_STATUS.erc20UsdcAddress",
+        "assetDecimals: ARC_TESTNET_STATUS.erc20UsdcDecimals",
+        "nativeGasDecimals: ARC_TESTNET_STATUS.nativeGasDecimals",
+        "statusSource: ARC_TESTNET_STATUS.statusSource",
+    ):
+        assert_contains(js, marker, JS)
+
+
 def test_playground_javascript_stays_local_only() -> None:
     js = read(JS)
     forbidden_markers = (
@@ -63,5 +106,7 @@ def test_playground_javascript_stays_local_only() -> None:
 
 if __name__ == "__main__":
     test_arc_testnet_status_panel_is_visible_and_read_only()
+    test_wallet_action_controls_are_disabled_with_explicit_guard_reasons()
+    test_intent_json_includes_arc_network_readiness_fields()
     test_playground_javascript_stays_local_only()
     print("payment intent playground tests passed")
