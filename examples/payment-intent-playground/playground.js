@@ -12,6 +12,7 @@ const arcReadonlyState = document.querySelector('#arc-readonly-state');
 const arcSafetyJson = document.querySelector('#arc-safety-json');
 const walletGuardReasons = document.querySelector('#wallet-guard-reasons');
 const validationSummaryList = document.querySelector('#validation-summary-list');
+const statusStateList = document.querySelector('#status-state-list');
 const signingPreflightReport = document.querySelector('#signing-preflight-report');
 const copyPreflightButton = document.querySelector('#copy-preflight-report');
 
@@ -31,6 +32,29 @@ const ARC_TESTNET_STATUS = Object.freeze({
   transactionBroadcast: false,
   signingRequiresWalletChainGateAndHumanApproval: true,
 });
+
+const STATUS_STATES = Object.freeze([
+  {
+    id: 'draft',
+    label: 'Draft',
+    description: 'Intent exists but is not approved.',
+  },
+  {
+    id: 'ready_for_review',
+    label: 'Ready for review',
+    description: 'Fields are valid enough for human review.',
+  },
+  {
+    id: 'approved_local',
+    label: 'Approved locally',
+    description: 'Human approved the local exercise only.',
+  },
+  {
+    id: 'blocked_wallet_unavailable',
+    label: 'Wallet blocked',
+    description: 'Signing remains disabled by guardrails.',
+  },
+]);
 
 const initialEvents = [
   ['draft', 'Playground loaded with local-only defaults.'],
@@ -133,6 +157,27 @@ function renderWalletGuardPanel(intent) {
   );
 }
 
+function isIntentReadyForReview(intent) {
+  return hasValidRecipient(intent.recipient)
+    && hasValidUsdcAmount(intent.amount)
+    && hasFutureExpiry(intent.expiry);
+}
+
+function nextStatusAfterPrepare(intent) {
+  return isIntentReadyForReview(intent) ? 'ready_for_review' : 'draft';
+}
+
+function markStatusStep(currentStatusId) {
+  const knownStatuses = new Set(STATUS_STATES.map((status) => status.id));
+  const safeStatusId = knownStatuses.has(currentStatusId) ? currentStatusId : 'draft';
+
+  statusStateList.querySelectorAll('[data-status-step]').forEach((item) => {
+    const isActive = item.dataset.statusStep === safeStatusId;
+    item.classList.toggle('active', isActive);
+    item.setAttribute('aria-current', isActive ? 'step' : 'false');
+  });
+}
+
 function buildValidationSummary(intent) {
   return [
     {
@@ -162,8 +207,8 @@ function buildValidationSummary(intent) {
     {
       id: 'approval',
       label: 'Human approval marker',
-      passed: currentStatus === 'approved_locally',
-      detail: currentStatus === 'approved_locally'
+      passed: currentStatus === 'approved_local',
+      detail: currentStatus === 'approved_local'
         ? 'Local approval marker is present.'
         : 'Click Approve manually after reviewing the intent.',
     },
@@ -210,7 +255,7 @@ function buildSigningPreflightReport(intent) {
         value: intent.expiry || null,
       },
       humanApproval: {
-        passed: currentStatus === 'approved_locally',
+        passed: currentStatus === 'approved_local',
         required: true,
         note: 'Local approval is only a review marker, not wallet consent.',
       },
@@ -252,6 +297,7 @@ function render() {
   renderWalletGuardPanel(intent);
   renderValidationSummary(intent);
   renderSigningPreflightReport(intent);
+  markStatusStep(currentStatus);
   statusLog.replaceChildren(
     ...events.map(([status, message]) => {
       const row = document.createElement('div');
@@ -268,15 +314,21 @@ form.addEventListener('input', () => {
 });
 
 prepareButton.addEventListener('click', () => {
-  appendEvent('pending_human_approval', 'Agent prepared a reviewable intent object. No wallet prompt was opened.');
+  const intent = readIntent();
+  const nextStatus = nextStatusAfterPrepare(intent);
+  if (nextStatus === 'ready_for_review') {
+    appendEvent('ready_for_review', 'Agent prepared a reviewable intent object. No wallet prompt was opened.');
+    return;
+  }
+  appendEvent('draft', 'Intent needs valid recipient, amount, and future expiry before review.');
 });
 
 approveButton.addEventListener('click', () => {
-  appendEvent('approved_locally', 'Human approval was recorded as local UI state only.');
+  appendEvent('approved_local', 'Human approval was recorded as local UI state only.');
 });
 
 submitButton.addEventListener('click', () => {
-  appendEvent('submitted_simulation', 'Submission was simulated locally. No transaction was broadcast.');
+  appendEvent('blocked_wallet_unavailable', 'Wallet submission stayed blocked. No transaction was broadcast.');
 });
 
 copyPreflightButton.addEventListener('click', () => {
