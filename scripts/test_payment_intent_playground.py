@@ -89,6 +89,31 @@ def test_intent_json_includes_arc_network_readiness_fields() -> None:
         assert_contains(js, marker, JS)
 
 
+def test_usdc_unit_preview_distinguishes_erc20_units_from_native_gas() -> None:
+    html = read(HTML)
+    js = read(JS)
+
+    for marker in (
+        'id="unit-preview-panel"',
+        'USDC unit preview',
+        'id="erc20-base-units"',
+        'id="native-gas-decimals"',
+        'ERC-20 USDC uses 6 decimals',
+        'Native gas accounting uses 18 decimals',
+    ):
+        assert_contains(html, marker, HTML)
+
+    for marker in (
+        "function formatUsdcBaseUnits(amount)",
+        "baseUnits: formatUsdcBaseUnits(intent.amount)",
+        "erc20Decimals: ARC_TESTNET_STATUS.erc20UsdcDecimals",
+        "nativeGasDecimals: ARC_TESTNET_STATUS.nativeGasDecimals",
+        "function renderUnitPreview(intent)",
+        "renderUnitPreview(intent)",
+    ):
+        assert_contains(js, marker, JS)
+
+
 def test_signing_preflight_report_is_rendered_without_wallet_actions() -> None:
     html = read(HTML)
     js = read(JS)
@@ -234,6 +259,7 @@ if __name__ == "__main__":
     test_arc_testnet_status_panel_is_visible_and_read_only()
     test_wallet_action_controls_are_disabled_with_explicit_guard_reasons()
     test_intent_json_includes_arc_network_readiness_fields()
+    test_usdc_unit_preview_distinguishes_erc20_units_from_native_gas()
     test_signing_preflight_report_is_rendered_without_wallet_actions()
     test_validation_summary_panel_shows_local_readiness_without_wallet_actions()
     test_signing_preflight_report_can_be_copied_without_network_or_wallet()

@@ -116,6 +116,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - Add Circle Dev-Controlled SCA Wallet notes for Arc Testnet.
 - Add optional Circle Contracts template deployment notes for receipts, credits, or payout demos.
 - [x] Add explicit local payment status states in the playground (`draft`, `ready_for_review`, `approved_local`, `blocked_wallet_unavailable`).
+- [x] Add a USDC unit preview that keeps ERC-20 6-decimal transfer amounts separate from 18-decimal native gas accounting.
 - [x] Add a short local payment status tutorial.
 - Add a real testnet transaction-status tutorial after wallet integration exists.
 
@@ -143,6 +144,7 @@ validator) and a web browser are required.
 
 ```bash
 # Validate the repo the same way CI does.
+python3 scripts/test_payment_intent_playground.py
 python3 scripts/test_x402_boundary.py
 python3 scripts/validate_repo.py
 

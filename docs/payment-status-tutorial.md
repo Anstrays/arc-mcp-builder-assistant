@@ -59,6 +59,8 @@ Click **Prepare intent** and inspect the JSON. The important fields for status r
 - `networkReadiness.chainId` — expected Arc Testnet chain ID.
 - `networkReadiness.rpcUrl` — expected read-only RPC URL.
 - `networkReadiness.assetAddress` — expected USDC asset constant.
+- `unitPreview.baseUnits` — browser-local conversion of the displayed USDC amount into 6-decimal ERC-20 base units.
+- `unitPreview.nativeGasDecimals` — reminder that Arc native gas accounting uses 18 decimals and is not the ERC-20 transfer unit.
 - `networkReadiness.statusSource` — where the status assumptions came from.
 
 ## Step 3 — Review the validation summary
@@ -84,6 +86,7 @@ Payment status exercise:
 - Wallet action: blocked
 - Transaction broadcast: false
 - Chain expectation: Arc Testnet 5042002 / 0x4cef52
+- Unit preview: ERC-20 USDC amount uses 6 decimals; native gas accounting uses 18 decimals
 - Asset: USDC constant from repo docs
 - Next required review: separate testnet-only wallet PR
 ```

@@ -15,6 +15,9 @@ const validationSummaryList = document.querySelector('#validation-summary-list')
 const statusStateList = document.querySelector('#status-state-list');
 const signingPreflightReport = document.querySelector('#signing-preflight-report');
 const copyPreflightButton = document.querySelector('#copy-preflight-report');
+const erc20BaseUnits = document.querySelector('#erc20-base-units');
+const erc20Decimals = document.querySelector('#erc20-decimals');
+const nativeGasDecimals = document.querySelector('#native-gas-decimals');
 
 const ARC_TESTNET_STATUS = Object.freeze({
   network: 'Arc Testnet',
@@ -65,7 +68,7 @@ let events = [...initialEvents];
 
 function readIntent() {
   const data = new FormData(form);
-  return {
+  const intent = {
     agent: String(data.get('agent') || '').trim(),
     recipient: String(data.get('recipient') || '').trim(),
     asset: String(data.get('asset') || 'USDC').trim(),
@@ -89,6 +92,11 @@ function readIntent() {
       autonomousSpending: false,
       humanApprovalRequired: true,
     },
+  };
+
+  return {
+    ...intent,
+    unitPreview: buildUnitPreview(intent),
   };
 }
 
@@ -117,6 +125,33 @@ function hasValidRecipient(recipient) {
 
 function hasValidUsdcAmount(amount) {
   return /^(?:0|[1-9]\d*)(?:\.\d{1,6})?$/.test(amount) && Number(amount) > 0;
+}
+
+function formatUsdcBaseUnits(amount) {
+  const normalizedAmount = String(amount || '').trim();
+  if (!hasValidUsdcAmount(normalizedAmount)) return 'invalid';
+
+  const [whole, fraction = ''] = normalizedAmount.split('.');
+  const paddedFraction = fraction.padEnd(ARC_TESTNET_STATUS.erc20UsdcDecimals, '0');
+  const scale = 10n ** BigInt(ARC_TESTNET_STATUS.erc20UsdcDecimals);
+  return String((BigInt(whole) * scale) + BigInt(paddedFraction));
+}
+
+function buildUnitPreview(intent) {
+  return {
+    baseUnits: formatUsdcBaseUnits(intent.amount),
+    erc20Decimals: ARC_TESTNET_STATUS.erc20UsdcDecimals,
+    nativeGasDecimals: ARC_TESTNET_STATUS.nativeGasDecimals,
+    warning: 'Do not use native gas decimals for ERC-20 USDC transfer amounts.',
+    localOnly: true,
+  };
+}
+
+function renderUnitPreview(intent) {
+  const preview = buildUnitPreview(intent);
+  erc20BaseUnits.textContent = preview.baseUnits;
+  erc20Decimals.textContent = String(preview.erc20Decimals);
+  nativeGasDecimals.textContent = String(preview.nativeGasDecimals);
 }
 
 function hasFutureExpiry(expiry) {
@@ -233,6 +268,7 @@ function buildSigningPreflightReport(intent) {
     nextRequiredReview: 'separate testnet-only wallet PR',
     generatedFrom: 'browser-local intent state only',
     guardReasons: getWalletGuardReasons(intent),
+    unitPreview: buildUnitPreview(intent),
     validationSummary: buildValidationSummary(intent),
     checks: {
       chainGate: {
@@ -295,6 +331,7 @@ function render() {
   jsonOutput.textContent = JSON.stringify(intent, null, 2);
   statusPill.textContent = currentStatus;
   renderWalletGuardPanel(intent);
+  renderUnitPreview(intent);
   renderValidationSummary(intent);
   renderSigningPreflightReport(intent);
   markStatusStep(currentStatus);

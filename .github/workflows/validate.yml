@@ -27,6 +27,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Test payment intent playground
+        run: python scripts/test_payment_intent_playground.py
+
       - name: Test local x402 boundary
         run: python scripts/test_x402_boundary.py
 
