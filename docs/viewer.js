@@ -7,6 +7,7 @@ const PAGES = [
   { id: 'payment-intent-quickstart.md', path: './payment-intent-quickstart.md', githubPath: 'docs/payment-intent-quickstart.md', label: 'Payment-intent quickstart', group: 'Builder kit' },
   { id: 'payment-status-tutorial.md', path: './payment-status-tutorial.md', githubPath: 'docs/payment-status-tutorial.md', label: 'Payment status tutorial', group: 'Builder kit' },
   { id: 'contest-demo-script.md', path: './contest-demo-script.md', githubPath: 'docs/contest-demo-script.md', label: 'Contest demo script', group: 'Builder kit' },
+  { id: 'content-pack.md', path: './content-pack.md', githubPath: 'docs/content-pack.md', label: 'Blog and contest content pack', group: 'Builder kit' },
   { id: 'prompt-library.md', path: './prompt-library.md', githubPath: 'docs/prompt-library.md', label: 'Prompt library', group: 'Builder kit' },
   { id: 'agent-identity-erc8004.md', path: './agent-identity-erc8004.md', githubPath: 'docs/agent-identity-erc8004.md', label: 'Agent identity notes', group: 'Builder kit' },
   { id: 'arc-builder-readiness-checklist.md', path: './arc-builder-readiness-checklist.md', githubPath: 'docs/arc-builder-readiness-checklist.md', label: 'Builder readiness checklist', group: 'Playbooks' },
