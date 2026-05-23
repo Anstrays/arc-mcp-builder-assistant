@@ -11,6 +11,7 @@ const arcRpcUrl = document.querySelector('#arc-rpc-url');
 const arcReadonlyState = document.querySelector('#arc-readonly-state');
 const arcSafetyJson = document.querySelector('#arc-safety-json');
 const walletGuardReasons = document.querySelector('#wallet-guard-reasons');
+const signingPreflightReport = document.querySelector('#signing-preflight-report');
 
 const ARC_TESTNET_STATUS = Object.freeze({
   network: 'Arc Testnet',
@@ -126,11 +127,51 @@ function renderWalletGuardPanel(intent) {
   );
 }
 
+function buildSigningPreflightReport(intent) {
+  return {
+    walletAction: 'blocked',
+    nextRequiredReview: 'separate testnet-only wallet PR',
+    generatedFrom: 'browser-local intent state only',
+    guardReasons: getWalletGuardReasons(intent),
+    checks: {
+      chainGate: {
+        expectedChainId: ARC_TESTNET_STATUS.expectedChainIdDecimal,
+        expectedChainIdHex: ARC_TESTNET_STATUS.expectedChainIdHex,
+        passed: false,
+        note: 'No live wallet chain check is performed in this playground.',
+      },
+      recipientFormat: {
+        passed: hasValidRecipient(intent.recipient),
+        value: intent.recipient || null,
+      },
+      amountFormat: {
+        passed: hasValidUsdcAmount(intent.amount),
+        value: intent.amount || null,
+        decimals: ARC_TESTNET_STATUS.erc20UsdcDecimals,
+      },
+      expiryWindow: {
+        passed: hasFutureExpiry(intent.expiry),
+        value: intent.expiry || null,
+      },
+      humanApproval: {
+        passed: currentStatus === 'approved_locally',
+        required: true,
+        note: 'Local approval is only a review marker, not wallet consent.',
+      },
+    },
+  };
+}
+
+function renderSigningPreflightReport(intent) {
+  signingPreflightReport.textContent = JSON.stringify(buildSigningPreflightReport(intent), null, 2);
+}
+
 function render() {
   const intent = readIntent();
   jsonOutput.textContent = JSON.stringify(intent, null, 2);
   statusPill.textContent = currentStatus;
   renderWalletGuardPanel(intent);
+  renderSigningPreflightReport(intent);
   statusLog.replaceChildren(
     ...events.map(([status, message]) => {
       const row = document.createElement('div');

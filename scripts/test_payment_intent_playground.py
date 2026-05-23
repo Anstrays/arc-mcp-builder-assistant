@@ -89,6 +89,33 @@ def test_intent_json_includes_arc_network_readiness_fields() -> None:
         assert_contains(js, marker, JS)
 
 
+def test_signing_preflight_report_is_rendered_without_wallet_actions() -> None:
+    html = read(HTML)
+    js = read(JS)
+
+    for marker in (
+        'id="signing-preflight-panel"',
+        'Signing preflight report',
+        'id="signing-preflight-report"',
+        'Manual copy for wallet PR review',
+    ):
+        assert_contains(html, marker, HTML)
+
+    for marker in (
+        "function buildSigningPreflightReport(intent)",
+        "walletAction: 'blocked'",
+        "nextRequiredReview: 'separate testnet-only wallet PR'",
+        "guardReasons: getWalletGuardReasons(intent)",
+        "chainGate: {",
+        "recipientFormat: {",
+        "amountFormat: {",
+        "expiryWindow: {",
+        "humanApproval: {",
+        "renderSigningPreflightReport(intent)",
+    ):
+        assert_contains(js, marker, JS)
+
+
 def test_playground_javascript_stays_local_only() -> None:
     js = read(JS)
     forbidden_markers = (
@@ -108,5 +135,6 @@ if __name__ == "__main__":
     test_arc_testnet_status_panel_is_visible_and_read_only()
     test_wallet_action_controls_are_disabled_with_explicit_guard_reasons()
     test_intent_json_includes_arc_network_readiness_fields()
+    test_signing_preflight_report_is_rendered_without_wallet_actions()
     test_playground_javascript_stays_local_only()
     print("payment intent playground tests passed")

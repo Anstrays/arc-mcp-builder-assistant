@@ -171,6 +171,13 @@
       <ul id="wallet-guard-reasons" class="mini-list" aria-live="polite"></ul>
     </section>
 
+    <section class="card notice" id="signing-preflight-panel" aria-labelledby="signing-preflight-title">
+      <div class="eyebrow">Manual copy for wallet PR review</div>
+      <h2 id="signing-preflight-title">Signing preflight report</h2>
+      <p>This generated report summarizes the local intent, guard failures, and readiness checks that a future testnet-only wallet PR must satisfy before any signing path is enabled.</p>
+      <pre id="signing-preflight-report" class="json-preview compact" aria-live="polite"></pre>
+    </section>
+
     <section class="grid" aria-label="Status and safety details">
       <article class="card notice" aria-labelledby="timeline-title">
         <div class="eyebrow">Local status timeline</div>
