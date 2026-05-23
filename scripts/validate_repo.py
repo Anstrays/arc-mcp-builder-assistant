@@ -46,6 +46,7 @@ REQUIRED_FILES = [
     "docs/builder-workflows.md",
     "docs/payment-intent-demo.md",
     "docs/payment-intent-quickstart.md",
+    "docs/payment-status-tutorial.md",
     "docs/prompt-library.md",
     "docs/arc-builder-readiness-checklist.md",
     "docs/arc-testnet-integration-runbook.md",

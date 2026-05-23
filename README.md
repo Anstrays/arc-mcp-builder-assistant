@@ -54,6 +54,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/builder-workflows.md`](./docs/builder-workflows.md) — practical Arc + AI builder workflows.
 - [`docs/payment-intent-demo.md`](./docs/payment-intent-demo.md) — first demo specification.
 - [`docs/payment-intent-quickstart.md`](./docs/payment-intent-quickstart.md) — 5-minute reviewer path for showing the local payment-intent playground without wallet or transaction side effects.
+- [`docs/payment-status-tutorial.md`](./docs/payment-status-tutorial.md) — step-by-step local payment status exercise for reviewers, plus the future Arc Testnet status checklist.
 - [`docs/prompt-library.md`](./docs/prompt-library.md) and [`prompts/`](./prompts/) — copy-paste prompts for AI coding tools, including the standalone Arc Testnet status prompt.
 - [`docs/arc-builder-readiness-checklist.md`](./docs/arc-builder-readiness-checklist.md) — pre-submit checklist for docs grounding, payment safety, UX states, repo quality, and public proof-of-work.
 - [`docs/arc-testnet-integration-runbook.md`](./docs/arc-testnet-integration-runbook.md) — safe sequence for the next real Arc Testnet payment-intent integration.
@@ -98,6 +99,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - [x] Add a public build log and refreshed Arc House submission draft.
 - [x] Add Arc Testnet integration runbook and read-only RPC status helper.
 - [x] Add a 5-minute local payment-intent quickstart for reviewers and contest judges.
+- [x] Add a short payment status tutorial for local review and future testnet confirmation states.
 - [ ] Share build log in Arc community.
 
 ### Phase 2 — Working prototype
@@ -110,7 +112,8 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - Add Circle Dev-Controlled SCA Wallet notes for Arc Testnet.
 - Add optional Circle Contracts template deployment notes for receipts, credits, or payout demos.
 - Track transaction/payment status.
-- Add a short tutorial.
+- [x] Add a short local payment status tutorial.
+- Add a real testnet transaction-status tutorial after wallet integration exists.
 
 ### Phase 3 — Agent commerce starter kit
 
@@ -175,6 +178,8 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 │   ├── deploy-contracts-arc.md
 │   ├── builder-workflows.md
 │   ├── payment-intent-demo.md
+│   ├── payment-intent-quickstart.md
+│   ├── payment-status-tutorial.md
 │   ├── arc-builder-readiness-checklist.md
 │   ├── arc-testnet-integration-runbook.md
 │   ├── agent-commerce-use-cases.md
