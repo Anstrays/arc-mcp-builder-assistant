@@ -168,6 +168,53 @@ def test_signing_preflight_report_can_be_copied_without_network_or_wallet() -> N
         assert_contains(js, marker, JS)
 
 
+def test_default_demo_values_are_reviewable_without_real_wallet_details() -> None:
+    html = read(HTML)
+
+    for marker in (
+        'value="0x1111111111111111111111111111111111111111"',
+        'value="5.00"',
+        'value="2026-05-30T00:00"',
+    ):
+        assert_contains(html, marker, HTML)
+
+
+def test_status_state_machine_uses_review_safe_vocabulary() -> None:
+    html = read(HTML)
+    js = read(JS)
+
+    for marker in (
+        'id="status-state-list"',
+        'Status states',
+        'data-status-step="draft"',
+        'data-status-step="ready_for_review"',
+        'data-status-step="approved_local"',
+        'data-status-step="blocked_wallet_unavailable"',
+    ):
+        assert_contains(html, marker, HTML)
+
+    for marker in (
+        "const STATUS_STATES = Object.freeze([",
+        "id: 'draft'",
+        "id: 'ready_for_review'",
+        "id: 'approved_local'",
+        "id: 'blocked_wallet_unavailable'",
+        "function nextStatusAfterPrepare(intent)",
+        "function markStatusStep(currentStatusId)",
+        "currentStatus === 'approved_local'",
+        "appendEvent('ready_for_review'",
+        "appendEvent('blocked_wallet_unavailable'",
+    ):
+        assert_contains(js, marker, JS)
+
+    for removed_status in (
+        "pending_human_approval",
+        "approved_locally",
+        "submitted_simulation",
+    ):
+        assert removed_status not in js, f"old status vocabulary still present in {JS.relative_to(ROOT)}: {removed_status}"
+
+
 def test_playground_javascript_stays_local_only() -> None:
     js = read(JS)
     forbidden_markers = (
@@ -190,5 +237,7 @@ if __name__ == "__main__":
     test_signing_preflight_report_is_rendered_without_wallet_actions()
     test_validation_summary_panel_shows_local_readiness_without_wallet_actions()
     test_signing_preflight_report_can_be_copied_without_network_or_wallet()
+    test_default_demo_values_are_reviewable_without_real_wallet_details()
+    test_status_state_machine_uses_review_safe_vocabulary()
     test_playground_javascript_stays_local_only()
     print("payment intent playground tests passed")

@@ -65,6 +65,10 @@
     .status-log { display: grid; gap: 10px; margin-top: 14px; }
     .status-log div { border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 12px; color: var(--muted); background: var(--panel-2); }
     .status-log strong { color: var(--text); }
+    .status-state-list { display: grid; gap: 10px; margin: 14px 0 0; padding: 0; list-style: none; }
+    .status-state-list li { border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 12px; color: var(--muted); background: var(--panel-2); }
+    .status-state-list li.active { border-color: rgba(94,234,212,.46); background: rgba(94,234,212,.11); color: #e9fffb; }
+    .status-state-list strong { color: var(--text); }
     .notice { border-color: rgba(94,234,212,.32); background: rgba(94,234,212,.08); }
     .danger { border-color: rgba(255,121,121,.32); background: rgba(255,121,121,.08); }
     .metric-grid { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 14px 0; }
@@ -106,7 +110,7 @@
             <input id="agent" name="agent" autocomplete="off" value="Research Agent" />
           </label>
           <label>Recipient
-            <input id="recipient" name="recipient" autocomplete="off" value="0xDemo000000000000000000000000000000000Arc" />
+            <input id="recipient" name="recipient" autocomplete="off" value="0x1111111111111111111111111111111111111111" />
           </label>
           <div class="two">
             <label>Asset
@@ -176,6 +180,18 @@
       <h2 id="validation-summary-title">Validation summary</h2>
       <p>These checks summarize whether the local intent is ready for human review. They are advisory browser-only checks and never connect to a wallet or network.</p>
       <ul id="validation-summary-list" class="mini-list" aria-live="polite"></ul>
+    </section>
+
+    <section class="card notice" id="status-state-panel" aria-labelledby="status-state-title">
+      <div class="eyebrow">Review-safe state machine</div>
+      <h2 id="status-state-title">Status states</h2>
+      <p>The playground uses explicit local-only states so reviewers can tell what is real today and what still needs a separate Arc Testnet wallet PR.</p>
+      <ol id="status-state-list" class="status-state-list" aria-live="polite">
+        <li data-status-step="draft"><strong>draft</strong> — intent exists but is not approved.</li>
+        <li data-status-step="ready_for_review"><strong>ready_for_review</strong> — fields are valid enough for human review.</li>
+        <li data-status-step="approved_local"><strong>approved_local</strong> — human approved the local exercise only.</li>
+        <li data-status-step="blocked_wallet_unavailable"><strong>blocked_wallet_unavailable</strong> — signing remains disabled by guardrails.</li>
+      </ol>
     </section>
 
     <section class="card notice" id="signing-preflight-panel" aria-labelledby="signing-preflight-title">

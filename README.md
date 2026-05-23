@@ -111,7 +111,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - Start with the read-only `scripts/check_arc_testnet_status.py` helper before adding wallet signing.
 - Add Circle Dev-Controlled SCA Wallet notes for Arc Testnet.
 - Add optional Circle Contracts template deployment notes for receipts, credits, or payout demos.
-- Track transaction/payment status.
+- [x] Add explicit local payment status states in the playground (`draft`, `ready_for_review`, `approved_local`, `blocked_wallet_unavailable`).
 - [x] Add a short local payment status tutorial.
 - Add a real testnet transaction-status tutorial after wallet integration exists.
 
