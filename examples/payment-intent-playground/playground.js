@@ -10,13 +10,19 @@ const arcChainId = document.querySelector('#arc-chain-id');
 const arcRpcUrl = document.querySelector('#arc-rpc-url');
 const arcReadonlyState = document.querySelector('#arc-readonly-state');
 const arcSafetyJson = document.querySelector('#arc-safety-json');
+const walletGuardReasons = document.querySelector('#wallet-guard-reasons');
 
 const ARC_TESTNET_STATUS = Object.freeze({
   network: 'Arc Testnet',
   expectedChainIdDecimal: 5042002,
   expectedChainIdHex: '0x4cef52',
   rpcUrl: 'https://rpc.testnet.arc.network',
+  explorerUrl: 'https://testnet.arcscan.app',
+  erc20UsdcAddress: '0x3600000000000000000000000000000000000000',
+  erc20UsdcDecimals: 6,
   nativeGasAsset: 'USDC',
+  nativeGasDecimals: 18,
+  statusSource: 'static Arc docs constants + read-only helper baseline',
   walletConnected: false,
   backendCalls: false,
   transactionBroadcast: false,
@@ -40,6 +46,16 @@ function readIntent() {
     memo: String(data.get('memo') || '').trim(),
     expiry: String(data.get('expiry') || '').trim(),
     status: currentStatus,
+    networkReadiness: {
+      chainId: ARC_TESTNET_STATUS.expectedChainIdDecimal,
+      chainIdHex: ARC_TESTNET_STATUS.expectedChainIdHex,
+      rpcUrl: ARC_TESTNET_STATUS.rpcUrl,
+      explorerUrl: ARC_TESTNET_STATUS.explorerUrl,
+      assetAddress: ARC_TESTNET_STATUS.erc20UsdcAddress,
+      assetDecimals: ARC_TESTNET_STATUS.erc20UsdcDecimals,
+      nativeGasDecimals: ARC_TESTNET_STATUS.nativeGasDecimals,
+      statusSource: ARC_TESTNET_STATUS.statusSource,
+    },
     safety: {
       walletConnected: false,
       backendCalls: false,
@@ -64,10 +80,57 @@ function renderArcStatusPanel() {
   arcSafetyJson.textContent = JSON.stringify(ARC_TESTNET_STATUS, null, 2);
 }
 
+function hasValidRecipient(recipient) {
+  return /^0x[a-fA-F0-9]{40}$/.test(recipient);
+}
+
+function hasValidUsdcAmount(amount) {
+  return /^(?:0|[1-9]\d*)(?:\.\d{1,6})?$/.test(amount) && Number(amount) > 0;
+}
+
+function hasFutureExpiry(expiry) {
+  if (!expiry) return false;
+  const expiryTime = new Date(expiry).getTime();
+  return Number.isFinite(expiryTime) && expiryTime > Date.now();
+}
+
+function getWalletGuardReasons(intent) {
+  const reasons = [
+    'Wrong chain: expected Arc Testnet chain ID 5042002 (0x4cef52).',
+    'RPC unavailable: no live browser RPC probe is enabled in this local-only demo.',
+    'Unverified docs/constants: re-check Arc MCP/docs before any signing PR.',
+    'User approval required: real signing must open an external wallet confirmation.',
+  ];
+
+  if (!hasValidRecipient(intent.recipient)) {
+    reasons.push('Missing recipient: enter a 0x-prefixed Arc Testnet recipient before review.');
+  }
+  if (!hasValidUsdcAmount(intent.amount)) {
+    reasons.push('Invalid amount or decimals: use a positive USDC amount with at most 6 decimal places.');
+  }
+  if (!hasFutureExpiry(intent.expiry)) {
+    reasons.push('Expired intent: choose a future expiry before enabling wallet review.');
+  }
+
+  return reasons;
+}
+
+function renderWalletGuardPanel(intent) {
+  const reasons = getWalletGuardReasons(intent);
+  walletGuardReasons.replaceChildren(
+    ...reasons.map((reason) => {
+      const item = document.createElement('li');
+      item.textContent = reason;
+      return item;
+    })
+  );
+}
+
 function render() {
   const intent = readIntent();
   jsonOutput.textContent = JSON.stringify(intent, null, 2);
   statusPill.textContent = currentStatus;
+  renderWalletGuardPanel(intent);
   statusLog.replaceChildren(
     ...events.map(([status, message]) => {
       const row = document.createElement('div');

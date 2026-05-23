@@ -163,6 +163,14 @@
       <pre id="arc-safety-json" class="json-preview compact" aria-live="polite"></pre>
     </section>
 
+    <section class="card danger" id="wallet-guard-panel" aria-labelledby="wallet-guard-title">
+      <div class="eyebrow">Wallet guardrails</div>
+      <h2 id="wallet-guard-title">Wallet action unavailable</h2>
+      <p>Signing stays disabled until a separate testnet-only wallet PR proves every guard. The current playground only explains why a real wallet action is blocked.</p>
+      <button type="button" id="wallet-action-button" disabled aria-disabled="true">Connect wallet / sign intent disabled</button>
+      <ul id="wallet-guard-reasons" class="mini-list" aria-live="polite"></ul>
+    </section>
+
     <section class="grid" aria-label="Status and safety details">
       <article class="card notice" aria-labelledby="timeline-title">
         <div class="eyebrow">Local status timeline</div>
