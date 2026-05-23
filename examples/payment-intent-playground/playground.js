@@ -11,6 +11,7 @@ const arcRpcUrl = document.querySelector('#arc-rpc-url');
 const arcReadonlyState = document.querySelector('#arc-readonly-state');
 const arcSafetyJson = document.querySelector('#arc-safety-json');
 const walletGuardReasons = document.querySelector('#wallet-guard-reasons');
+const validationSummaryList = document.querySelector('#validation-summary-list');
 const signingPreflightReport = document.querySelector('#signing-preflight-report');
 const copyPreflightButton = document.querySelector('#copy-preflight-report');
 
@@ -132,12 +133,62 @@ function renderWalletGuardPanel(intent) {
   );
 }
 
+function buildValidationSummary(intent) {
+  return [
+    {
+      id: 'recipient',
+      label: 'Recipient format',
+      passed: hasValidRecipient(intent.recipient),
+      detail: hasValidRecipient(intent.recipient)
+        ? '0x recipient shape is valid.'
+        : 'Use a 0x-prefixed address with 40 hex characters.',
+    },
+    {
+      id: 'amount',
+      label: 'USDC amount',
+      passed: hasValidUsdcAmount(intent.amount),
+      detail: hasValidUsdcAmount(intent.amount)
+        ? 'Positive amount with at most 6 decimals.'
+        : 'Use a positive USDC amount with at most 6 decimals.',
+    },
+    {
+      id: 'expiry',
+      label: 'Future expiry',
+      passed: hasFutureExpiry(intent.expiry),
+      detail: hasFutureExpiry(intent.expiry)
+        ? 'Expiry is still in the future.'
+        : 'Choose a future expiry before wallet review.',
+    },
+    {
+      id: 'approval',
+      label: 'Human approval marker',
+      passed: currentStatus === 'approved_locally',
+      detail: currentStatus === 'approved_locally'
+        ? 'Local approval marker is present.'
+        : 'Click Approve manually after reviewing the intent.',
+    },
+  ];
+}
+
+function renderValidationSummary(intent) {
+  validationSummaryList.replaceChildren(
+    ...buildValidationSummary(intent).map((check) => {
+      const item = document.createElement('li');
+      const strong = document.createElement('strong');
+      strong.textContent = `${check.passed ? 'PASS' : 'BLOCK'} · ${check.label}`;
+      item.append(strong, document.createTextNode(` — ${check.detail}`));
+      return item;
+    })
+  );
+}
+
 function buildSigningPreflightReport(intent) {
   return {
     walletAction: 'blocked',
     nextRequiredReview: 'separate testnet-only wallet PR',
     generatedFrom: 'browser-local intent state only',
     guardReasons: getWalletGuardReasons(intent),
+    validationSummary: buildValidationSummary(intent),
     checks: {
       chainGate: {
         expectedChainId: ARC_TESTNET_STATUS.expectedChainIdDecimal,
@@ -199,6 +250,7 @@ function render() {
   jsonOutput.textContent = JSON.stringify(intent, null, 2);
   statusPill.textContent = currentStatus;
   renderWalletGuardPanel(intent);
+  renderValidationSummary(intent);
   renderSigningPreflightReport(intent);
   statusLog.replaceChildren(
     ...events.map(([status, message]) => {
