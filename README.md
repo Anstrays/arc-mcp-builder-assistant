@@ -56,6 +56,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/payment-intent-quickstart.md`](./docs/payment-intent-quickstart.md) — 5-minute reviewer path for showing the local payment-intent playground without wallet or transaction side effects.
 - [`docs/payment-status-tutorial.md`](./docs/payment-status-tutorial.md) — step-by-step local payment status exercise for reviewers, plus the future Arc Testnet status checklist.
 - [`docs/contest-demo-script.md`](./docs/contest-demo-script.md) — 60-90 second demo script, recording checklist, community post copy, and contest submission bullets.
+- [`docs/content-pack.md`](./docs/content-pack.md) — blog and contest content pack with Russian Telegram copy, X/Discord drafts, thumbnail prompts, video storyboard, and screenshot checklist.
 - [`docs/prompt-library.md`](./docs/prompt-library.md) and [`prompts/`](./prompts/) — copy-paste prompts for AI coding tools, including the standalone Arc Testnet status prompt.
 - [`docs/arc-builder-readiness-checklist.md`](./docs/arc-builder-readiness-checklist.md) — pre-submit checklist for docs grounding, payment safety, UX states, repo quality, and public proof-of-work.
 - [`docs/arc-testnet-integration-runbook.md`](./docs/arc-testnet-integration-runbook.md) — safe sequence for the next real Arc Testnet payment-intent integration.
@@ -102,6 +103,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - [x] Add a 5-minute local payment-intent quickstart for reviewers and contest judges.
 - [x] Add a short payment status tutorial for local review and future testnet confirmation states.
 - [x] Add a contest/demo script with recording checklist and community copy.
+- [x] Add a blog/contest content pack with visual prompts, social copy, storyboard, and screenshot checklist.
 - [ ] Share build log in Arc community.
 
 ### Phase 2 — Working prototype
