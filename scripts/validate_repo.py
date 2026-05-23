@@ -47,6 +47,7 @@ REQUIRED_FILES = [
     "docs/payment-intent-demo.md",
     "docs/payment-intent-quickstart.md",
     "docs/payment-status-tutorial.md",
+    "docs/contest-demo-script.md",
     "docs/prompt-library.md",
     "docs/arc-builder-readiness-checklist.md",
     "docs/arc-testnet-integration-runbook.md",
