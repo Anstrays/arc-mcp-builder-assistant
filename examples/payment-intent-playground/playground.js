@@ -12,6 +12,7 @@ const arcReadonlyState = document.querySelector('#arc-readonly-state');
 const arcSafetyJson = document.querySelector('#arc-safety-json');
 const walletGuardReasons = document.querySelector('#wallet-guard-reasons');
 const signingPreflightReport = document.querySelector('#signing-preflight-report');
+const copyPreflightButton = document.querySelector('#copy-preflight-report');
 
 const ARC_TESTNET_STATUS = Object.freeze({
   network: 'Arc Testnet',
@@ -68,6 +69,10 @@ function readIntent() {
 
 function appendEvent(status, message) {
   currentStatus = status;
+  logEvent(status, message);
+}
+
+function logEvent(status, message) {
   events = [[status, message], ...events].slice(0, 8);
   render();
 }
@@ -163,7 +168,30 @@ function buildSigningPreflightReport(intent) {
 }
 
 function renderSigningPreflightReport(intent) {
-  signingPreflightReport.textContent = JSON.stringify(buildSigningPreflightReport(intent), null, 2);
+  signingPreflightReport.textContent = serializeSigningPreflightReport(intent);
+}
+
+function serializeSigningPreflightReport(intent) {
+  return JSON.stringify(buildSigningPreflightReport(intent), null, 2);
+}
+
+async function copySigningPreflightReport() {
+  const intent = readIntent();
+  const reportText = serializeSigningPreflightReport(intent);
+
+  if (!navigator.clipboard || !navigator.clipboard.writeText) {
+    signingPreflightReport.focus();
+    logEvent('copy_unavailable', 'Clipboard copy was unavailable; select and copy the report manually.');
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(reportText);
+    logEvent('copied_preflight_report', 'Signing preflight report was copied locally. No wallet or network call was made.');
+  } catch (error) {
+    signingPreflightReport.focus();
+    logEvent('copy_unavailable', 'Clipboard copy was unavailable; select and copy the report manually.');
+  }
 }
 
 function render() {
@@ -197,6 +225,10 @@ approveButton.addEventListener('click', () => {
 
 submitButton.addEventListener('click', () => {
   appendEvent('submitted_simulation', 'Submission was simulated locally. No transaction was broadcast.');
+});
+
+copyPreflightButton.addEventListener('click', () => {
+  copySigningPreflightReport();
 });
 
 resetButton.addEventListener('click', () => {
