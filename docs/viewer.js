@@ -4,6 +4,7 @@ const PAGES = [
   { id: 'deploy-contracts-arc.md', path: './deploy-contracts-arc.md', githubPath: 'docs/deploy-contracts-arc.md', label: 'Deploy contracts on Arc', group: 'Arc docs' },
   { id: 'builder-workflows.md', path: './builder-workflows.md', githubPath: 'docs/builder-workflows.md', label: 'Builder workflows', group: 'Builder kit' },
   { id: 'payment-intent-demo.md', path: './payment-intent-demo.md', githubPath: 'docs/payment-intent-demo.md', label: 'Payment-intent demo spec', group: 'Builder kit' },
+  { id: 'payment-intent-quickstart.md', path: './payment-intent-quickstart.md', githubPath: 'docs/payment-intent-quickstart.md', label: 'Payment-intent quickstart', group: 'Builder kit' },
   { id: 'prompt-library.md', path: './prompt-library.md', githubPath: 'docs/prompt-library.md', label: 'Prompt library', group: 'Builder kit' },
   { id: 'agent-identity-erc8004.md', path: './agent-identity-erc8004.md', githubPath: 'docs/agent-identity-erc8004.md', label: 'Agent identity notes', group: 'Builder kit' },
   { id: 'arc-builder-readiness-checklist.md', path: './arc-builder-readiness-checklist.md', githubPath: 'docs/arc-builder-readiness-checklist.md', label: 'Builder readiness checklist', group: 'Playbooks' },

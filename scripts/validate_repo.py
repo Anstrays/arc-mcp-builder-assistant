@@ -45,6 +45,7 @@ REQUIRED_FILES = [
     "docs/agent-identity-erc8004.md",
     "docs/builder-workflows.md",
     "docs/payment-intent-demo.md",
+    "docs/payment-intent-quickstart.md",
     "docs/prompt-library.md",
     "docs/arc-builder-readiness-checklist.md",
     "docs/arc-testnet-integration-runbook.md",
