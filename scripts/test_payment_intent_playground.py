@@ -106,12 +106,41 @@ def test_signing_preflight_report_is_rendered_without_wallet_actions() -> None:
         "walletAction: 'blocked'",
         "nextRequiredReview: 'separate testnet-only wallet PR'",
         "guardReasons: getWalletGuardReasons(intent)",
+        "validationSummary: buildValidationSummary(intent)",
         "chainGate: {",
         "recipientFormat: {",
         "amountFormat: {",
         "expiryWindow: {",
         "humanApproval: {",
         "renderSigningPreflightReport(intent)",
+    ):
+        assert_contains(js, marker, JS)
+
+
+def test_validation_summary_panel_shows_local_readiness_without_wallet_actions() -> None:
+    html = read(HTML)
+    js = read(JS)
+
+    for marker in (
+        'id="validation-summary-panel"',
+        'Validation summary',
+        'id="validation-summary-list"',
+        'Local readiness checks',
+    ):
+        assert_contains(html, marker, HTML)
+
+    for marker in (
+        "function buildValidationSummary(intent)",
+        "id: 'recipient'",
+        "label: 'Recipient format'",
+        "id: 'amount'",
+        "label: 'USDC amount'",
+        "id: 'expiry'",
+        "label: 'Future expiry'",
+        "id: 'approval'",
+        "label: 'Human approval marker'",
+        "function renderValidationSummary(intent)",
+        "validationSummaryList.replaceChildren(",
     ):
         assert_contains(js, marker, JS)
 
@@ -159,6 +188,7 @@ if __name__ == "__main__":
     test_wallet_action_controls_are_disabled_with_explicit_guard_reasons()
     test_intent_json_includes_arc_network_readiness_fields()
     test_signing_preflight_report_is_rendered_without_wallet_actions()
+    test_validation_summary_panel_shows_local_readiness_without_wallet_actions()
     test_signing_preflight_report_can_be_copied_without_network_or_wallet()
     test_playground_javascript_stays_local_only()
     print("payment intent playground tests passed")
