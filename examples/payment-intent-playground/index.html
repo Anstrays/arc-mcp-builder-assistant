@@ -175,6 +175,8 @@
       <div class="eyebrow">Manual copy for wallet PR review</div>
       <h2 id="signing-preflight-title">Signing preflight report</h2>
       <p>This generated report summarizes the local intent, guard failures, and readiness checks that a future testnet-only wallet PR must satisfy before any signing path is enabled.</p>
+      <button type="button" id="copy-preflight-report" class="secondary" aria-describedby="signing-preflight-copy-help">Copy preflight report</button>
+      <p id="signing-preflight-copy-help" class="fine-print">Copies the local JSON report to your clipboard only. No wallet, network, or backend call is made.</p>
       <pre id="signing-preflight-report" class="json-preview compact" aria-live="polite"></pre>
     </section>
 

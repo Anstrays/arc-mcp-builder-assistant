@@ -116,6 +116,29 @@ def test_signing_preflight_report_is_rendered_without_wallet_actions() -> None:
         assert_contains(js, marker, JS)
 
 
+def test_signing_preflight_report_can_be_copied_without_network_or_wallet() -> None:
+    html = read(HTML)
+    js = read(JS)
+
+    for marker in (
+        'id="copy-preflight-report"',
+        'Copy preflight report',
+        'aria-describedby="signing-preflight-copy-help"',
+        'id="signing-preflight-copy-help"',
+    ):
+        assert_contains(html, marker, HTML)
+
+    for marker in (
+        "function serializeSigningPreflightReport(intent)",
+        "function copySigningPreflightReport()",
+        "function logEvent(status, message)",
+        "await navigator.clipboard.writeText(reportText)",
+        "logEvent('copied_preflight_report'",
+        "copyPreflightButton.addEventListener('click'",
+    ):
+        assert_contains(js, marker, JS)
+
+
 def test_playground_javascript_stays_local_only() -> None:
     js = read(JS)
     forbidden_markers = (
@@ -136,5 +159,6 @@ if __name__ == "__main__":
     test_wallet_action_controls_are_disabled_with_explicit_guard_reasons()
     test_intent_json_includes_arc_network_readiness_fields()
     test_signing_preflight_report_is_rendered_without_wallet_actions()
+    test_signing_preflight_report_can_be_copied_without_network_or_wallet()
     test_playground_javascript_stays_local_only()
     print("payment intent playground tests passed")
