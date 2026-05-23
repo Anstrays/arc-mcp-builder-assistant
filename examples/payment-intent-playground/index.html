@@ -167,6 +167,31 @@
       <pre id="arc-safety-json" class="json-preview compact" aria-live="polite"></pre>
     </section>
 
+    <section class="card notice" id="unit-preview-panel" aria-labelledby="unit-preview-title">
+      <div class="eyebrow">Amount units before signing</div>
+      <h2 id="unit-preview-title">USDC unit preview</h2>
+      <p>Arc uses USDC as native gas, but ERC-20 USDC transfers still use 6-decimal token units. This local preview keeps those unit systems visible before any future wallet PR.</p>
+      <div class="metric-grid" aria-label="USDC unit conversion preview">
+        <div class="metric">
+          <span>ERC-20 base units</span>
+          <strong id="erc20-base-units">0</strong>
+        </div>
+        <div class="metric">
+          <span>ERC-20 decimals</span>
+          <strong id="erc20-decimals">6</strong>
+        </div>
+        <div class="metric">
+          <span>Native gas decimals</span>
+          <strong id="native-gas-decimals">18</strong>
+        </div>
+      </div>
+      <ul class="mini-list">
+        <li>ERC-20 USDC uses 6 decimals for token transfer amounts.</li>
+        <li>Native gas accounting uses 18 decimals and must not be reused for ERC-20 transfer amounts.</li>
+        <li>This panel is browser-local math only: no wallet, backend, RPC write, signing, or broadcast.</li>
+      </ul>
+    </section>
+
     <section class="card danger" id="wallet-guard-panel" aria-labelledby="wallet-guard-title">
       <div class="eyebrow">Wallet guardrails</div>
       <h2 id="wallet-guard-title">Wallet action unavailable</h2>

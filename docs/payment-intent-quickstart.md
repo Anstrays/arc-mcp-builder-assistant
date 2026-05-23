@@ -7,6 +7,7 @@ Use this 5-minute path when you want to show the project to an Arc builder, revi
 - The site can turn an agent payment request into reviewable JSON.
 - The user, not the agent, keeps approval control.
 - Arc Testnet details are visible as preflight context before wallet work.
+- ERC-20 USDC base units are previewed separately from native gas decimals.
 - The demo has guardrails for recipient, amount, expiry, and human approval.
 - The current build is local-first: no wallet connection, no backend call, no RPC write, no signing, and no broadcast.
 
@@ -53,6 +54,7 @@ http://localhost:8080/examples/payment-intent-playground/
 ### 4. Check the readiness panels before touching wallet work
 
 - Arc Testnet status constants;
+- USDC unit preview, including 6-decimal ERC-20 base units versus 18-decimal native gas accounting;
 - wallet guard reasons;
 - local validation summary;
 - signing preflight report.
@@ -77,6 +79,7 @@ The current project is a safe builder kit, not a live payment app. A reviewer sh
 - a human approval gate;
 - explicit disabled wallet controls;
 - a preflight report that explains what still blocks signing;
+- a USDC unit preview that keeps 6-decimal ERC-20 transfer math separate from 18-decimal native gas accounting;
 - test commands that prove the local-only boundary stays intact.
 
 ## What is intentionally not included yet

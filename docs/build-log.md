@@ -15,7 +15,7 @@ This repo now ships a GitHub Pages site, docs, prompts, and local demos that sho
 - Arc MCP setup checklist for Claude Code, Claude Desktop, Cursor, VS Code, Windsurf, and HTTP MCP clients.
 - Arc docs map covering Testnet config, stablecoin context, ERC-8004 agent identity, ERC-8183 job escrow, providers, and tutorials.
 - Prompt library that asks AI tools to cite Arc docs, separate known facts from suggestions, and flag unknowns.
-- Local-only payment-intent playground with editable fields, reviewable JSON, and human approval status transitions.
+- Local-only payment-intent playground with editable fields, reviewable JSON, USDC unit preview, and human approval status transitions.
 - Local-only ERC-8183-style job escrow simulator for posting, accepting, funding, submitting, reviewing, and approving payout state.
 - Local-only x402 challenge server that demonstrates an HTTP 402 payment boundary without wallet, RPC, verifier backend, transaction broadcast, or mainnet settlement.
 - Lightweight validator and GitHub Actions workflow covering required files, safety copy, static-page invariants, public links, and the x402 verifier boundary.
@@ -33,6 +33,7 @@ This repo now ships a GitHub Pages site, docs, prompts, and local demos that sho
 ## How to verify locally
 
 ```bash
+python3 scripts/test_payment_intent_playground.py
 python3 scripts/test_x402_boundary.py
 python3 scripts/validate_repo.py
 python3 -m http.server 8080
