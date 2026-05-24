@@ -36,5 +36,8 @@ jobs:
       - name: Test receipt verifier playground
         run: python scripts/test_receipt_verifier_playground.py
 
+      - name: Test transaction status playground
+        run: python scripts/test_transaction_status_playground.py
+
       - name: Validate repository files
         run: python scripts/validate_repo.py

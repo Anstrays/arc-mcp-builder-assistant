@@ -55,6 +55,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/payment-intent-demo.md`](./docs/payment-intent-demo.md) — first demo specification.
 - [`docs/payment-intent-quickstart.md`](./docs/payment-intent-quickstart.md) — 5-minute reviewer path for showing the local payment-intent playground without wallet or transaction side effects.
 - [`docs/payment-status-tutorial.md`](./docs/payment-status-tutorial.md) — step-by-step local payment status exercise for reviewers, plus the future Arc Testnet status checklist.
+- [`docs/transaction-status-playground.md`](./docs/transaction-status-playground.md) — read-only Arc Testnet transaction status playground for checking hashes through public RPC without wallet or broadcast side effects.
 - [`docs/contest-demo-script.md`](./docs/contest-demo-script.md) — 60-90 second demo script, recording checklist, community post copy, and contest submission bullets.
 - [`docs/content-pack.md`](./docs/content-pack.md) — blog and contest content pack with Russian Telegram copy, X/Discord drafts, thumbnail prompts, video storyboard, and screenshot checklist.
 - [`docs/prompt-library.md`](./docs/prompt-library.md) and [`prompts/`](./prompts/) — copy-paste prompts for AI coding tools, including the standalone Arc Testnet status prompt.
@@ -67,6 +68,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/arc-house-submission.md`](./docs/arc-house-submission.md) — ready-to-edit builder update for Arc community or Arc House-style submissions.
 - [`docs/build-log.md`](./docs/build-log.md) — public milestone note and community-update draft for sharing the current local-first builder kit.
 - [`examples/payment-intent-playground/`](./examples/payment-intent-playground/) — local-only interactive playground for editing a payment request, inspecting live JSON, viewing Arc Testnet read-only status constants, reviewing disabled wallet guard reasons, generating/copying a manual signing preflight report, and simulating approval/submission states.
+- [`examples/transaction-status-playground/`](./examples/transaction-status-playground/) — read-only Arc Testnet transaction hash lookup with explicit `not_checked`, `pending`, `confirmed`, `failed`, and `unknown` states.
 - [`examples/job-escrow-simulator/`](./examples/job-escrow-simulator/) — local-only ERC-8183-style job escrow simulator for posting, accepting, funding, submitting, and approving a payout.
 - [`examples/x402-local-challenge-server/`](./examples/x402-local-challenge-server/) — dependency-free local HTTP 402 challenge server with a swappable verifier boundary for future Circle/x402 settlement work.
 - [`examples/payment-intent-demo/`](./examples/payment-intent-demo/) — tiny static mockup for the first payment-intent flow, including trust-boundary and review-state UI copy.
@@ -106,6 +108,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - [x] Add a blog/contest content pack with visual prompts, social copy, storyboard, and screenshot checklist.
 - [x] Add an Arc Discord introduction pack for builder onboarding and public updates.
 - [x] Add a local receipt verifier playground for simulated Arc payment receipt review.
+- [x] Add a read-only Arc Testnet transaction status playground for hash lookup without signing or broadcast.
 - [ ] Share build log in Arc community.
 
 ### Phase 2 — Working prototype
@@ -121,7 +124,8 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - [x] Add a USDC unit preview that keeps ERC-20 6-decimal transfer amounts separate from 18-decimal native gas accounting.
 - [x] Add a short local payment status tutorial.
 - [x] Add a local receipt verifier playground (`examples/receipt-verifier-playground/index.html`) with notes in `docs/receipt-verifier-playground.md`.
-- Add a real testnet transaction-status tutorial after wallet integration exists.
+- [x] Add a read-only transaction-status playground (`examples/transaction-status-playground/index.html`) with notes in `docs/transaction-status-playground.md`.
+- Add a real wallet-submission tutorial after wallet integration exists.
 
 ### Phase 3 — Agent commerce starter kit
 
@@ -150,6 +154,7 @@ validator) and a web browser are required.
 python3 scripts/test_payment_intent_playground.py
 python3 scripts/test_x402_boundary.py
 python3 scripts/test_receipt_verifier_playground.py
+python3 scripts/test_transaction_status_playground.py
 python3 scripts/validate_repo.py
 
 # Optional read-only Arc Testnet status check.
@@ -192,6 +197,7 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 │   ├── payment-status-tutorial.md
 │   ├── arc-discord-introduction.md
 │   ├── receipt-verifier-playground.md
+│   ├── transaction-status-playground.md
 │   ├── arc-builder-readiness-checklist.md
 │   ├── arc-testnet-integration-runbook.md
 │   ├── agent-commerce-use-cases.md
@@ -204,6 +210,7 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 │   ├── payment-intent-demo/         # Static UI mockup of the v0 demo flow
 │   ├── payment-intent-playground/   # Local-only intent playground with Arc status constants
 │   ├── receipt-verifier-playground/  # Local-only simulated receipt verifier
+│   ├── transaction-status-playground/ # Read-only Arc Testnet transaction status lookup
 │   ├── job-escrow-simulator/        # Local-only ERC-8183-style escrow flow simulator
 │   └── x402-local-challenge-server/ # Local-only 402 challenge/verifier boundary demo
 ├── assets/screenshots/              # Committed preview proof for reviewers
@@ -211,6 +218,7 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 │   ├── check_arc_testnet_status.py  # Read-only Arc Testnet RPC status check
 │   ├── test_x402_boundary.py        # Regression tests for the local x402 boundary
 │   ├── test_receipt_verifier_playground.py # Regression tests for receipt verifier UI
+│   ├── test_transaction_status_playground.py # Regression tests for transaction status UI
 │   └── validate_repo.py             # CI / local validation script
 ├── .github/                         # Workflows, issue & PR templates
 ├── CODE_OF_CONDUCT.md

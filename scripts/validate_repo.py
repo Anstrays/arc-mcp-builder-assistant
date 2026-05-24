@@ -51,6 +51,7 @@ REQUIRED_FILES = [
     "docs/content-pack.md",
     "docs/arc-discord-introduction.md",
     "docs/receipt-verifier-playground.md",
+    "docs/transaction-status-playground.md",
     "docs/prompt-library.md",
     "docs/arc-builder-readiness-checklist.md",
     "docs/arc-testnet-integration-runbook.md",
@@ -72,6 +73,8 @@ REQUIRED_FILES = [
     "examples/payment-intent-playground/playground.js",
     "examples/receipt-verifier-playground/index.html",
     "examples/receipt-verifier-playground/verifier.js",
+    "examples/transaction-status-playground/index.html",
+    "examples/transaction-status-playground/status.js",
     "examples/job-escrow-simulator/index.html",
     "examples/job-escrow-simulator/simulator.js",
     "examples/x402-local-challenge-server/README.md",
@@ -80,6 +83,7 @@ REQUIRED_FILES = [
     "scripts/check_arc_testnet_status.py",
     "scripts/test_payment_intent_playground.py",
     "scripts/test_x402_boundary.py",
+    "scripts/test_transaction_status_playground.py",
     "assets/screenshots/landing.png",
     "assets/screenshots/security-viewer.png",
     "assets/screenshots/payment-intent-playground.png",
@@ -94,6 +98,7 @@ HTML_FILES_TO_VALIDATE = [
     "examples/payment-intent-demo/index.html",
     "examples/payment-intent-playground/index.html",
     "examples/receipt-verifier-playground/index.html",
+    "examples/transaction-status-playground/index.html",
     "examples/job-escrow-simulator/index.html",
 ]
 
@@ -105,6 +110,7 @@ SITEMAP_REQUIRED_LOCATIONS = (
     CANONICAL_BASE_URL + "examples/payment-intent-demo/",
     CANONICAL_BASE_URL + "examples/payment-intent-playground/",
     CANONICAL_BASE_URL + "examples/receipt-verifier-playground/",
+    CANONICAL_BASE_URL + "examples/transaction-status-playground/",
     CANONICAL_BASE_URL + "examples/job-escrow-simulator/",
 )
 REDUCED_MOTION_MEDIA_RE = re.compile(
@@ -486,6 +492,55 @@ def validate_receipt_verifier_playground() -> None:
             fail(f"{js_relative}: forbidden network/wallet marker: {marker}")
 
 
+
+def validate_transaction_status_playground() -> None:
+    """Keep the transaction status playground read-only and wallet-free."""
+    html_relative = "examples/transaction-status-playground/index.html"
+    js_relative = "examples/transaction-status-playground/status.js"
+    html = (ROOT / html_relative).read_text(encoding="utf-8")
+    js = (ROOT / js_relative).read_text(encoding="utf-8")
+    for marker in (
+        'id="transaction-hash"',
+        'id="check-transaction"',
+        'id="status-pill"',
+        'id="status-check-list"',
+        'id="transaction-status-json"',
+        "Transaction Status Playground",
+        "Read-only Arc Testnet RPC",
+        "No wallet connection",
+        "No transaction broadcast",
+        "connect-src 'self' https://rpc.testnet.arc.network",
+    ):
+        if marker not in html:
+            fail(f"{html_relative}: missing transaction status marker: {marker}")
+    for marker in (
+        "const ARC_TRANSACTION_STATUS = Object.freeze",
+        "expectedChainId: 5042002",
+        "expectedChainIdHex: '0x4cef52'",
+        "rpcUrl: 'https://rpc.testnet.arc.network'",
+        "explorerUrl: 'https://testnet.arcscan.app'",
+        "method: 'eth_chainId'",
+        "method: 'eth_getTransactionByHash'",
+        "method: 'eth_getTransactionReceipt'",
+        "readOnlyRpcCheckOnly: true",
+        "transactionBroadcast: false",
+        "autonomousSpending: false",
+        "humanApprovalRequired: true",
+        "signingRequiresWalletChainGateAndHumanApproval: true",
+        "function classifyTransactionStatus(chainIdHex, transaction, receipt)",
+        "state: 'not_checked'",
+        "state: 'pending'",
+        "state: 'confirmed'",
+        "state: 'failed'",
+        "state: 'unknown'",
+    ):
+        if marker not in js:
+            fail(f"{js_relative}: missing transaction status marker: {marker}")
+    for marker in ("window.ethereum", "personal_sign", "eth_sendTransaction", "wallet_switchEthereumChain", "signTransaction", "PRIVATE_KEY", "localStorage"):
+        if marker in js:
+            fail(f"{js_relative}: forbidden wallet/signing marker: {marker}")
+
+
 def validate_robots_txt() -> None:
     relative = "robots.txt"
     text = (ROOT / relative).read_text(encoding="utf-8")
@@ -524,6 +579,7 @@ def main() -> None:
     validate_arc_testnet_status_helper()
     validate_payment_intent_playground_status_panel()
     validate_receipt_verifier_playground()
+    validate_transaction_status_playground()
     validate_robots_txt()
     validate_sitemap_xml()
     print("validation passed", file=sys.stdout)
