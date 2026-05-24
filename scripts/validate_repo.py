@@ -50,6 +50,7 @@ REQUIRED_FILES = [
     "docs/contest-demo-script.md",
     "docs/content-pack.md",
     "docs/arc-discord-introduction.md",
+    "docs/receipt-verifier-playground.md",
     "docs/prompt-library.md",
     "docs/arc-builder-readiness-checklist.md",
     "docs/arc-testnet-integration-runbook.md",
@@ -69,6 +70,8 @@ REQUIRED_FILES = [
     "examples/payment-intent-demo/index.html",
     "examples/payment-intent-playground/index.html",
     "examples/payment-intent-playground/playground.js",
+    "examples/receipt-verifier-playground/index.html",
+    "examples/receipt-verifier-playground/verifier.js",
     "examples/job-escrow-simulator/index.html",
     "examples/job-escrow-simulator/simulator.js",
     "examples/x402-local-challenge-server/README.md",
@@ -90,6 +93,7 @@ HTML_FILES_TO_VALIDATE = [
     "docs/view.html",
     "examples/payment-intent-demo/index.html",
     "examples/payment-intent-playground/index.html",
+    "examples/receipt-verifier-playground/index.html",
     "examples/job-escrow-simulator/index.html",
 ]
 
@@ -100,6 +104,7 @@ SITEMAP_REQUIRED_LOCATIONS = (
     CANONICAL_BASE_URL + "docs/view.html",
     CANONICAL_BASE_URL + "examples/payment-intent-demo/",
     CANONICAL_BASE_URL + "examples/payment-intent-playground/",
+    CANONICAL_BASE_URL + "examples/receipt-verifier-playground/",
     CANONICAL_BASE_URL + "examples/job-escrow-simulator/",
 )
 REDUCED_MOTION_MEDIA_RE = re.compile(
@@ -442,6 +447,45 @@ def validate_payment_intent_playground_status_panel() -> None:
             fail(f"{js_relative}: forbidden network/wallet marker: {marker}")
 
 
+def validate_receipt_verifier_playground() -> None:
+    """Keep the receipt verifier playground static, local-only, and Arc-grounded."""
+    html_relative = "examples/receipt-verifier-playground/index.html"
+    js_relative = "examples/receipt-verifier-playground/verifier.js"
+    html = (ROOT / html_relative).read_text(encoding="utf-8")
+    js = (ROOT / js_relative).read_text(encoding="utf-8")
+    for marker in (
+        'id="receipt-json"',
+        'id="verify-receipt"',
+        'id="verdict-pill"',
+        'id="receipt-check-list"',
+        'id="normalized-receipt"',
+        "Receipt Verifier Playground",
+        "No wallet connection",
+        "No transaction broadcast",
+    ):
+        if marker not in html:
+            fail(f"{html_relative}: missing receipt verifier marker: {marker}")
+    for marker in (
+        "const ARC_RECEIPT_EXPECTATIONS",
+        "expectedChainId: 5042002",
+        "expectedChainIdHex: '0x4cef52'",
+        "asset: 'USDC'",
+        "assetDecimals: 6",
+        "function normalizeReceipt(rawReceipt)",
+        "function verifyReceipt(receipt)",
+        "walletConnected: false",
+        "backendCalls: false",
+        "transactionBroadcast: false",
+        "signingEnabled: false",
+        "localOnly: true",
+    ):
+        if marker not in js:
+            fail(f"{js_relative}: missing receipt verifier marker: {marker}")
+    for marker in ("fetch(", "XMLHttpRequest", "WebSocket", "ethereum.request", "sendTransaction", "signTransaction", "PRIVATE_KEY", "seed phrase"):
+        if marker in js:
+            fail(f"{js_relative}: forbidden network/wallet marker: {marker}")
+
+
 def validate_robots_txt() -> None:
     relative = "robots.txt"
     text = (ROOT / relative).read_text(encoding="utf-8")
@@ -479,6 +523,7 @@ def main() -> None:
     validate_x402_boundary_demo()
     validate_arc_testnet_status_helper()
     validate_payment_intent_playground_status_panel()
+    validate_receipt_verifier_playground()
     validate_robots_txt()
     validate_sitemap_xml()
     print("validation passed", file=sys.stdout)

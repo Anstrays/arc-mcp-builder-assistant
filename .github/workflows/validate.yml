@@ -33,5 +33,8 @@ jobs:
       - name: Test local x402 boundary
         run: python scripts/test_x402_boundary.py
 
+      - name: Test receipt verifier playground
+        run: python scripts/test_receipt_verifier_playground.py
+
       - name: Validate repository files
         run: python scripts/validate_repo.py

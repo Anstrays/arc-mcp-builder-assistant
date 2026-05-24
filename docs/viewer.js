@@ -9,6 +9,7 @@ const PAGES = [
   { id: 'contest-demo-script.md', path: './contest-demo-script.md', githubPath: 'docs/contest-demo-script.md', label: 'Contest demo script', group: 'Builder kit' },
   { id: 'content-pack.md', path: './content-pack.md', githubPath: 'docs/content-pack.md', label: 'Blog and contest content pack', group: 'Builder kit' },
   { id: 'arc-discord-introduction.md', path: './arc-discord-introduction.md', githubPath: 'docs/arc-discord-introduction.md', label: 'Arc Discord introduction pack', group: 'Builder kit' },
+  { id: 'receipt-verifier-playground.md', path: './receipt-verifier-playground.md', githubPath: 'docs/receipt-verifier-playground.md', label: 'Receipt verifier playground', group: 'Builder kit' },
   { id: 'prompt-library.md', path: './prompt-library.md', githubPath: 'docs/prompt-library.md', label: 'Prompt library', group: 'Builder kit' },
   { id: 'agent-identity-erc8004.md', path: './agent-identity-erc8004.md', githubPath: 'docs/agent-identity-erc8004.md', label: 'Agent identity notes', group: 'Builder kit' },
   { id: 'arc-builder-readiness-checklist.md', path: './arc-builder-readiness-checklist.md', githubPath: 'docs/arc-builder-readiness-checklist.md', label: 'Builder readiness checklist', group: 'Playbooks' },
