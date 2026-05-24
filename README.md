@@ -105,6 +105,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - [x] Add a contest/demo script with recording checklist and community copy.
 - [x] Add a blog/contest content pack with visual prompts, social copy, storyboard, and screenshot checklist.
 - [x] Add an Arc Discord introduction pack for builder onboarding and public updates.
+- [x] Add a local receipt verifier playground for simulated Arc payment receipt review.
 - [ ] Share build log in Arc community.
 
 ### Phase 2 — Working prototype
@@ -119,6 +120,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - [x] Add explicit local payment status states in the playground (`draft`, `ready_for_review`, `approved_local`, `blocked_wallet_unavailable`).
 - [x] Add a USDC unit preview that keeps ERC-20 6-decimal transfer amounts separate from 18-decimal native gas accounting.
 - [x] Add a short local payment status tutorial.
+- [x] Add a local receipt verifier playground (`examples/receipt-verifier-playground/index.html`) with notes in `docs/receipt-verifier-playground.md`.
 - Add a real testnet transaction-status tutorial after wallet integration exists.
 
 ### Phase 3 — Agent commerce starter kit
@@ -147,6 +149,7 @@ validator) and a web browser are required.
 # Validate the repo the same way CI does.
 python3 scripts/test_payment_intent_playground.py
 python3 scripts/test_x402_boundary.py
+python3 scripts/test_receipt_verifier_playground.py
 python3 scripts/validate_repo.py
 
 # Optional read-only Arc Testnet status check.
@@ -188,6 +191,7 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 │   ├── payment-intent-quickstart.md
 │   ├── payment-status-tutorial.md
 │   ├── arc-discord-introduction.md
+│   ├── receipt-verifier-playground.md
 │   ├── arc-builder-readiness-checklist.md
 │   ├── arc-testnet-integration-runbook.md
 │   ├── agent-commerce-use-cases.md
@@ -199,12 +203,14 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 ├── examples/
 │   ├── payment-intent-demo/         # Static UI mockup of the v0 demo flow
 │   ├── payment-intent-playground/   # Local-only intent playground with Arc status constants
+│   ├── receipt-verifier-playground/  # Local-only simulated receipt verifier
 │   ├── job-escrow-simulator/        # Local-only ERC-8183-style escrow flow simulator
 │   └── x402-local-challenge-server/ # Local-only 402 challenge/verifier boundary demo
 ├── assets/screenshots/              # Committed preview proof for reviewers
 ├── scripts/
 │   ├── check_arc_testnet_status.py  # Read-only Arc Testnet RPC status check
 │   ├── test_x402_boundary.py        # Regression tests for the local x402 boundary
+│   ├── test_receipt_verifier_playground.py # Regression tests for receipt verifier UI
 │   └── validate_repo.py             # CI / local validation script
 ├── .github/                         # Workflows, issue & PR templates
 ├── CODE_OF_CONDUCT.md

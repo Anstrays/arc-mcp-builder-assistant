@@ -21,6 +21,11 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://anstrays.github.io/arc-mcp-builder-assistant/examples/receipt-verifier-playground/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
     <loc>https://anstrays.github.io/arc-mcp-builder-assistant/examples/job-escrow-simulator/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
