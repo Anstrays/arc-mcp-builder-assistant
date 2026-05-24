@@ -104,6 +104,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - [x] Add a short payment status tutorial for local review and future testnet confirmation states.
 - [x] Add a contest/demo script with recording checklist and community copy.
 - [x] Add a blog/contest content pack with visual prompts, social copy, storyboard, and screenshot checklist.
+- [x] Add an Arc Discord introduction pack for builder onboarding and public updates.
 - [ ] Share build log in Arc community.
 
 ### Phase 2 — Working prototype
@@ -186,6 +187,7 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 │   ├── payment-intent-demo.md
 │   ├── payment-intent-quickstart.md
 │   ├── payment-status-tutorial.md
+│   ├── arc-discord-introduction.md
 │   ├── arc-builder-readiness-checklist.md
 │   ├── arc-testnet-integration-runbook.md
 │   ├── agent-commerce-use-cases.md

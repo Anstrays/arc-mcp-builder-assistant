@@ -49,6 +49,7 @@ REQUIRED_FILES = [
     "docs/payment-status-tutorial.md",
     "docs/contest-demo-script.md",
     "docs/content-pack.md",
+    "docs/arc-discord-introduction.md",
     "docs/prompt-library.md",
     "docs/arc-builder-readiness-checklist.md",
     "docs/arc-testnet-integration-runbook.md",
