@@ -52,6 +52,7 @@ REQUIRED_FILES = [
     "docs/arc-discord-introduction.md",
     "docs/receipt-verifier-playground.md",
     "docs/transaction-status-playground.md",
+    "docs/x402-mcp-manifest.md",
     "docs/prompt-library.md",
     "docs/arc-builder-readiness-checklist.md",
     "docs/arc-testnet-integration-runbook.md",

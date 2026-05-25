@@ -125,6 +125,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - [x] Add a short local payment status tutorial.
 - [x] Add a local receipt verifier playground (`examples/receipt-verifier-playground/index.html`) with notes in `docs/receipt-verifier-playground.md`.
 - [x] Add a read-only transaction-status playground (`examples/transaction-status-playground/index.html`) with notes in `docs/transaction-status-playground.md`.
+- [x] Add a machine-readable x402 MCP-style manifest to the local paid-agent boundary (`docs/x402-mcp-manifest.md`).
 - Add a real wallet-submission tutorial after wallet integration exists.
 
 ### Phase 3 — Agent commerce starter kit
@@ -166,7 +167,7 @@ python3 -m http.server 8080
 
 # Run the local-only x402 challenge boundary demo.
 python3 examples/x402-local-challenge-server/server.py --port 8087
-# then request http://localhost:8087/protected
+# then request http://localhost:8087/protected to inspect the 402 challenge and MCP-style manifest
 ```
 
 The validator checks for required files, obvious credential patterns,
@@ -198,6 +199,7 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 │   ├── arc-discord-introduction.md
 │   ├── receipt-verifier-playground.md
 │   ├── transaction-status-playground.md
+│   ├── x402-mcp-manifest.md
 │   ├── arc-builder-readiness-checklist.md
 │   ├── arc-testnet-integration-runbook.md
 │   ├── agent-commerce-use-cases.md

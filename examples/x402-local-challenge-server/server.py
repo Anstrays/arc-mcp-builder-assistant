@@ -103,6 +103,29 @@ class LocalDemoVerifier:
         )
 
 
+def amount_to_micro_usd(amount: str) -> int:
+    """Convert a decimal USDC string to integer microUSD for agents."""
+
+    whole, dot, fractional = amount.partition(".")
+    if not whole.isdigit() or (dot and not fractional.isdigit()):
+        raise ValueError("amount must be a positive decimal string")
+    if len(fractional) > 6:
+        raise ValueError("USDC demo amounts use at most 6 decimal places")
+    return int(whole) * 1_000_000 + int(fractional.ljust(6, "0") or "0")
+
+
+def build_unit_economics(config: PaymentConfig) -> dict[str, object]:
+    """Return integer-priced demo economics without float ambiguity."""
+
+    return {
+        "asset": config.asset,
+        "assetDecimals": 6,
+        "priceMicroUsd": amount_to_micro_usd(config.amount),
+        "displayPrice": f"{config.amount} {config.asset}",
+        "billingModel": "one local demo proof unlocks one protected report response",
+    }
+
+
 def build_payment_challenge(config: PaymentConfig) -> dict[str, object]:
     """Return an x402-shaped payment challenge with safe local metadata."""
 
@@ -120,11 +143,87 @@ def build_payment_challenge(config: PaymentConfig) -> dict[str, object]:
                 "payTo": config.pay_to,
             }
         ],
+        "unitEconomics": build_unit_economics(config),
         "verifierMode": config.verifier_mode,
         "humanApprovalRequired": config.human_approval_required,
         "mainnetEnabled": config.mainnet_enabled,
         "transactionBroadcast": False,
         "instructions": "Approve locally only, then send X-Payment: local-demo:<challenge-id>:<amount>.",
+    }
+
+
+def build_mcp_manifest(config: PaymentConfig) -> dict[str, object]:
+    """Return a machine-readable paid-agent manifest for local MCP-style discovery."""
+
+    return {
+        "name": "arc-local-x402-paid-agent",
+        "version": "0.1.0",
+        "description": "Local-only Arc Testnet x402-style paid agent boundary for builders.",
+        "network": {
+            "name": "Arc Testnet",
+            "chainId": 5_042_002,
+            "chainIdHex": "0x4cef52",
+            "rpc": "https://rpc.testnet.arc.network",
+            "explorer": "https://testnet.arcscan.app",
+        },
+        "payment": {
+            "network": config.network,
+            "asset": config.asset,
+            "assetDecimals": 6,
+            "amount": config.amount,
+            "payTo": config.pay_to,
+            "resource": config.resource,
+        },
+        "unitEconomics": build_unit_economics(config),
+        "safety": {
+            "testnetOnly": True,
+            "humanApprovalRequired": config.human_approval_required,
+            "localDemoProofOnly": True,
+            "mainnetEnabled": config.mainnet_enabled,
+            "transactionBroadcast": False,
+            "privateKeysAccepted": False,
+            "autonomousSpending": False,
+        },
+        "productionReplacementBoundary": (
+            "Replace LocalDemoVerifier with Circle Gateway/x402 verification only after "
+            "network, asset, pay-to ownership, expiry, replay protection, logging, "
+            "and settlement finality rules are reviewed."
+        ),
+        "builderContext": {
+            "verifiedFacts": [
+                "Arc Testnet chain ID is 5042002 / 0x4cef52.",
+                "ERC-20 USDC amounts use 6 decimal places.",
+            ],
+            "repoChoices": [
+                "This demo uses deterministic local proof strings instead of live settlement.",
+                "The HTTP server binds to localhost by default.",
+            ],
+            "assumptionsAndUnknowns": [
+                "A production verifier, nonce store, and wallet approval path are not implemented here.",
+            ],
+            "nonGoals": [
+                "No wallet signing.",
+                "No transaction broadcast.",
+                "No mainnet payment processing.",
+            ],
+        },
+        "tools": [
+            {
+                "name": "inspect_payment_challenge",
+                "description": "Return the current local x402-style challenge without requiring a proof.",
+                "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False},
+            },
+            {
+                "name": "get_paid_resource",
+                "description": "Return the protected local report when X-Payment carries the accepted demo proof.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {"xPayment": {"type": "string"}},
+                    "required": ["xPayment"],
+                    "additionalProperties": False,
+                },
+            },
+        ],
     }
 
 
@@ -135,6 +234,7 @@ def payment_required_response(config: PaymentConfig, error: str = "payment_requi
         body={
             "error": error,
             **challenge,
+            "mcpManifest": build_mcp_manifest(config),
         },
     )
 
@@ -175,6 +275,8 @@ def handle_protected_request(
                 "resource": config.resource,
             },
             "receipt": verification.receipt,
+            "unitEconomics": build_unit_economics(config),
+            "mcpManifest": build_mcp_manifest(config),
         },
     )
 
