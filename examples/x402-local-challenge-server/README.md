@@ -31,6 +31,23 @@ curl -i \
 
 The unpaid `402` response includes `mcpManifest`, a machine-readable discovery contract for future agents. It lists the local tool surface, Arc Testnet constants, integer microUSD unit economics, safety flags, and the Circle Gateway/x402 production replacement boundary.
 
+The same local tool surface is available through a dependency-free JSON-RPC/MCP-style stdio mode:
+
+```bash
+printf '{"jsonrpc":"2.0","id":"tools","method":"tools/list"}\n' \
+  | python3 examples/x402-local-challenge-server/server.py --mcp-stdio
+```
+
+Quick JSON helpers:
+
+```bash
+python3 examples/x402-local-challenge-server/server.py --print-manifest
+python3 examples/x402-local-challenge-server/server.py --print-challenge
+python3 examples/x402-local-challenge-server/server.py --verify-payment 'local-demo:<challenge-id>:0.01'
+```
+
+These helpers never open wallets, accept private keys, broadcast transactions, or claim settlement.
+
 See [x402 MCP manifest](../../docs/x402-mcp-manifest.md) for the field-by-field walkthrough.
 
 ## Boundary contract

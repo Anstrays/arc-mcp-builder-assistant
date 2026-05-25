@@ -42,7 +42,38 @@ The local manifest intentionally exposes only two tools:
 - `inspect_payment_challenge` — returns the current local challenge without requiring a payment proof.
 - `get_paid_resource` — returns the protected local report only when `X-Payment` carries the accepted demo proof.
 
-This is a discovery contract for future agents. It is not yet a full stdio MCP server and does not call Circle Gateway.
+The example also exposes a dependency-free newline-delimited JSON-RPC/MCP-style stdio mode over the same tool functions:
+
+```bash
+printf '{"jsonrpc":"2.0","id":1,"method":"tools/list"}\n' \
+  | python3 examples/x402-local-challenge-server/server.py --mcp-stdio
+```
+
+Supported methods:
+
+- `initialize` — returns protocol metadata, server info, tool capabilities, and safety flags.
+- `tools/list` — returns the manifest tool list.
+- `tools/call` — dispatches `inspect_payment_challenge` or `get_paid_resource` and returns both `content` and `structuredContent`.
+
+Unknown methods or tools return JSON-RPC errors instead of crashing. Notification messages without an `id` are consumed silently, matching the JSON-RPC no-response contract that MCP clients expect after initialization. The stdio mode still uses only local demo proof strings and does not call Circle Gateway.
+
+## CLI helpers
+
+The same server file has JSON helpers for quick checks and agent consumption:
+
+```bash
+# Print the manifest.
+python3 examples/x402-local-challenge-server/server.py --print-manifest
+
+# Print the challenge plus the exact local demo proof hint.
+python3 examples/x402-local-challenge-server/server.py --print-challenge
+
+# Verify a supplied local demo proof and print the simulated response.
+python3 examples/x402-local-challenge-server/server.py \
+  --verify-payment 'local-demo:<challenge-id>:0.01'
+```
+
+All helper outputs are JSON. The `localDemoProof` value is a deterministic demo switch, not a wallet credential or settlement proof.
 
 ## Safe paid-agent flow
 
