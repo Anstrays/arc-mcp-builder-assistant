@@ -64,6 +64,8 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/arc-wallet-integration-notes.md`](./docs/arc-wallet-integration-notes.md) — Circle Wallets vs browser-wallet decision notes for the next Phase 2 integration slice.
 - [`docs/agent-commerce-use-cases.md`](./docs/agent-commerce-use-cases.md) — practical use cases for API-call payments, creator payouts, job escrow, AI-service marketplace flows, and report agents.
 - [`docs/job-escrow-demo.md`](./docs/job-escrow-demo.md) — ERC-8183-style flow for posting jobs, funding escrow, reviewing agent output, and releasing stablecoin payouts.
+- [`docs/x402-mcp-manifest.md`](./docs/x402-mcp-manifest.md) — machine-readable paid-agent manifest and JSON-RPC tool surface for the local x402 boundary.
+- [`docs/arc-production-deployment.md`](./docs/arc-production-deployment.md) — secret-free production deployment runbook, live-smoke checklist, and Circle Gateway/x402 verifier handoff.
 - [`docs/mcp-query-examples.md`](./docs/mcp-query-examples.md) — prompts that force AI tools to separate retrieved Arc facts, implementation suggestions, and unknowns.
 - [`docs/arc-house-submission.md`](./docs/arc-house-submission.md) — ready-to-edit builder update for Arc community or Arc House-style submissions.
 - [`docs/build-log.md`](./docs/build-log.md) — public milestone note and community-update draft for sharing the current local-first builder kit.
@@ -109,6 +111,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - [x] Add an Arc Discord introduction pack for builder onboarding and public updates.
 - [x] Add a local receipt verifier playground for simulated Arc payment receipt review.
 - [x] Add a read-only Arc Testnet transaction status playground for hash lookup without signing or broadcast.
+- [x] Add a secret-free Arc/x402 production deployment runbook, `.env.example` placeholders, and live-smoke script.
 - [ ] Share build log in Arc community.
 
 ### Phase 2 — Working prototype
@@ -155,6 +158,7 @@ validator) and a web browser are required.
 # Validate the repo the same way CI does.
 python3 scripts/test_payment_intent_playground.py
 python3 scripts/test_x402_boundary.py
+python3 scripts/test_arc_production_deployment.py
 python3 scripts/test_receipt_verifier_playground.py
 python3 scripts/test_transaction_status_playground.py
 python3 scripts/validate_repo.py
@@ -175,12 +179,17 @@ python3 examples/x402-local-challenge-server/server.py --print-manifest
 python3 examples/x402-local-challenge-server/server.py --print-challenge
 printf '{"jsonrpc":"2.0","id":"tools","method":"tools/list"}\n' \
   | python3 examples/x402-local-challenge-server/server.py --mcp-stdio
+
+# Challenge-only smoke for a deployed paid-agent endpoint.
+ARC_PAID_AGENT_URL="http://127.0.0.1:8087/protected" \
+  python3 scripts/live_arc_gateway_smoke.py --expect-402-only
 ```
 
 The validator checks for required files, obvious credential patterns,
 basic HTML safety / accessibility / SEO invariants on every public HTML page,
 local links, reduced-motion CSS coverage, payment-demo safety copy, styled-viewer
 coverage for public Markdown pages, the local-only x402 verifier boundary,
+production deployment placeholders / live-smoke assets,
 no raw Markdown links in user-facing HTML, and the integrity of `robots.txt`
 and `sitemap.xml`. It runs on every push and pull request
 via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
