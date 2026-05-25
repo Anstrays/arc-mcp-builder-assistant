@@ -19,13 +19,19 @@ In another terminal:
 curl -i http://127.0.0.1:8087/protected
 ```
 
-The response includes a challenge id. To simulate approval, send:
+The response includes a challenge id plus an `mcpManifest` object with safe paid-agent tool metadata. To simulate approval, send:
 
 ```bash
 curl -i \
   -H 'X-Payment: local-demo:<challenge-id>:0.01' \
   http://127.0.0.1:8087/protected
 ```
+
+## MCP-style manifest
+
+The unpaid `402` response includes `mcpManifest`, a machine-readable discovery contract for future agents. It lists the local tool surface, Arc Testnet constants, integer microUSD unit economics, safety flags, and the Circle Gateway/x402 production replacement boundary.
+
+See [x402 MCP manifest](../../docs/x402-mcp-manifest.md) for the field-by-field walkthrough.
 
 ## Boundary contract
 

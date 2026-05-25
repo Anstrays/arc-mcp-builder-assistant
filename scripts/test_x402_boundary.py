@@ -60,6 +60,41 @@ class X402BoundaryTests(unittest.TestCase):
         self.assertFalse(response.body["receipt"]["transactionBroadcast"])
         self.assertFalse(response.body["receipt"]["mainnetEnabled"])
 
+    def test_mcp_manifest_exposes_safe_arc_paid_agent_tools(self) -> None:
+        manifest = self.server.build_mcp_manifest(self.config)
+
+        self.assertEqual(manifest["name"], "arc-local-x402-paid-agent")
+        self.assertEqual(manifest["network"]["chainId"], 5042002)
+        self.assertEqual(manifest["network"]["chainIdHex"], "0x4cef52")
+        self.assertEqual(manifest["payment"]["amount"], "0.01")
+        self.assertEqual(manifest["payment"]["asset"], "USDC")
+        self.assertTrue(manifest["safety"]["testnetOnly"])
+        self.assertTrue(manifest["safety"]["humanApprovalRequired"])
+        self.assertTrue(manifest["safety"]["localDemoProofOnly"])
+        self.assertFalse(manifest["safety"]["transactionBroadcast"])
+        self.assertIn("Circle Gateway/x402", manifest["productionReplacementBoundary"])
+        tool_names = {tool["name"] for tool in manifest["tools"]}
+        self.assertEqual(tool_names, {"get_paid_resource", "inspect_payment_challenge"})
+
+    def test_402_response_includes_manifest_for_agent_discovery(self) -> None:
+        response = self.server.handle_protected_request({}, self.config)
+
+        self.assertEqual(response.status, 402)
+        self.assertIn("mcpManifest", response.body)
+        self.assertEqual(response.body["mcpManifest"]["name"], "arc-local-x402-paid-agent")
+        self.assertFalse(response.body["mcpManifest"]["safety"]["transactionBroadcast"])
+
+    def test_paid_response_includes_manifest_metadata(self) -> None:
+        challenge = self.server.build_payment_challenge(self.config)
+        proof = f"local-demo:{challenge['id']}:{self.config.amount}"
+
+        response = self.server.handle_protected_request({"X-Payment": proof}, self.config)
+
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response.body["mcpManifest"]["name"], "arc-local-x402-paid-agent")
+        self.assertEqual(response.body["unitEconomics"]["priceMicroUsd"], 10000)
+        self.assertEqual(response.body["unitEconomics"]["displayPrice"], "0.01 USDC")
+
     def test_demo_config_is_safe_by_default(self) -> None:
         self.assertEqual(self.config.network, "arc-testnet")
         self.assertTrue(self.config.human_approval_required)
