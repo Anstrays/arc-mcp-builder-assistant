@@ -70,7 +70,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`examples/payment-intent-playground/`](./examples/payment-intent-playground/) — local-only interactive playground for editing a payment request, inspecting live JSON, viewing Arc Testnet read-only status constants, reviewing disabled wallet guard reasons, generating/copying a manual signing preflight report, and simulating approval/submission states.
 - [`examples/transaction-status-playground/`](./examples/transaction-status-playground/) — read-only Arc Testnet transaction hash lookup with explicit `not_checked`, `pending`, `confirmed`, `failed`, and `unknown` states.
 - [`examples/job-escrow-simulator/`](./examples/job-escrow-simulator/) — local-only ERC-8183-style job escrow simulator for posting, accepting, funding, submitting, and approving a payout.
-- [`examples/x402-local-challenge-server/`](./examples/x402-local-challenge-server/) — dependency-free local HTTP 402 challenge server with a swappable verifier boundary for future Circle/x402 settlement work.
+- [`examples/x402-local-challenge-server/`](./examples/x402-local-challenge-server/) — dependency-free local HTTP 402 challenge server with MCP-style manifest, JSON-RPC stdio tool mode, JSON CLI helpers, and a swappable verifier boundary for future Circle/x402 settlement work.
 - [`examples/payment-intent-demo/`](./examples/payment-intent-demo/) — tiny static mockup for the first payment-intent flow, including trust-boundary and review-state UI copy.
 
 ## Screenshots
@@ -126,6 +126,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - [x] Add a local receipt verifier playground (`examples/receipt-verifier-playground/index.html`) with notes in `docs/receipt-verifier-playground.md`.
 - [x] Add a read-only transaction-status playground (`examples/transaction-status-playground/index.html`) with notes in `docs/transaction-status-playground.md`.
 - [x] Add a machine-readable x402 MCP-style manifest to the local paid-agent boundary (`docs/x402-mcp-manifest.md`).
+- [x] Add dependency-free JSON-RPC/MCP-style stdio mode and JSON CLI helpers for the local paid-agent tools.
 - Add a real wallet-submission tutorial after wallet integration exists.
 
 ### Phase 3 — Agent commerce starter kit
@@ -168,6 +169,12 @@ python3 -m http.server 8080
 # Run the local-only x402 challenge boundary demo.
 python3 examples/x402-local-challenge-server/server.py --port 8087
 # then request http://localhost:8087/protected to inspect the 402 challenge and MCP-style manifest
+
+# Inspect the same paid-agent surface through JSON helpers / stdio.
+python3 examples/x402-local-challenge-server/server.py --print-manifest
+python3 examples/x402-local-challenge-server/server.py --print-challenge
+printf '{"jsonrpc":"2.0","id":"tools","method":"tools/list"}\n' \
+  | python3 examples/x402-local-challenge-server/server.py --mcp-stdio
 ```
 
 The validator checks for required files, obvious credential patterns,

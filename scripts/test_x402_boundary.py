@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import subprocess
 import sys
 import unittest
 from pathlib import Path
@@ -100,6 +102,147 @@ class X402BoundaryTests(unittest.TestCase):
         self.assertTrue(self.config.human_approval_required)
         self.assertFalse(self.config.mainnet_enabled)
         self.assertIn("0x", self.config.pay_to)
+
+    def test_jsonrpc_initialize_returns_mcp_capabilities(self) -> None:
+        response = self.server.process_jsonrpc_request({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}})
+
+        self.assertEqual(response["jsonrpc"], "2.0")
+        self.assertEqual(response["id"], 1)
+        self.assertEqual(response["result"]["serverInfo"]["name"], "arc-local-x402-paid-agent")
+        self.assertIn("tools", response["result"]["capabilities"])
+        self.assertFalse(response["result"]["safety"]["transactionBroadcast"])
+
+    def test_jsonrpc_tools_list_exposes_manifest_tools(self) -> None:
+        response = self.server.process_jsonrpc_request({"jsonrpc": "2.0", "id": "tools", "method": "tools/list"})
+
+        tool_names = {tool["name"] for tool in response["result"]["tools"]}
+        self.assertEqual(tool_names, {"get_paid_resource", "inspect_payment_challenge"})
+        self.assertTrue(all("inputSchema" in tool for tool in response["result"]["tools"]))
+
+    def test_jsonrpc_inspect_payment_challenge_returns_structured_content(self) -> None:
+        response = self.server.process_jsonrpc_request(
+            {"jsonrpc": "2.0", "id": "inspect", "method": "tools/call", "params": {"name": "inspect_payment_challenge", "arguments": {}}}
+        )
+
+        structured = response["result"]["structuredContent"]
+        self.assertEqual(structured["challenge"]["resource"], self.config.resource)
+        self.assertEqual(structured["mcpManifest"]["name"], "arc-local-x402-paid-agent")
+        self.assertIn("402", response["result"]["content"][0]["text"])
+
+    def test_jsonrpc_get_paid_resource_requires_valid_demo_proof(self) -> None:
+        challenge = self.server.build_payment_challenge(self.config)
+        proof = f"local-demo:{challenge['id']}:{self.config.amount}"
+        response = self.server.process_jsonrpc_request(
+            {"jsonrpc": "2.0", "id": "paid", "method": "tools/call", "params": {"name": "get_paid_resource", "arguments": {"xPayment": proof}}}
+        )
+
+        structured = response["result"]["structuredContent"]
+        self.assertEqual(structured["status"], 200)
+        self.assertEqual(structured["body"]["receipt"]["verifierMode"], "local-simulation")
+        self.assertFalse(structured["body"]["receipt"]["transactionBroadcast"])
+
+    def test_jsonrpc_unknown_tool_returns_error_without_crashing(self) -> None:
+        response = self.server.process_jsonrpc_request(
+            {"jsonrpc": "2.0", "id": "bad", "method": "tools/call", "params": {"name": "send_money", "arguments": {}}}
+        )
+
+        self.assertEqual(response["error"]["code"], -32602)
+        self.assertIn("unknown tool", response["error"]["message"])
+
+    def test_jsonrpc_notifications_do_not_emit_responses(self) -> None:
+        response = self.server.process_jsonrpc_request({"jsonrpc": "2.0", "method": "notifications/initialized"})
+
+        self.assertIsNone(response)
+
+    def test_mcp_stdio_mode_suppresses_notification_responses(self) -> None:
+        payload = (
+            json.dumps({"jsonrpc": "2.0", "id": "stdio", "method": "tools/list"})
+            + "\n"
+            + json.dumps({"jsonrpc": "2.0", "method": "notifications/initialized"})
+            + "\n"
+        )
+
+        completed = subprocess.run(
+            [sys.executable, str(SERVER_PATH), "--mcp-stdio"],
+            input=payload,
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=5,
+        )
+
+        lines = [json.loads(line) for line in completed.stdout.splitlines() if line.strip()]
+        self.assertEqual(len(lines), 1)
+        self.assertEqual(lines[0]["id"], "stdio")
+
+    def test_mcp_stdio_mode_processes_newline_delimited_json(self) -> None:
+        payload = json.dumps({"jsonrpc": "2.0", "id": "stdio", "method": "tools/list"}) + "\n"
+
+        completed = subprocess.run(
+            [sys.executable, str(SERVER_PATH), "--mcp-stdio"],
+            input=payload,
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=5,
+        )
+
+        lines = [json.loads(line) for line in completed.stdout.splitlines() if line.strip()]
+        self.assertEqual(lines[0]["id"], "stdio")
+        self.assertIn("get_paid_resource", {tool["name"] for tool in lines[0]["result"]["tools"]})
+
+    def test_cli_print_manifest_emits_safe_agent_json(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, str(SERVER_PATH), "--print-manifest"],
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=5,
+        )
+
+        manifest = json.loads(completed.stdout)
+        self.assertEqual(manifest["name"], "arc-local-x402-paid-agent")
+        self.assertFalse(manifest["safety"]["transactionBroadcast"])
+        self.assertFalse(manifest["safety"]["privateKeysAccepted"])
+
+    def test_cli_print_challenge_includes_local_demo_proof_hint(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, str(SERVER_PATH), "--print-challenge"],
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=5,
+        )
+
+        challenge = json.loads(completed.stdout)
+        self.assertEqual(challenge["status"], 402)
+        self.assertEqual(challenge["localDemoProof"], f"local-demo:{challenge['challenge']['id']}:{self.config.amount}")
+        self.assertFalse(challenge["challenge"]["transactionBroadcast"])
+
+    def test_cli_verify_payment_emits_rejected_and_accepted_receipts(self) -> None:
+        rejected = subprocess.run(
+            [sys.executable, str(SERVER_PATH), "--verify-payment", "bad-proof"],
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=5,
+        )
+        rejected_body = json.loads(rejected.stdout)
+        self.assertEqual(rejected_body["status"], 402)
+        self.assertFalse(rejected_body["body"]["transactionBroadcast"])
+
+        challenge = self.server.build_payment_challenge(self.config)
+        proof = f"local-demo:{challenge['id']}:{self.config.amount}"
+        accepted = subprocess.run(
+            [sys.executable, str(SERVER_PATH), "--verify-payment", proof],
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=5,
+        )
+        accepted_body = json.loads(accepted.stdout)
+        self.assertEqual(accepted_body["status"], 200)
+        self.assertFalse(accepted_body["body"]["receipt"]["transactionBroadcast"])
 
 
 if __name__ == "__main__":
