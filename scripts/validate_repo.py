@@ -53,6 +53,7 @@ REQUIRED_FILES = [
     "docs/receipt-verifier-playground.md",
     "docs/transaction-status-playground.md",
     "docs/x402-mcp-manifest.md",
+    "docs/arc-production-deployment.md",
     "docs/prompt-library.md",
     "docs/arc-builder-readiness-checklist.md",
     "docs/arc-testnet-integration-runbook.md",
@@ -82,6 +83,8 @@ REQUIRED_FILES = [
     "examples/x402-local-challenge-server/.env.example",
     "examples/x402-local-challenge-server/server.py",
     "scripts/check_arc_testnet_status.py",
+    "scripts/live_arc_gateway_smoke.py",
+    "scripts/test_arc_production_deployment.py",
     "scripts/test_payment_intent_playground.py",
     "scripts/test_x402_boundary.py",
     "scripts/test_transaction_status_playground.py",
@@ -396,6 +399,66 @@ def validate_x402_boundary_demo() -> None:
             fail(f"examples/x402-local-challenge-server/README.md: missing safety marker: {marker}")
 
 
+def validate_arc_production_deployment_assets() -> None:
+    """Keep production-facing Arc/x402 docs secret-free and smoke-testable."""
+    runbook_relative = "docs/arc-production-deployment.md"
+    env_relative = "examples/x402-local-challenge-server/.env.example"
+    smoke_relative = "scripts/live_arc_gateway_smoke.py"
+    test_relative = "scripts/test_arc_production_deployment.py"
+
+    runbook = (ROOT / runbook_relative).read_text(encoding="utf-8").lower()
+    env_example = (ROOT / env_relative).read_text(encoding="utf-8")
+    smoke = (ROOT / smoke_relative).read_text(encoding="utf-8")
+    tests = (ROOT / test_relative).read_text(encoding="utf-8")
+
+    for marker in (
+        "arc_paid_agent_url",
+        "arc_live_x_payment",
+        "--expect-402-only",
+        "circle gateway",
+        "x402",
+        "rollback",
+        "human approval",
+        "no private keys",
+        "no seed phrases",
+        "does not create payments",
+    ):
+        if marker not in runbook:
+            fail(f"{runbook_relative}: missing production runbook marker: {marker}")
+    for marker in (
+        "ARC_PAID_AGENT_URL=",
+        "ARC_LIVE_X_PAYMENT=",
+        "CIRCLE_GATEWAY_API_KEY=",
+        "X402_GATEWAY_VERIFIER_URL=",
+        "EXPECT_402_ONLY=true",
+        "Placeholder only",
+    ):
+        if marker not in env_example:
+            fail(f"{env_relative}: missing placeholder env marker: {marker}")
+    for marker in (
+        "ARC_PAID_AGENT_URL",
+        "ARC_LIVE_X_PAYMENT",
+        "X-Payment",
+        "--expect-402-only",
+        "No payments were created",
+        "transactionBroadcast",
+        "humanApprovalRequired",
+        "arc-testnet",
+    ):
+        if marker not in smoke:
+            fail(f"{smoke_relative}: missing safe smoke marker: {marker}")
+    for marker in (
+        "test_live_smoke_fails_safely_without_target_url",
+        "test_live_smoke_accepts_local_402_only_mode",
+        "test_production_runbook_documents_safe_gateway_handoff",
+    ):
+        if marker not in tests:
+            fail(f"{test_relative}: missing regression test marker: {marker}")
+    for forbidden in ("local-demo:", "-----BEGIN", "sk-"):
+        if forbidden in env_example:
+            fail(f"{env_relative}: forbidden placeholder content: {forbidden}")
+
+
 def validate_arc_testnet_status_helper() -> None:
     """Keep the first Arc Testnet helper read-only and source-fact grounded."""
     relative = "scripts/check_arc_testnet_status.py"
@@ -577,6 +640,7 @@ def main() -> None:
     validate_docs_viewer_registry()
     validate_demo_safety_copy()
     validate_x402_boundary_demo()
+    validate_arc_production_deployment_assets()
     validate_arc_testnet_status_helper()
     validate_payment_intent_playground_status_panel()
     validate_receipt_verifier_playground()
