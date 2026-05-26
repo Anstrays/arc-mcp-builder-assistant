@@ -125,6 +125,34 @@ def test_usdc_unit_preview_distinguishes_erc20_units_from_native_gas() -> None:
         assert_contains(js, marker, JS)
 
 
+def test_unsigned_transaction_draft_preview_is_local_only() -> None:
+    html = read(HTML)
+    js = read(JS)
+
+    for marker in (
+        'id="unsigned-transaction-panel"',
+        'Unsigned transaction draft',
+        'ERC-20 transfer payload preview',
+        'id="unsigned-transaction-draft"',
+        'It is unsigned JSON only',
+    ):
+        assert_contains(html, marker, HTML)
+
+    for marker in (
+        "function buildErc20TransferCalldata(intent)",
+        "function buildUnsignedTransactionDraft(intent)",
+        "type: 'unsigned_erc20_transfer_preview'",
+        "walletRequestEnabled: false",
+        "unsignedOnly: true",
+        "gasEstimateIncluded: false",
+        "simulationIncluded: false",
+        "method: 'transfer(address,uint256)'",
+        "renderUnsignedTransactionDraft(intent)",
+        "unsignedTransactionDraft: buildUnsignedTransactionDraft(intent)",
+    ):
+        assert_contains(js, marker, JS)
+
+
 def test_signing_preflight_report_is_rendered_without_wallet_actions() -> None:
     html = read(HTML)
     js = read(JS)
@@ -307,6 +335,7 @@ if __name__ == "__main__":
     test_wallet_action_controls_are_disabled_with_explicit_guard_reasons()
     test_intent_json_includes_arc_network_readiness_fields()
     test_usdc_unit_preview_distinguishes_erc20_units_from_native_gas()
+    test_unsigned_transaction_draft_preview_is_local_only()
     test_signing_preflight_report_is_rendered_without_wallet_actions()
     test_validation_summary_panel_shows_local_readiness_without_wallet_actions()
     test_signing_preflight_report_can_be_copied_without_network_or_wallet()

@@ -22,6 +22,7 @@ The preflight contract is allowed to contain only public or user-entered payment
 - asset symbol and token address;
 - amount in decimal USDC;
 - amount in ERC-20 base units;
+- unsigned ERC-20 transaction draft fields for review (`to`, `value`, `data`, decoded recipient, decoded amount);
 - memo / resource binding;
 - expiry;
 - guard reasons;
@@ -56,6 +57,10 @@ A future wallet adapter must render these fields before enabling any signing but
 | `intent.recipient` | 0x-prefixed 40-byte address | Block invalid, empty, or changed-after-review recipients. |
 | `intent.amountDecimal` | positive decimal with at most 6 fractional digits | Block zero, negative, scientific notation, or more than 6 decimals. |
 | `intent.amountBaseUnits` | deterministic 6-decimal parse of `amountDecimal` | Block if base units do not match the decimal display. |
+| `transactionDraft.unsignedOnly` | `true` until a separate send PR | Block if a draft can trigger wallet UI by itself. |
+| `transactionDraft.to` | reviewed Arc Testnet USDC token address | Block if transfer target differs from the reviewed token address. |
+| `transactionDraft.value` | `0x0` for ERC-20 transfer | Block native-value transfers for the first USDC send PR. |
+| `transactionDraft.data` | deterministic `transfer(address,uint256)` calldata | Block if decoded recipient or base units differ from the frozen intent. |
 | `intent.memo` | visible user-facing description | Block hidden memo/resource changes after review starts. |
 | `intent.expiry` | future timestamp | Block expired intents before signing. |
 | `approval.humanRequired` | `true` | Block any auto-submit or unattended spending path. |
@@ -90,6 +95,19 @@ The local playground or a future wallet-preview component should be able to prod
     "memo": "Paid data/API task for Arc market research report.",
     "expiry": "2026-05-30T00:00"
   },
+  "transactionDraft": {
+    "type": "unsigned_erc20_transfer_preview",
+    "unsignedOnly": true,
+    "walletRequestEnabled": false,
+    "to": "0x3600000000000000000000000000000000000000",
+    "value": "0x0",
+    "data": "0xa9059cbb000000000000000000000000111111111111111111111111111111111111111100000000000000000000000000000000000000000000000000000000004c4b40",
+    "decoded": {
+      "method": "transfer(address,uint256)",
+      "recipient": "0x1111111111111111111111111111111111111111",
+      "amountBaseUnits": "5000000"
+    }
+  },
   "approval": {
     "humanRequired": true,
     "status": "ready_for_review",
@@ -122,6 +140,7 @@ The first wallet-related PR should still avoid sending funds. It is acceptable w
 - [x] The preflight report can be copied without network writes.
 - [x] Recipient, amount, token address, chain ID, memo, and expiry are frozen once review starts.
 - [x] Final local confirmation is explicit and still does not enable a transaction request.
+- [x] Unsigned transaction draft is inspectable and cannot trigger a wallet request.
 - [x] The app cannot call `sendTransaction`, `eth_sendTransaction`, or equivalent write APIs.
 - [x] Tests prove that the no-broadcast path remains default.
 - [x] The local playground remains usable when no wallet is present.
@@ -130,6 +149,7 @@ The first wallet-related PR should still avoid sending funds. It is acceptable w
 
 A later send PR may submit a testnet transaction only if all preview criteria are already met and these additional rules pass:
 
+- [ ] Unsigned transaction draft decodes back to the frozen recipient, amount, token address, and chain before wallet handoff.
 - [ ] The user clicks an explicit final confirmation button.
 - [ ] The wallet confirmation dialog is the only signing path.
 - [ ] The transfer is Arc Testnet only.
