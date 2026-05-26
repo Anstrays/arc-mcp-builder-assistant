@@ -52,6 +52,10 @@ def test_wallet_action_controls_are_disabled_with_explicit_guard_reasons() -> No
 
     for marker in (
         'id="wallet-guard-panel"',
+        'id="wallet-provider-state"',
+        'id="wallet-address-state"',
+        'id="wallet-chain-state"',
+        'Read-only wallet preview state',
         'id="wallet-action-button"',
         'disabled aria-disabled="true"',
         'id="wallet-guard-reasons"',
@@ -68,6 +72,13 @@ def test_wallet_action_controls_are_disabled_with_explicit_guard_reasons() -> No
         "Invalid amount or decimals: use a positive USDC amount with at most 6 decimal places.",
         "Expired intent: choose a future expiry before enabling wallet review.",
         "User approval required: real signing must open an external wallet confirmation.",
+        "Wallet adapter feature flag is off: this UI only previews provider/address/chain state.",
+        "Wallet provider not detected: no injected browser wallet was observed.",
+        "Wallet account unknown: this guard does not request accounts or permissions.",
+        "Frozen intent changed: restart review before any future wallet action.",
+        "function getWalletPreviewState(intent)",
+        "requestMethodsCalled: false",
+        "walletActionEnabled: false",
         "renderWalletGuardPanel(intent)",
     ):
         assert_contains(js, marker, JS)
@@ -136,6 +147,9 @@ def test_signing_preflight_report_is_rendered_without_wallet_actions() -> None:
         "recipientFormat: {",
         "amountFormat: {",
         "expiryWindow: {",
+        "walletPreview: getWalletPreviewState(intent)",
+        "frozenIntent: frozenIntentSnapshot ? frozenIntentSnapshot.fields : null",
+        "frozenIntent: {",
         "humanApproval: {",
         "renderSigningPreflightReport(intent)",
     ):
@@ -227,6 +241,8 @@ def test_status_state_machine_uses_review_safe_vocabulary() -> None:
         "function nextStatusAfterPrepare(intent)",
         "function markStatusStep(currentStatusId)",
         "currentStatus === 'approved_local'",
+        "function freezeIntentForReview(intent)",
+        "function hasFrozenIntentChanged(intent)",
         "appendEvent('ready_for_review'",
         "appendEvent('blocked_wallet_unavailable'",
     ):
@@ -247,6 +263,8 @@ def test_playground_javascript_stays_local_only() -> None:
         "XMLHttpRequest",
         "WebSocket",
         "ethereum.request",
+        "eth_sendTransaction",
+        "wallet_switchEthereumChain",
         "sendTransaction",
         "signTransaction",
         "PRIVATE_KEY",

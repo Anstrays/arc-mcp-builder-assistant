@@ -54,6 +54,7 @@ http://localhost:8080/examples/payment-intent-playground/
 ### 4. Check the readiness panels before touching wallet work
 
 - Arc Testnet status constants;
+- read-only wallet preview state: provider detected/not detected, selected address if exposed by the wallet, and chain gate status without account requests;
 - USDC unit preview, including 6-decimal ERC-20 base units versus 18-decimal native gas accounting;
 - wallet guard reasons;
 - local validation summary;
@@ -79,6 +80,8 @@ The current project is a safe builder kit, not a live payment app. A reviewer sh
 - a human approval gate;
 - explicit disabled wallet controls;
 - a preflight report that explains what still blocks signing;
+- frozen recipient, amount, memo, expiry, chain, token, and base-unit fields after review starts;
+- a read-only wallet preview that never calls account-request, signing, switching, or broadcast APIs;
 - a USDC unit preview that keeps 6-decimal ERC-20 transfer math separate from 18-decimal native gas accounting;
 - test commands that prove the local-only boundary stays intact.
 
@@ -97,9 +100,9 @@ The current project is a safe builder kit, not a live payment app. A reviewer sh
 The next code slice should stay guard-first:
 
 1. verify current Arc docs and Circle wallet details through MCP or official docs;
-2. add wallet-chain detection without signing;
-3. keep submit controls disabled until chain ID, recipient, amount, expiry, and human approval all pass;
-4. add regression tests that prove the UI cannot call signing or broadcast code while guards are failing;
+2. add an explicit final-confirmation UX for a later send PR while keeping transaction requests disabled;
+3. keep submit controls disabled until chain ID, recipient, amount, expiry, frozen intent, and human approval all pass;
+4. add regression tests that prove the UI cannot call signing, chain-switching, account-request, or broadcast code while guards are failing;
 5. only then consider a separate testnet signing PR.
 
 ## Useful links

@@ -274,7 +274,7 @@ Arc Testnet · USDC · ArcScan status</code></pre>
           </article>
           <article class="card">
             <h3>Payment-intent playground</h3>
-            <p>Local-only interactive app for editing a payment request, inspecting live JSON, and simulating explicit human approval states.</p>
+            <p>Local-only interactive app for editing a payment request, inspecting live JSON, previewing wallet provider/address/chain state without permissions, freezing reviewed fields, and simulating explicit human approval states.</p>
             <span class="meta"><a href="./examples/payment-intent-playground/">examples/payment-intent-playground →</a></span>
           </article>
           <article class="card">
@@ -458,7 +458,8 @@ Arc Testnet · USDC · ArcScan status</code></pre>
           <li>Done: added a read-only Arc Testnet transaction status playground for hash lookup without signing or broadcast.</li>
           <li>Done: added a secret-free Arc/x402 production deployment runbook, placeholder env contract, challenge-only live smoke script, and local demo transcript.</li>
           <li>Done: added a secret-free wallet preflight contract for future Arc Testnet wallet preview/send PRs.</li>
-          <li>Next: wire a reviewed wallet adapter with chain gating and human approval.</li>
+          <li>Done: added read-only wallet preview guard UI with provider/address/chain visibility, frozen intent fields, and no wallet permission requests.</li>
+          <li>Next: add explicit final-confirmation UX for a later reviewed testnet send PR while keeping transaction requests disabled.</li>
         </ul>
       </div>
     </section>

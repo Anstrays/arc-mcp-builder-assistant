@@ -111,14 +111,14 @@ The local playground or a future wallet-preview component should be able to prod
 
 The first wallet-related PR should still avoid sending funds. It is acceptable when all of these are true:
 
-- [ ] Wallet detection is optional and feature-flagged.
-- [ ] Wrong-chain state is visible and blocks all signing controls.
-- [ ] Connected address is displayed before review.
-- [ ] The preflight report can be copied without network writes.
-- [ ] Recipient, amount, token address, chain ID, memo, and expiry are frozen once review starts.
-- [ ] The app cannot call `sendTransaction`, `eth_sendTransaction`, or equivalent write APIs.
-- [ ] Tests prove that the no-broadcast path remains default.
-- [ ] The local playground remains usable when no wallet is present.
+- [x] Wallet detection is optional and feature-flagged.
+- [x] Wrong-chain state is visible and blocks all signing controls.
+- [x] Connected address is displayed before review when an injected wallet exposes it without a permission request.
+- [x] The preflight report can be copied without network writes.
+- [x] Recipient, amount, token address, chain ID, memo, and expiry are frozen once review starts.
+- [x] The app cannot call `sendTransaction`, `eth_sendTransaction`, or equivalent write APIs.
+- [x] Tests prove that the no-broadcast path remains default.
+- [x] The local playground remains usable when no wallet is present.
 
 ## Send PR acceptance criteria
 
@@ -146,4 +146,4 @@ Before approving any wallet PR, verify:
 
 ## Current status
 
-This repository currently implements the safe local side of the contract: deterministic amount parsing, explicit guard reasons, a copyable preflight report, and disabled wallet actions. Real wallet detection, signing, and transaction submission remain future work and must land in separate reviewed PRs.
+This repository currently implements the safe local side of the contract: deterministic amount parsing, optional read-only injected-wallet preview state, explicit wrong-chain/provider/account guard reasons, frozen reviewed intent fields, a copyable preflight report, and disabled wallet actions. Real wallet permission requests, signing, and transaction submission remain future work and must land in separate reviewed PRs.
