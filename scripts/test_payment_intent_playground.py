@@ -228,6 +228,7 @@ def test_status_state_machine_uses_review_safe_vocabulary() -> None:
         'data-status-step="draft"',
         'data-status-step="ready_for_review"',
         'data-status-step="approved_local"',
+        'data-status-step="final_review_confirmed"',
         'data-status-step="blocked_wallet_unavailable"',
     ):
         assert_contains(html, marker, HTML)
@@ -237,6 +238,7 @@ def test_status_state_machine_uses_review_safe_vocabulary() -> None:
         "id: 'draft'",
         "id: 'ready_for_review'",
         "id: 'approved_local'",
+        "id: 'final_review_confirmed'",
         "id: 'blocked_wallet_unavailable'",
         "function nextStatusAfterPrepare(intent)",
         "function markStatusStep(currentStatusId)",
@@ -244,6 +246,7 @@ def test_status_state_machine_uses_review_safe_vocabulary() -> None:
         "function freezeIntentForReview(intent)",
         "function hasFrozenIntentChanged(intent)",
         "appendEvent('ready_for_review'",
+        "appendEvent('final_review_confirmed'",
         "appendEvent('blocked_wallet_unavailable'",
     ):
         assert_contains(js, marker, JS)
@@ -254,6 +257,32 @@ def test_status_state_machine_uses_review_safe_vocabulary() -> None:
         "submitted_simulation",
     ):
         assert removed_status not in js, f"old status vocabulary still present in {JS.relative_to(ROOT)}: {removed_status}"
+
+
+def test_final_confirmation_gate_is_local_only_and_keeps_transactions_disabled() -> None:
+    html = read(HTML)
+    js = read(JS)
+
+    for marker in (
+        'id="final-confirmation-panel"',
+        'Final confirmation, still no transaction',
+        'id="final-confirmation-checkbox"',
+        'id="final-confirmation-button"',
+        'Confirm final review locally',
+        'id="final-confirmation-reasons"',
+    ):
+        assert_contains(html, marker, HTML)
+
+    for marker in (
+        "function getFinalConfirmationReasons(intent)",
+        "function canRecordFinalConfirmation(intent)",
+        "function renderFinalConfirmationPanel(intent)",
+        "finalConfirmationRecorded = false",
+        "finalConfirmationButton.disabled = !canConfirm",
+        "transactionRequestEnabled: false",
+        "appendEvent('final_review_confirmed'",
+    ):
+        assert_contains(js, marker, JS)
 
 
 def test_playground_javascript_stays_local_only() -> None:
@@ -283,5 +312,6 @@ if __name__ == "__main__":
     test_signing_preflight_report_can_be_copied_without_network_or_wallet()
     test_default_demo_values_are_reviewable_without_real_wallet_details()
     test_status_state_machine_uses_review_safe_vocabulary()
+    test_final_confirmation_gate_is_local_only_and_keeps_transactions_disabled()
     test_playground_javascript_stays_local_only()
     print("payment intent playground tests passed")

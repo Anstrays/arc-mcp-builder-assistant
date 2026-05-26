@@ -229,6 +229,7 @@
         <li data-status-step="draft"><strong>draft</strong> — intent exists but is not approved.</li>
         <li data-status-step="ready_for_review"><strong>ready_for_review</strong> — fields are valid enough for human review.</li>
         <li data-status-step="approved_local"><strong>approved_local</strong> — human approved the local exercise only.</li>
+        <li data-status-step="final_review_confirmed"><strong>final_review_confirmed</strong> — final local confirmation recorded without a wallet request.</li>
         <li data-status-step="blocked_wallet_unavailable"><strong>blocked_wallet_unavailable</strong> — signing remains disabled by guardrails.</li>
       </ol>
     </section>
@@ -242,6 +243,18 @@
       <pre id="signing-preflight-report" class="json-preview compact" aria-live="polite"></pre>
     </section>
 
+    <section class="card danger" id="final-confirmation-panel" aria-labelledby="final-confirmation-title">
+      <div class="eyebrow">Final review gate</div>
+      <h2 id="final-confirmation-title">Final confirmation, still no transaction</h2>
+      <p>This is the last human confirmation step a future testnet send PR should reuse before opening any wallet prompt. Today it only records local review intent and keeps transaction requests disabled.</p>
+      <label>
+        <input id="final-confirmation-checkbox" name="final-confirmation-checkbox" type="checkbox" />
+        I reviewed the frozen recipient, amount, memo, expiry, Arc Testnet chain, token address, and guard reasons.
+      </label>
+      <button type="button" id="final-confirmation-button" class="secondary" disabled aria-disabled="true">Confirm final review locally</button>
+      <ul id="final-confirmation-reasons" class="mini-list" aria-live="polite"></ul>
+    </section>
+
     <section class="grid" aria-label="Status and safety details">
       <article class="card notice" aria-labelledby="timeline-title">
         <div class="eyebrow">Local status timeline</div>
@@ -253,7 +266,7 @@
         <h2 id="boundaries-title">Still not a wallet app</h2>
         <ul class="mini-list">
           <li>The agent can prepare and explain an intent, not spend funds.</li>
-          <li>Every approval state in this playground is local UI state.</li>
+          <li>Every approval and final-confirmation state in this playground is local UI state.</li>
           <li>Real Arc Testnet integration must re-check chain, wallet, and contract details through current Arc docs/MCP.</li>
           <li>Use the <a href="../../docs/view.html#arc-builder-readiness-checklist.md">builder readiness checklist</a> before adding any transaction path.</li>
         </ul>
