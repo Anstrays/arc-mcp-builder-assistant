@@ -177,6 +177,33 @@ def test_unsigned_transaction_draft_consistency_check_decodes_payload() -> None:
         assert_contains(js, marker, JS)
 
 
+def test_wallet_handoff_readiness_manifest_keeps_send_pr_blocked() -> None:
+    html = read(HTML)
+    js = read(JS)
+
+    for marker in (
+        'id="wallet-handoff-readiness-panel"',
+        'Wallet handoff readiness',
+        'Send PR blocker manifest',
+        'id="wallet-handoff-readiness-list"',
+        'id="wallet-handoff-readiness-json"',
+    ):
+        assert_contains(html, marker, HTML)
+
+    for marker in (
+        "function buildWalletHandoffReadinessManifest(intent)",
+        "type: 'wallet_handoff_readiness_manifest'",
+        "walletRequestEnabled: false",
+        "canRequestWallet: false",
+        "sendPrRequired: true",
+        "id: 'wallet-chain-observed'",
+        "id: 'wallet-request-still-disabled'",
+        "renderWalletHandoffReadinessManifest(intent)",
+        "walletHandoffReadiness: buildWalletHandoffReadinessManifest(intent)",
+    ):
+        assert_contains(js, marker, JS)
+
+
 def test_signing_preflight_report_is_rendered_without_wallet_actions() -> None:
     html = read(HTML)
     js = read(JS)

@@ -24,6 +24,7 @@ The preflight contract is allowed to contain only public or user-entered payment
 - amount in ERC-20 base units;
 - unsigned ERC-20 transaction draft fields for review (`to`, `value`, `data`, decoded recipient, decoded amount);
 - transaction draft consistency checks that decode calldata back to reviewed fields;
+- wallet handoff readiness manifest fields (`walletRequestEnabled`, `canRequestWallet`, `sendPrRequired`, required guard IDs);
 - memo / resource binding;
 - expiry;
 - guard reasons;
@@ -63,6 +64,10 @@ A future wallet adapter must render these fields before enabling any signing but
 | `transactionDraft.value` | `0x0` for ERC-20 transfer | Block native-value transfers for the first USDC send PR. |
 | `transactionDraft.data` | deterministic `transfer(address,uint256)` calldata | Block if decoded recipient or base units differ from the frozen intent. |
 | `transactionDraftConsistency.allPassed` | `true` before any later wallet handoff | Block if calldata cannot be decoded back to the reviewed recipient and amount. |
+| `walletHandoffReadiness.walletRequestEnabled` | `false` in the local playground | Block any preview PR that can open a wallet request before the send PR. |
+| `walletHandoffReadiness.canRequestWallet` | `false` until a separate send PR | Block if local guard manifests can flip into a wallet action. |
+| `walletHandoffReadiness.sendPrRequired` | `true` | Block unless reviewers can see that wallet/send remains separate from preview guards. |
+| `walletHandoffReadiness.requiredBeforeSend` | validation, frozen intent, human approval, final confirmation, draft consistency, wallet chain proof | Block if any required guard is omitted from the handoff manifest. |
 | `intent.memo` | visible user-facing description | Block hidden memo/resource changes after review starts. |
 | `intent.expiry` | future timestamp | Block expired intents before signing. |
 | `approval.humanRequired` | `true` | Block any auto-submit or unattended spending path. |
@@ -121,6 +126,23 @@ The local playground or a future wallet-preview component should be able to prod
       "amountBaseUnits": "5000000"
     }
   },
+  "walletHandoffReadiness": {
+    "type": "wallet_handoff_readiness_manifest",
+    "localOnly": true,
+    "walletRequestEnabled": false,
+    "canRequestWallet": false,
+    "sendPrRequired": true,
+    "allLocalPrerequisitesPassed": false,
+    "requiredBeforeSend": [
+      "valid-intent-fields",
+      "frozen-intent-present",
+      "human-approval-recorded",
+      "final-confirmation-recorded",
+      "unsigned-draft-consistent",
+      "wallet-chain-observed",
+      "wallet-request-still-disabled"
+    ]
+  },
   "approval": {
     "humanRequired": true,
     "status": "ready_for_review",
@@ -155,6 +177,7 @@ The first wallet-related PR should still avoid sending funds. It is acceptable w
 - [x] Final local confirmation is explicit and still does not enable a transaction request.
 - [x] Unsigned transaction draft is inspectable and cannot trigger a wallet request.
 - [x] Unsigned transaction draft consistency is checked by decoding calldata back to reviewed fields.
+- [x] Wallet handoff readiness manifest keeps wallet requests disabled and lists required send-PR guards.
 - [x] The app cannot call `sendTransaction`, `eth_sendTransaction`, or equivalent write APIs.
 - [x] Tests prove that the no-broadcast path remains default.
 - [x] The local playground remains usable when no wallet is present.
@@ -163,6 +186,7 @@ The first wallet-related PR should still avoid sending funds. It is acceptable w
 
 A later send PR may submit a testnet transaction only if all preview criteria are already met and these additional rules pass:
 
+- [ ] Wallet handoff readiness manifest passes immediately before wallet prompt creation.
 - [ ] Unsigned transaction draft decodes back to the frozen recipient, amount, token address, and chain before wallet handoff.
 - [ ] The user clicks an explicit final confirmation button.
 - [ ] The wallet confirmation dialog is the only signing path.
@@ -186,4 +210,4 @@ Before approving any wallet PR, verify:
 
 ## Current status
 
-This repository currently implements the safe local side of the contract: deterministic amount parsing, optional read-only injected-wallet preview state, explicit wrong-chain/provider/account guard reasons, frozen reviewed intent fields, unsigned transaction draft generation, calldata consistency checks, a copyable preflight report, and disabled wallet actions. Real wallet permission requests, signing, and transaction submission remain future work and must land in separate reviewed PRs.
+This repository currently implements the safe local side of the contract: deterministic amount parsing, optional read-only injected-wallet preview state, explicit wrong-chain/provider/account guard reasons, frozen reviewed intent fields, unsigned transaction draft generation, calldata consistency checks, wallet handoff readiness manifest, a copyable preflight report, and disabled wallet actions. Real wallet permission requests, signing, and transaction submission remain future work and must land in separate reviewed PRs.

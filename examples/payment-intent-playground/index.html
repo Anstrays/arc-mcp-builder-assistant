@@ -257,6 +257,14 @@
       <ul id="draft-consistency-list" class="mini-list" aria-live="polite"></ul>
     </section>
 
+    <section class="card danger" id="wallet-handoff-readiness-panel" aria-labelledby="wallet-handoff-readiness-title">
+      <div class="eyebrow">Wallet handoff readiness</div>
+      <h2 id="wallet-handoff-readiness-title">Send PR blocker manifest</h2>
+      <p>This local manifest lists every guard a separate wallet/send PR must satisfy before it can enable any wallet request. It remains a no-transaction checklist: no provider call, chain switch, signing, gas estimate, simulation, or broadcast.</p>
+      <ul id="wallet-handoff-readiness-list" class="mini-list" aria-live="polite"></ul>
+      <pre id="wallet-handoff-readiness-json" class="json-preview compact" aria-live="polite"></pre>
+    </section>
+
     <section class="card danger" id="final-confirmation-panel" aria-labelledby="final-confirmation-title">
       <div class="eyebrow">Final review gate</div>
       <h2 id="final-confirmation-title">Final confirmation, still no transaction</h2>

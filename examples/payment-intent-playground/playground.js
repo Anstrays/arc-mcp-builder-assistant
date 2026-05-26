@@ -26,6 +26,8 @@ const finalConfirmationButton = document.querySelector('#final-confirmation-butt
 const finalConfirmationReasons = document.querySelector('#final-confirmation-reasons');
 const unsignedTransactionDraft = document.querySelector('#unsigned-transaction-draft');
 const draftConsistencyList = document.querySelector('#draft-consistency-list');
+const walletHandoffReadinessList = document.querySelector('#wallet-handoff-readiness-list');
+const walletHandoffReadinessJson = document.querySelector('#wallet-handoff-readiness-json');
 
 const ARC_TESTNET_STATUS = Object.freeze({
   network: 'Arc Testnet',
@@ -313,6 +315,89 @@ function renderTransactionDraftConsistencyCheck(intent) {
   );
 }
 
+function buildWalletHandoffReadinessManifest(intent) {
+  const validationSummary = buildValidationSummary(intent);
+  const transactionDraftConsistency = buildTransactionDraftConsistencyCheck(intent);
+  const walletPreview = getWalletPreviewState(intent);
+  const frozenIntentPassed = Boolean(frozenIntentSnapshot) && !hasFrozenIntentChanged(intent);
+  const humanApprovalPassed = currentStatus === 'approved_local' || currentStatus === 'final_review_confirmed';
+  const checks = [
+    {
+      id: 'valid-intent-fields',
+      label: 'Intent fields are locally valid',
+      passed: validationSummary.every((check) => check.passed),
+      detail: 'Recipient, amount, expiry, and local approval prerequisites must be reviewable.',
+    },
+    {
+      id: 'frozen-intent-present',
+      label: 'Frozen intent snapshot is unchanged',
+      passed: frozenIntentPassed,
+      detail: 'Future wallet request must be generated from the same frozen fields reviewers saw.',
+    },
+    {
+      id: 'human-approval-recorded',
+      label: 'Human approval marker is present',
+      passed: humanApprovalPassed,
+      detail: 'Local approval is required but still is not wallet consent.',
+    },
+    {
+      id: 'final-confirmation-recorded',
+      label: 'Final local confirmation is recorded',
+      passed: finalConfirmationRecorded,
+      detail: 'A future send PR must require a fresh final review before opening a wallet prompt.',
+    },
+    {
+      id: 'unsigned-draft-consistent',
+      label: 'Unsigned transaction draft is consistent',
+      passed: transactionDraftConsistency.allPassed,
+      detail: 'Calldata, token target, chain, and native value must match the reviewed intent.',
+    },
+    {
+      id: 'wallet-chain-observed',
+      label: 'Wallet chain observed as Arc Testnet',
+      passed: walletPreview.chainMatches,
+      detail: 'This playground does not request accounts or switch chains; a future wallet PR must prove this live.',
+    },
+    {
+      id: 'wallet-request-still-disabled',
+      label: 'Wallet request remains disabled here',
+      passed: walletPreview.walletActionEnabled === false,
+      detail: 'This manifest cannot enable wallet send calls, signing, simulation, or broadcast.'
+    },
+  ];
+
+  return {
+    type: 'wallet_handoff_readiness_manifest',
+    localOnly: true,
+    walletRequestEnabled: false,
+    canRequestWallet: false,
+    sendPrRequired: true,
+    requiredBeforeSend: checks.map((check) => check.id),
+    allLocalPrerequisitesPassed: checks.every((check) => check.passed),
+    checks,
+  };
+}
+
+function renderWalletHandoffReadinessManifest(intent) {
+  const manifest = buildWalletHandoffReadinessManifest(intent);
+  walletHandoffReadinessList.replaceChildren(
+    ...manifest.checks.map((check) => {
+      const item = document.createElement('li');
+      const strong = document.createElement('strong');
+      strong.textContent = `${check.passed ? 'PASS' : 'BLOCK'} · ${check.label}`;
+      item.append(strong, document.createTextNode(` — ${check.detail}`));
+      return item;
+    })
+  );
+  walletHandoffReadinessJson.textContent = JSON.stringify({
+    walletRequestEnabled: manifest.walletRequestEnabled,
+    canRequestWallet: manifest.canRequestWallet,
+    sendPrRequired: manifest.sendPrRequired,
+    allLocalPrerequisitesPassed: manifest.allLocalPrerequisitesPassed,
+    requiredBeforeSend: manifest.requiredBeforeSend,
+  }, null, 2);
+}
+
 function hasFutureExpiry(expiry) {
   if (!expiry) return false;
   const expiryTime = new Date(expiry).getTime();
@@ -558,6 +643,7 @@ function buildSigningPreflightReport(intent) {
     unitPreview: buildUnitPreview(intent),
     unsignedTransactionDraft: buildUnsignedTransactionDraft(intent),
     transactionDraftConsistency: buildTransactionDraftConsistencyCheck(intent),
+    walletHandoffReadiness: buildWalletHandoffReadinessManifest(intent),
     validationSummary: buildValidationSummary(intent),
     walletPreview: getWalletPreviewState(intent),
     frozenIntent: frozenIntentSnapshot ? frozenIntentSnapshot.fields : null,
@@ -604,6 +690,11 @@ function buildSigningPreflightReport(intent) {
         required: true,
         note: 'Unsigned draft must decode back to reviewed intent fields before wallet handoff.',
       },
+      walletHandoffReadiness: {
+        passed: buildWalletHandoffReadinessManifest(intent).allLocalPrerequisitesPassed,
+        required: true,
+        note: 'Future send PR remains blocked until every handoff-readiness guard is satisfied.',
+      },
       finalConfirmation: {
         passed: finalConfirmationRecorded,
         required: true,
@@ -648,6 +739,7 @@ function render() {
   renderUnitPreview(intent);
   renderUnsignedTransactionDraft(intent);
   renderTransactionDraftConsistencyCheck(intent);
+  renderWalletHandoffReadinessManifest(intent);
   renderValidationSummary(intent);
   renderSigningPreflightReport(intent);
   renderFinalConfirmationPanel(intent);
