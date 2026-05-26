@@ -250,6 +250,13 @@
       <pre id="unsigned-transaction-draft" class="json-preview compact" aria-live="polite"></pre>
     </section>
 
+    <section class="card notice" id="draft-consistency-panel" aria-labelledby="draft-consistency-title">
+      <div class="eyebrow">Payload consistency check</div>
+      <h2 id="draft-consistency-title">Unsigned draft decodes back to intent</h2>
+      <p>This local verifier decodes the ERC-20 calldata and compares token target, native value, chain ID, recipient, and base units against the current reviewed intent before any future wallet handoff.</p>
+      <ul id="draft-consistency-list" class="mini-list" aria-live="polite"></ul>
+    </section>
+
     <section class="card danger" id="final-confirmation-panel" aria-labelledby="final-confirmation-title">
       <div class="eyebrow">Final review gate</div>
       <h2 id="final-confirmation-title">Final confirmation, still no transaction</h2>

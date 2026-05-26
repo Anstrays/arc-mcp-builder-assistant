@@ -25,6 +25,7 @@ const finalConfirmationCheckbox = document.querySelector('#final-confirmation-ch
 const finalConfirmationButton = document.querySelector('#final-confirmation-button');
 const finalConfirmationReasons = document.querySelector('#final-confirmation-reasons');
 const unsignedTransactionDraft = document.querySelector('#unsigned-transaction-draft');
+const draftConsistencyList = document.querySelector('#draft-consistency-list');
 
 const ARC_TESTNET_STATUS = Object.freeze({
   network: 'Arc Testnet',
@@ -215,6 +216,79 @@ function buildUnsignedTransactionDraft(intent) {
   };
 }
 
+function decodeErc20TransferCalldata(data) {
+  if (typeof data !== 'string' || !/^0xa9059cbb[0-9a-fA-F]{128}$/.test(data)) return null;
+  const recipientWord = data.slice(10, 74);
+  const amountWord = data.slice(74, 138);
+  const recipient = `0x${recipientWord.slice(24)}`.toLowerCase();
+  const amountBaseUnits = BigInt(`0x${amountWord}`).toString(10);
+  return {
+    method: 'transfer(address,uint256)',
+    recipient,
+    amountBaseUnits,
+  };
+}
+
+function buildTransactionDraftConsistencyCheck(intent) {
+  const draft = buildUnsignedTransactionDraft(intent);
+  const decodedCalldata = decodeErc20TransferCalldata(draft.data);
+  const expectedBaseUnits = formatUsdcBaseUnits(intent.amount);
+  const expectedRecipient = hasValidRecipient(intent.recipient) ? intent.recipient.toLowerCase() : null;
+  const checks = [
+    {
+      id: 'unsigned-only',
+      label: 'Unsigned-only guard',
+      passed: draft.unsignedOnly === true && draft.walletRequestEnabled === false,
+      detail: 'Draft cannot open a wallet request by itself.',
+    },
+    {
+      id: 'token-target',
+      label: 'Token target',
+      passed: draft.to === ARC_TESTNET_STATUS.erc20UsdcAddress,
+      detail: 'Transaction target remains the reviewed Arc Testnet USDC token address.',
+    },
+    {
+      id: 'native-value',
+      label: 'Native value',
+      passed: draft.value === '0x0',
+      detail: 'ERC-20 transfer uses zero native value.',
+    },
+    {
+      id: 'chain-id',
+      label: 'Arc Testnet chain',
+      passed: draft.chainId === ARC_TESTNET_STATUS.expectedChainIdDecimal && draft.chainIdHex === ARC_TESTNET_STATUS.expectedChainIdHex,
+      detail: 'Draft chain ID stays pinned to Arc Testnet constants.',
+    },
+    {
+      id: 'calldata-decodes',
+      label: 'Calldata decodes',
+      passed: Boolean(decodedCalldata),
+      detail: 'Data must decode as ERC-20 transfer(address,uint256).',
+    },
+    {
+      id: 'recipient-match',
+      label: 'Recipient match',
+      passed: Boolean(decodedCalldata) && decodedCalldata.recipient === expectedRecipient,
+      detail: 'Decoded calldata recipient must match the current intent recipient.',
+    },
+    {
+      id: 'amount-match',
+      label: 'Amount match',
+      passed: Boolean(decodedCalldata) && expectedBaseUnits !== 'invalid' && decodedCalldata.amountBaseUnits === expectedBaseUnits,
+      detail: 'Decoded calldata amount must match the 6-decimal USDC base units.',
+    },
+  ];
+
+  return {
+    type: 'local_unsigned_transaction_consistency_check',
+    localOnly: true,
+    walletRequestEnabled: false,
+    decodedCalldata,
+    allPassed: checks.every((check) => check.passed),
+    checks,
+  };
+}
+
 function renderUnitPreview(intent) {
   const preview = buildUnitPreview(intent);
   erc20BaseUnits.textContent = preview.baseUnits;
@@ -224,6 +298,19 @@ function renderUnitPreview(intent) {
 
 function renderUnsignedTransactionDraft(intent) {
   unsignedTransactionDraft.textContent = JSON.stringify(buildUnsignedTransactionDraft(intent), null, 2);
+}
+
+function renderTransactionDraftConsistencyCheck(intent) {
+  const consistencyCheck = buildTransactionDraftConsistencyCheck(intent);
+  draftConsistencyList.replaceChildren(
+    ...consistencyCheck.checks.map((check) => {
+      const item = document.createElement('li');
+      const strong = document.createElement('strong');
+      strong.textContent = `${check.passed ? 'PASS' : 'BLOCK'} · ${check.label}`;
+      item.append(strong, document.createTextNode(` — ${check.detail}`));
+      return item;
+    })
+  );
 }
 
 function hasFutureExpiry(expiry) {
@@ -470,6 +557,7 @@ function buildSigningPreflightReport(intent) {
     guardReasons: getWalletGuardReasons(intent),
     unitPreview: buildUnitPreview(intent),
     unsignedTransactionDraft: buildUnsignedTransactionDraft(intent),
+    transactionDraftConsistency: buildTransactionDraftConsistencyCheck(intent),
     validationSummary: buildValidationSummary(intent),
     walletPreview: getWalletPreviewState(intent),
     frozenIntent: frozenIntentSnapshot ? frozenIntentSnapshot.fields : null,
@@ -510,6 +598,11 @@ function buildSigningPreflightReport(intent) {
         passed: currentStatus === 'approved_local' || currentStatus === 'final_review_confirmed',
         required: true,
         note: 'Local approval is only a review marker, not wallet consent.',
+      },
+      transactionDraftConsistency: {
+        passed: buildTransactionDraftConsistencyCheck(intent).allPassed,
+        required: true,
+        note: 'Unsigned draft must decode back to reviewed intent fields before wallet handoff.',
       },
       finalConfirmation: {
         passed: finalConfirmationRecorded,
@@ -554,6 +647,7 @@ function render() {
   renderWalletGuardPanel(intent);
   renderUnitPreview(intent);
   renderUnsignedTransactionDraft(intent);
+  renderTransactionDraftConsistencyCheck(intent);
   renderValidationSummary(intent);
   renderSigningPreflightReport(intent);
   renderFinalConfirmationPanel(intent);

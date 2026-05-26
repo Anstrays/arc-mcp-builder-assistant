@@ -23,6 +23,7 @@ The preflight contract is allowed to contain only public or user-entered payment
 - amount in decimal USDC;
 - amount in ERC-20 base units;
 - unsigned ERC-20 transaction draft fields for review (`to`, `value`, `data`, decoded recipient, decoded amount);
+- transaction draft consistency checks that decode calldata back to reviewed fields;
 - memo / resource binding;
 - expiry;
 - guard reasons;
@@ -61,6 +62,7 @@ A future wallet adapter must render these fields before enabling any signing but
 | `transactionDraft.to` | reviewed Arc Testnet USDC token address | Block if transfer target differs from the reviewed token address. |
 | `transactionDraft.value` | `0x0` for ERC-20 transfer | Block native-value transfers for the first USDC send PR. |
 | `transactionDraft.data` | deterministic `transfer(address,uint256)` calldata | Block if decoded recipient or base units differ from the frozen intent. |
+| `transactionDraftConsistency.allPassed` | `true` before any later wallet handoff | Block if calldata cannot be decoded back to the reviewed recipient and amount. |
 | `intent.memo` | visible user-facing description | Block hidden memo/resource changes after review starts. |
 | `intent.expiry` | future timestamp | Block expired intents before signing. |
 | `approval.humanRequired` | `true` | Block any auto-submit or unattended spending path. |
@@ -108,6 +110,17 @@ The local playground or a future wallet-preview component should be able to prod
       "amountBaseUnits": "5000000"
     }
   },
+  "transactionDraftConsistency": {
+    "type": "local_unsigned_transaction_consistency_check",
+    "localOnly": true,
+    "walletRequestEnabled": false,
+    "allPassed": true,
+    "decodedCalldata": {
+      "method": "transfer(address,uint256)",
+      "recipient": "0x1111111111111111111111111111111111111111",
+      "amountBaseUnits": "5000000"
+    }
+  },
   "approval": {
     "humanRequired": true,
     "status": "ready_for_review",
@@ -141,6 +154,7 @@ The first wallet-related PR should still avoid sending funds. It is acceptable w
 - [x] Recipient, amount, token address, chain ID, memo, and expiry are frozen once review starts.
 - [x] Final local confirmation is explicit and still does not enable a transaction request.
 - [x] Unsigned transaction draft is inspectable and cannot trigger a wallet request.
+- [x] Unsigned transaction draft consistency is checked by decoding calldata back to reviewed fields.
 - [x] The app cannot call `sendTransaction`, `eth_sendTransaction`, or equivalent write APIs.
 - [x] Tests prove that the no-broadcast path remains default.
 - [x] The local playground remains usable when no wallet is present.
@@ -172,4 +186,4 @@ Before approving any wallet PR, verify:
 
 ## Current status
 
-This repository currently implements the safe local side of the contract: deterministic amount parsing, optional read-only injected-wallet preview state, explicit wrong-chain/provider/account guard reasons, frozen reviewed intent fields, a copyable preflight report, and disabled wallet actions. Real wallet permission requests, signing, and transaction submission remain future work and must land in separate reviewed PRs.
+This repository currently implements the safe local side of the contract: deterministic amount parsing, optional read-only injected-wallet preview state, explicit wrong-chain/provider/account guard reasons, frozen reviewed intent fields, unsigned transaction draft generation, calldata consistency checks, a copyable preflight report, and disabled wallet actions. Real wallet permission requests, signing, and transaction submission remain future work and must land in separate reviewed PRs.
