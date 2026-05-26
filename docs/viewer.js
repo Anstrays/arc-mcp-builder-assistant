@@ -12,6 +12,7 @@ const PAGES = [
   { id: 'receipt-verifier-playground.md', path: './receipt-verifier-playground.md', githubPath: 'docs/receipt-verifier-playground.md', label: 'Receipt verifier playground', group: 'Builder kit' },
   { id: 'transaction-status-playground.md', path: './transaction-status-playground.md', githubPath: 'docs/transaction-status-playground.md', label: 'Transaction status playground', group: 'Builder kit' },
   { id: 'x402-mcp-manifest.md', path: './x402-mcp-manifest.md', githubPath: 'docs/x402-mcp-manifest.md', label: 'x402 MCP manifest', group: 'Builder kit' },
+  { id: 'x402-demo-transcript.md', path: './x402-demo-transcript.md', githubPath: 'docs/x402-demo-transcript.md', label: 'x402 demo transcript', group: 'Builder kit' },
   { id: 'arc-production-deployment.md', path: './arc-production-deployment.md', githubPath: 'docs/arc-production-deployment.md', label: 'Arc production deployment', group: 'Builder kit' },
   { id: 'prompt-library.md', path: './prompt-library.md', githubPath: 'docs/prompt-library.md', label: 'Prompt library', group: 'Builder kit' },
   { id: 'agent-identity-erc8004.md', path: './agent-identity-erc8004.md', githubPath: 'docs/agent-identity-erc8004.md', label: 'Agent identity notes', group: 'Builder kit' },

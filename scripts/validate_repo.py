@@ -53,6 +53,7 @@ REQUIRED_FILES = [
     "docs/receipt-verifier-playground.md",
     "docs/transaction-status-playground.md",
     "docs/x402-mcp-manifest.md",
+    "docs/x402-demo-transcript.md",
     "docs/arc-production-deployment.md",
     "docs/prompt-library.md",
     "docs/arc-builder-readiness-checklist.md",

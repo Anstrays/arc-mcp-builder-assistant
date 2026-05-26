@@ -65,6 +65,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/agent-commerce-use-cases.md`](./docs/agent-commerce-use-cases.md) — practical use cases for API-call payments, creator payouts, job escrow, AI-service marketplace flows, and report agents.
 - [`docs/job-escrow-demo.md`](./docs/job-escrow-demo.md) — ERC-8183-style flow for posting jobs, funding escrow, reviewing agent output, and releasing stablecoin payouts.
 - [`docs/x402-mcp-manifest.md`](./docs/x402-mcp-manifest.md) — machine-readable paid-agent manifest and JSON-RPC tool surface for the local x402 boundary.
+- [`docs/x402-demo-transcript.md`](./docs/x402-demo-transcript.md) — copy-paste local `402 -> proof -> protected response` transcript with explicit no-wallet/no-settlement guardrails.
 - [`docs/arc-production-deployment.md`](./docs/arc-production-deployment.md) — secret-free production deployment runbook, live-smoke checklist, and Circle Gateway/x402 verifier handoff.
 - [`docs/mcp-query-examples.md`](./docs/mcp-query-examples.md) — prompts that force AI tools to separate retrieved Arc facts, implementation suggestions, and unknowns.
 - [`docs/arc-house-submission.md`](./docs/arc-house-submission.md) — ready-to-edit builder update for Arc community or Arc House-style submissions.
@@ -111,7 +112,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - [x] Add an Arc Discord introduction pack for builder onboarding and public updates.
 - [x] Add a local receipt verifier playground for simulated Arc payment receipt review.
 - [x] Add a read-only Arc Testnet transaction status playground for hash lookup without signing or broadcast.
-- [x] Add a secret-free Arc/x402 production deployment runbook, `.env.example` placeholders, and live-smoke script.
+- [x] Add a secret-free Arc/x402 production deployment runbook, `.env.example` placeholders, live-smoke script, and local demo transcript.
 - [ ] Share build log in Arc community.
 
 ### Phase 2 — Working prototype
@@ -216,6 +217,7 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 │   ├── receipt-verifier-playground.md
 │   ├── transaction-status-playground.md
 │   ├── x402-mcp-manifest.md
+│   ├── x402-demo-transcript.md
 │   ├── arc-builder-readiness-checklist.md
 │   ├── arc-testnet-integration-runbook.md
 │   ├── agent-commerce-use-cases.md
