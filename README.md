@@ -62,6 +62,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/arc-builder-readiness-checklist.md`](./docs/arc-builder-readiness-checklist.md) — pre-submit checklist for docs grounding, payment safety, UX states, repo quality, and public proof-of-work.
 - [`docs/arc-testnet-integration-runbook.md`](./docs/arc-testnet-integration-runbook.md) — safe sequence for the next real Arc Testnet payment-intent integration.
 - [`docs/arc-wallet-integration-notes.md`](./docs/arc-wallet-integration-notes.md) — Circle Wallets vs browser-wallet decision notes for the next Phase 2 integration slice.
+- [`docs/wallet-preflight-contract.md`](./docs/wallet-preflight-contract.md) — secret-free wallet preflight contract for the next Arc Testnet wallet preview/send PRs.
 - [`docs/agent-commerce-use-cases.md`](./docs/agent-commerce-use-cases.md) — practical use cases for API-call payments, creator payouts, job escrow, AI-service marketplace flows, and report agents.
 - [`docs/job-escrow-demo.md`](./docs/job-escrow-demo.md) — ERC-8183-style flow for posting jobs, funding escrow, reviewing agent output, and releasing stablecoin payouts.
 - [`docs/x402-mcp-manifest.md`](./docs/x402-mcp-manifest.md) — machine-readable paid-agent manifest and JSON-RPC tool surface for the local x402 boundary.
@@ -131,6 +132,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - [x] Add a read-only transaction-status playground (`examples/transaction-status-playground/index.html`) with notes in `docs/transaction-status-playground.md`.
 - [x] Add a machine-readable x402 MCP-style manifest to the local paid-agent boundary (`docs/x402-mcp-manifest.md`).
 - [x] Add dependency-free JSON-RPC/MCP-style stdio mode and JSON CLI helpers for the local paid-agent tools.
+- [x] Add a secret-free wallet preflight contract before any browser-wallet or send flow.
 - Add a real wallet-submission tutorial after wallet integration exists.
 
 ### Phase 3 — Agent commerce starter kit
@@ -220,6 +222,7 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 │   ├── x402-demo-transcript.md
 │   ├── arc-builder-readiness-checklist.md
 │   ├── arc-testnet-integration-runbook.md
+│   ├── wallet-preflight-contract.md
 │   ├── agent-commerce-use-cases.md
 │   ├── job-escrow-demo.md
 │   ├── mcp-query-examples.md
