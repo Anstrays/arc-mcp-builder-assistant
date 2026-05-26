@@ -153,6 +153,30 @@ def test_unsigned_transaction_draft_preview_is_local_only() -> None:
         assert_contains(js, marker, JS)
 
 
+def test_unsigned_transaction_draft_consistency_check_decodes_payload() -> None:
+    html = read(HTML)
+    js = read(JS)
+
+    for marker in (
+        'id="draft-consistency-panel"',
+        'Payload consistency check',
+        'Unsigned draft decodes back to intent',
+        'id="draft-consistency-list"',
+    ):
+        assert_contains(html, marker, HTML)
+
+    for marker in (
+        "function decodeErc20TransferCalldata(data)",
+        "function buildTransactionDraftConsistencyCheck(intent)",
+        "type: 'local_unsigned_transaction_consistency_check'",
+        "decodedCalldata.recipient === expectedRecipient",
+        "decodedCalldata.amountBaseUnits === expectedBaseUnits",
+        "renderTransactionDraftConsistencyCheck(intent)",
+        "transactionDraftConsistency: buildTransactionDraftConsistencyCheck(intent)",
+    ):
+        assert_contains(js, marker, JS)
+
+
 def test_signing_preflight_report_is_rendered_without_wallet_actions() -> None:
     html = read(HTML)
     js = read(JS)

@@ -71,7 +71,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/mcp-query-examples.md`](./docs/mcp-query-examples.md) — prompts that force AI tools to separate retrieved Arc facts, implementation suggestions, and unknowns.
 - [`docs/arc-house-submission.md`](./docs/arc-house-submission.md) — ready-to-edit builder update for Arc community or Arc House-style submissions.
 - [`docs/build-log.md`](./docs/build-log.md) — public milestone note and community-update draft for sharing the current local-first builder kit.
-- [`examples/payment-intent-playground/`](./examples/payment-intent-playground/) — local-only interactive playground for editing a payment request, inspecting live JSON, viewing Arc Testnet read-only status constants, previewing injected wallet provider/address/chain state without requesting permissions, freezing reviewed intent fields, recording final local confirmation, reviewing an unsigned ERC-20 transaction draft, reviewing disabled wallet guard reasons, generating/copying a manual signing preflight report, and simulating approval/submission states.
+- [`examples/payment-intent-playground/`](./examples/payment-intent-playground/) — local-only interactive playground for editing a payment request, inspecting live JSON, viewing Arc Testnet read-only status constants, previewing injected wallet provider/address/chain state without requesting permissions, freezing reviewed intent fields, recording final local confirmation, reviewing an unsigned ERC-20 transaction draft and local calldata consistency check, reviewing disabled wallet guard reasons, generating/copying a manual signing preflight report, and keeping transaction requests disabled.
 - [`examples/transaction-status-playground/`](./examples/transaction-status-playground/) — read-only Arc Testnet transaction hash lookup with explicit `not_checked`, `pending`, `confirmed`, `failed`, and `unknown` states.
 - [`examples/job-escrow-simulator/`](./examples/job-escrow-simulator/) — local-only ERC-8183-style job escrow simulator for posting, accepting, funding, submitting, and approving a payout.
 - [`examples/x402-local-challenge-server/`](./examples/x402-local-challenge-server/) — dependency-free local HTTP 402 challenge server with MCP-style manifest, JSON-RPC stdio tool mode, JSON CLI helpers, and a swappable verifier boundary for future Circle/x402 settlement work.
@@ -136,6 +136,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - [x] Add a read-only wallet preview guard UI without requesting permissions, signing, or broadcasting.
 - [x] Add final local confirmation UX while keeping transaction requests disabled.
 - [x] Add an unsigned ERC-20 transaction draft preview without wallet requests.
+- [x] Add a local calldata consistency check for the unsigned transaction draft.
 - Add a real wallet-submission tutorial after wallet integration exists.
 
 ### Phase 3 — Agent commerce starter kit
