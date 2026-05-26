@@ -59,6 +59,7 @@ A future wallet adapter must render these fields before enabling any signing but
 | `intent.memo` | visible user-facing description | Block hidden memo/resource changes after review starts. |
 | `intent.expiry` | future timestamp | Block expired intents before signing. |
 | `approval.humanRequired` | `true` | Block any auto-submit or unattended spending path. |
+| `approval.finalConfirmation` | local-only marker before any later wallet request | Block unless user confirms the frozen fields immediately before wallet handoff. |
 | `safety.transactionBroadcast` | `false` for preview PR, `true` only in a later send PR after wallet confirmation | Block any background broadcast. |
 
 ## JSON shape
@@ -91,7 +92,11 @@ The local playground or a future wallet-preview component should be able to prod
   },
   "approval": {
     "humanRequired": true,
-    "status": "ready_for_review"
+    "status": "ready_for_review",
+    "finalConfirmation": {
+      "recorded": false,
+      "transactionRequestEnabled": false
+    }
   },
   "safety": {
     "walletConnected": false,
@@ -116,6 +121,7 @@ The first wallet-related PR should still avoid sending funds. It is acceptable w
 - [x] Connected address is displayed before review when an injected wallet exposes it without a permission request.
 - [x] The preflight report can be copied without network writes.
 - [x] Recipient, amount, token address, chain ID, memo, and expiry are frozen once review starts.
+- [x] Final local confirmation is explicit and still does not enable a transaction request.
 - [x] The app cannot call `sendTransaction`, `eth_sendTransaction`, or equivalent write APIs.
 - [x] Tests prove that the no-broadcast path remains default.
 - [x] The local playground remains usable when no wallet is present.

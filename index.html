@@ -274,7 +274,7 @@ Arc Testnet · USDC · ArcScan status</code></pre>
           </article>
           <article class="card">
             <h3>Payment-intent playground</h3>
-            <p>Local-only interactive app for editing a payment request, inspecting live JSON, previewing wallet provider/address/chain state without permissions, freezing reviewed fields, and simulating explicit human approval states.</p>
+            <p>Local-only interactive app for editing a payment request, inspecting live JSON, previewing wallet provider/address/chain state without permissions, freezing reviewed fields, recording final local confirmation, and simulating explicit human approval states.</p>
             <span class="meta"><a href="./examples/payment-intent-playground/">examples/payment-intent-playground →</a></span>
           </article>
           <article class="card">
@@ -344,7 +344,7 @@ Arc Testnet · USDC · ArcScan status</code></pre>
           </article>
           <article class="card">
             <h3>Wallet preflight contract</h3>
-            <p>Secret-free review contract for future Arc Testnet wallet preview and send PRs: chain gating, USDC units, frozen intent fields, and human approval.</p>
+            <p>Secret-free review contract for future Arc Testnet wallet preview and send PRs: chain gating, USDC units, frozen intent fields, human approval, and final confirmation.</p>
             <span class="meta"><a href="./docs/view.html#wallet-preflight-contract.md">docs/wallet-preflight-contract.md →</a></span>
           </article>
           <article class="card">
@@ -459,7 +459,8 @@ Arc Testnet · USDC · ArcScan status</code></pre>
           <li>Done: added a secret-free Arc/x402 production deployment runbook, placeholder env contract, challenge-only live smoke script, and local demo transcript.</li>
           <li>Done: added a secret-free wallet preflight contract for future Arc Testnet wallet preview/send PRs.</li>
           <li>Done: added read-only wallet preview guard UI with provider/address/chain visibility, frozen intent fields, and no wallet permission requests.</li>
-          <li>Next: add explicit final-confirmation UX for a later reviewed testnet send PR while keeping transaction requests disabled.</li>
+          <li>Done: added final local confirmation UX while keeping transaction requests disabled.</li>
+          <li>Next: verify current wallet/send details and prepare a separate reviewed testnet send PR only after all guards pass.</li>
         </ul>
       </div>
     </section>

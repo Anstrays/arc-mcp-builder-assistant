@@ -21,6 +21,9 @@ const copyPreflightButton = document.querySelector('#copy-preflight-report');
 const erc20BaseUnits = document.querySelector('#erc20-base-units');
 const erc20Decimals = document.querySelector('#erc20-decimals');
 const nativeGasDecimals = document.querySelector('#native-gas-decimals');
+const finalConfirmationCheckbox = document.querySelector('#final-confirmation-checkbox');
+const finalConfirmationButton = document.querySelector('#final-confirmation-button');
+const finalConfirmationReasons = document.querySelector('#final-confirmation-reasons');
 
 const ARC_TESTNET_STATUS = Object.freeze({
   network: 'Arc Testnet',
@@ -56,6 +59,11 @@ const STATUS_STATES = Object.freeze([
     description: 'Human approved the local exercise only.',
   },
   {
+    id: 'final_review_confirmed',
+    label: 'Final review confirmed',
+    description: 'Final local confirmation is recorded without a wallet request.',
+  },
+  {
     id: 'blocked_wallet_unavailable',
     label: 'Wallet blocked',
     description: 'Signing remains disabled by guardrails.',
@@ -69,6 +77,7 @@ const initialEvents = [
 let currentStatus = 'draft';
 let events = [...initialEvents];
 let frozenIntentSnapshot = null;
+let finalConfirmationRecorded = false;
 
 function readIntent() {
   const data = new FormData(form);
@@ -348,6 +357,54 @@ function renderValidationSummary(intent) {
   );
 }
 
+function getFinalConfirmationReasons(intent) {
+  const walletPreview = getWalletPreviewState(intent);
+  const reasons = [];
+
+  if (!isIntentReadyForReview(intent)) {
+    reasons.push('Intent is not review-ready: fix recipient, amount, and expiry first.');
+  }
+  if (!frozenIntentSnapshot) {
+    reasons.push('Frozen intent missing: prepare the intent before final confirmation.');
+  }
+  if (hasFrozenIntentChanged(intent)) {
+    reasons.push('Frozen intent changed: restart review before final confirmation.');
+  }
+  if (currentStatus !== 'approved_local' && currentStatus !== 'final_review_confirmed') {
+    reasons.push('Local approval missing: click Approve manually before final confirmation.');
+  }
+  if (!finalConfirmationCheckbox.checked) {
+    reasons.push('Final review checkbox is not checked.');
+  }
+  if (!walletPreview.chainMatches) {
+    reasons.push('Arc Testnet chain is not observed; this remains a no-transaction confirmation.');
+  }
+  reasons.push('Transaction request remains disabled until a separate reviewed testnet send PR.');
+
+  return reasons;
+}
+
+function canRecordFinalConfirmation(intent) {
+  return isIntentReadyForReview(intent)
+    && Boolean(frozenIntentSnapshot)
+    && !hasFrozenIntentChanged(intent)
+    && currentStatus === 'approved_local'
+    && finalConfirmationCheckbox.checked;
+}
+
+function renderFinalConfirmationPanel(intent) {
+  const canConfirm = canRecordFinalConfirmation(intent);
+  finalConfirmationButton.disabled = !canConfirm;
+  finalConfirmationButton.setAttribute('aria-disabled', canConfirm ? 'false' : 'true');
+  finalConfirmationReasons.replaceChildren(
+    ...getFinalConfirmationReasons(intent).map((reason) => {
+      const item = document.createElement('li');
+      item.textContent = reason;
+      return item;
+    })
+  );
+}
+
 function buildSigningPreflightReport(intent) {
   return {
     walletAction: 'blocked',
@@ -358,6 +415,13 @@ function buildSigningPreflightReport(intent) {
     validationSummary: buildValidationSummary(intent),
     walletPreview: getWalletPreviewState(intent),
     frozenIntent: frozenIntentSnapshot ? frozenIntentSnapshot.fields : null,
+    finalConfirmation: {
+      recorded: finalConfirmationRecorded,
+      checkboxChecked: finalConfirmationCheckbox.checked,
+      canConfirmLocally: canRecordFinalConfirmation(intent),
+      reasons: getFinalConfirmationReasons(intent),
+      transactionRequestEnabled: false,
+    },
     checks: {
       chainGate: {
         expectedChainId: ARC_TESTNET_STATUS.expectedChainIdDecimal,
@@ -385,9 +449,14 @@ function buildSigningPreflightReport(intent) {
         note: 'Future wallet PRs must sign exactly the frozen reviewed fields.',
       },
       humanApproval: {
-        passed: currentStatus === 'approved_local',
+        passed: currentStatus === 'approved_local' || currentStatus === 'final_review_confirmed',
         required: true,
         note: 'Local approval is only a review marker, not wallet consent.',
+      },
+      finalConfirmation: {
+        passed: finalConfirmationRecorded,
+        required: true,
+        note: 'Final confirmation is local UX only; it never enables a transaction request.',
       },
     },
   };
@@ -428,6 +497,7 @@ function render() {
   renderUnitPreview(intent);
   renderValidationSummary(intent);
   renderSigningPreflightReport(intent);
+  renderFinalConfirmationPanel(intent);
   markStatusStep(currentStatus);
   statusLog.replaceChildren(
     ...events.map(([status, message]) => {
@@ -441,6 +511,12 @@ function render() {
 }
 
 form.addEventListener('input', () => {
+  finalConfirmationRecorded = false;
+  render();
+});
+
+finalConfirmationCheckbox.addEventListener('change', () => {
+  finalConfirmationRecorded = false;
   render();
 });
 
@@ -461,7 +537,18 @@ approveButton.addEventListener('click', () => {
     appendEvent('draft', 'Approval blocked until the current intent is prepared and frozen again.');
     return;
   }
+  finalConfirmationRecorded = false;
   appendEvent('approved_local', 'Human approval was recorded as local UI state only for the frozen intent.');
+});
+
+finalConfirmationButton.addEventListener('click', () => {
+  const intent = readIntent();
+  if (!canRecordFinalConfirmation(intent)) {
+    appendEvent('approved_local', 'Final confirmation stayed blocked until the frozen reviewed intent passes every local gate.');
+    return;
+  }
+  finalConfirmationRecorded = true;
+  appendEvent('final_review_confirmed', 'Final local confirmation recorded. Transaction requests remain disabled.');
 });
 
 submitButton.addEventListener('click', () => {
@@ -476,7 +563,9 @@ resetButton.addEventListener('click', () => {
   currentStatus = 'draft';
   events = [...initialEvents];
   frozenIntentSnapshot = null;
+  finalConfirmationRecorded = false;
   form.reset();
+  finalConfirmationCheckbox.checked = false;
   render();
 });
 
