@@ -59,6 +59,7 @@ REQUIRED_FILES = [
     "docs/arc-builder-readiness-checklist.md",
     "docs/arc-testnet-integration-runbook.md",
     "docs/arc-wallet-integration-notes.md",
+    "docs/wallet-preflight-contract.md",
     "docs/agent-commerce-use-cases.md",
     "docs/job-escrow-demo.md",
     "docs/mcp-query-examples.md",
