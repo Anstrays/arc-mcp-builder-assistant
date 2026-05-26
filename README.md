@@ -71,7 +71,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/mcp-query-examples.md`](./docs/mcp-query-examples.md) — prompts that force AI tools to separate retrieved Arc facts, implementation suggestions, and unknowns.
 - [`docs/arc-house-submission.md`](./docs/arc-house-submission.md) — ready-to-edit builder update for Arc community or Arc House-style submissions.
 - [`docs/build-log.md`](./docs/build-log.md) — public milestone note and community-update draft for sharing the current local-first builder kit.
-- [`examples/payment-intent-playground/`](./examples/payment-intent-playground/) — local-only interactive playground for editing a payment request, inspecting live JSON, viewing Arc Testnet read-only status constants, reviewing disabled wallet guard reasons, generating/copying a manual signing preflight report, and simulating approval/submission states.
+- [`examples/payment-intent-playground/`](./examples/payment-intent-playground/) — local-only interactive playground for editing a payment request, inspecting live JSON, viewing Arc Testnet read-only status constants, previewing injected wallet provider/address/chain state without requesting permissions, freezing reviewed intent fields, reviewing disabled wallet guard reasons, generating/copying a manual signing preflight report, and simulating approval/submission states.
 - [`examples/transaction-status-playground/`](./examples/transaction-status-playground/) — read-only Arc Testnet transaction hash lookup with explicit `not_checked`, `pending`, `confirmed`, `failed`, and `unknown` states.
 - [`examples/job-escrow-simulator/`](./examples/job-escrow-simulator/) — local-only ERC-8183-style job escrow simulator for posting, accepting, funding, submitting, and approving a payout.
 - [`examples/x402-local-challenge-server/`](./examples/x402-local-challenge-server/) — dependency-free local HTTP 402 challenge server with MCP-style manifest, JSON-RPC stdio tool mode, JSON CLI helpers, and a swappable verifier boundary for future Circle/x402 settlement work.
@@ -133,6 +133,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - [x] Add a machine-readable x402 MCP-style manifest to the local paid-agent boundary (`docs/x402-mcp-manifest.md`).
 - [x] Add dependency-free JSON-RPC/MCP-style stdio mode and JSON CLI helpers for the local paid-agent tools.
 - [x] Add a secret-free wallet preflight contract before any browser-wallet or send flow.
+- [x] Add a read-only wallet preview guard UI without requesting permissions, signing, or broadcasting.
 - Add a real wallet-submission tutorial after wallet integration exists.
 
 ### Phase 3 — Agent commerce starter kit

@@ -196,6 +196,20 @@
       <div class="eyebrow">Wallet guardrails</div>
       <h2 id="wallet-guard-title">Wallet action unavailable</h2>
       <p>Signing stays disabled until a separate testnet-only wallet PR proves every guard. The current playground only explains why a real wallet action is blocked.</p>
+      <div class="metric-grid" aria-label="Read-only wallet preview state">
+        <div class="metric">
+          <span>Provider</span>
+          <strong id="wallet-provider-state">Not detected</strong>
+        </div>
+        <div class="metric">
+          <span>Connected address</span>
+          <strong id="wallet-address-state">Not requested</strong>
+        </div>
+        <div class="metric">
+          <span>Chain gate</span>
+          <strong id="wallet-chain-state">Blocked</strong>
+        </div>
+      </div>
       <button type="button" id="wallet-action-button" disabled aria-disabled="true">Connect wallet / sign intent disabled</button>
       <ul id="wallet-guard-reasons" class="mini-list" aria-live="polite"></ul>
     </section>

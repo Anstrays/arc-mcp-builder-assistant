@@ -11,6 +11,9 @@ const arcRpcUrl = document.querySelector('#arc-rpc-url');
 const arcReadonlyState = document.querySelector('#arc-readonly-state');
 const arcSafetyJson = document.querySelector('#arc-safety-json');
 const walletGuardReasons = document.querySelector('#wallet-guard-reasons');
+const walletProviderState = document.querySelector('#wallet-provider-state');
+const walletAddressState = document.querySelector('#wallet-address-state');
+const walletChainState = document.querySelector('#wallet-chain-state');
 const validationSummaryList = document.querySelector('#validation-summary-list');
 const statusStateList = document.querySelector('#status-state-list');
 const signingPreflightReport = document.querySelector('#signing-preflight-report');
@@ -65,6 +68,7 @@ const initialEvents = [
 
 let currentStatus = 'draft';
 let events = [...initialEvents];
+let frozenIntentSnapshot = null;
 
 function readIntent() {
   const data = new FormData(form);
@@ -91,6 +95,8 @@ function readIntent() {
       backendCalls: false,
       autonomousSpending: false,
       humanApprovalRequired: true,
+      walletPreviewOnly: true,
+      walletAdapterFeatureFlag: false,
     },
   };
 
@@ -160,12 +166,76 @@ function hasFutureExpiry(expiry) {
   return Number.isFinite(expiryTime) && expiryTime > Date.now();
 }
 
+function normalizeIntentForFreeze(intent) {
+  return JSON.stringify({
+    recipient: intent.recipient,
+    asset: intent.asset,
+    amount: intent.amount,
+    memo: intent.memo,
+    expiry: intent.expiry,
+    chainId: ARC_TESTNET_STATUS.expectedChainIdDecimal,
+    assetAddress: ARC_TESTNET_STATUS.erc20UsdcAddress,
+    assetDecimals: ARC_TESTNET_STATUS.erc20UsdcDecimals,
+    baseUnits: formatUsdcBaseUnits(intent.amount),
+  });
+}
+
+function freezeIntentForReview(intent) {
+  frozenIntentSnapshot = {
+    frozenAt: new Date().toISOString(),
+    normalizedIntent: normalizeIntentForFreeze(intent),
+    fields: {
+      recipient: intent.recipient,
+      asset: intent.asset,
+      amount: intent.amount,
+      memo: intent.memo,
+      expiry: intent.expiry,
+      chainId: ARC_TESTNET_STATUS.expectedChainIdDecimal,
+      chainIdHex: ARC_TESTNET_STATUS.expectedChainIdHex,
+      assetAddress: ARC_TESTNET_STATUS.erc20UsdcAddress,
+      assetDecimals: ARC_TESTNET_STATUS.erc20UsdcDecimals,
+      baseUnits: formatUsdcBaseUnits(intent.amount),
+    },
+  };
+}
+
+function hasFrozenIntentChanged(intent) {
+  if (!frozenIntentSnapshot) return false;
+  return frozenIntentSnapshot.normalizedIntent !== normalizeIntentForFreeze(intent);
+}
+
+function getInjectedWalletProvider() {
+  return globalThis.ethereum || null;
+}
+
+function getWalletPreviewState(intent) {
+  const provider = getInjectedWalletProvider();
+  const chainId = provider && typeof provider.chainId === 'string' ? provider.chainId.toLowerCase() : null;
+  const selectedAddress = provider && typeof provider.selectedAddress === 'string' ? provider.selectedAddress : '';
+  const chainMatches = chainId === ARC_TESTNET_STATUS.expectedChainIdHex;
+  return {
+    mode: 'read-only wallet preview',
+    providerDetected: Boolean(provider),
+    requestMethodsCalled: false,
+    selectedAddress: selectedAddress || null,
+    connectedAddressKnown: hasValidRecipient(selectedAddress),
+    observedChainIdHex: chainId,
+    expectedChainIdHex: ARC_TESTNET_STATUS.expectedChainIdHex,
+    expectedChainIdDecimal: ARC_TESTNET_STATUS.expectedChainIdDecimal,
+    chainMatches,
+    frozenIntentPresent: Boolean(frozenIntentSnapshot),
+    frozenIntentChanged: hasFrozenIntentChanged(intent),
+    walletActionEnabled: false,
+  };
+}
+
 function getWalletGuardReasons(intent) {
   const reasons = [
     'Wrong chain: expected Arc Testnet chain ID 5042002 (0x4cef52).',
     'RPC unavailable: no live browser RPC probe is enabled in this local-only demo.',
     'Unverified docs/constants: re-check Arc MCP/docs before any signing PR.',
     'User approval required: real signing must open an external wallet confirmation.',
+    'Wallet adapter feature flag is off: this UI only previews provider/address/chain state.',
   ];
 
   if (!hasValidRecipient(intent.recipient)) {
@@ -177,11 +247,27 @@ function getWalletGuardReasons(intent) {
   if (!hasFutureExpiry(intent.expiry)) {
     reasons.push('Expired intent: choose a future expiry before enabling wallet review.');
   }
+  const walletPreview = getWalletPreviewState(intent);
+  if (!walletPreview.providerDetected) {
+    reasons.push('Wallet provider not detected: no injected browser wallet was observed.');
+  } else if (!walletPreview.connectedAddressKnown) {
+    reasons.push('Wallet account unknown: this guard does not request accounts or permissions.');
+  }
+  if (walletPreview.observedChainIdHex && !walletPreview.chainMatches) {
+    reasons.push(`Wrong wallet chain observed: expected ${ARC_TESTNET_STATUS.expectedChainIdHex}, saw ${walletPreview.observedChainIdHex}.`);
+  }
+  if (walletPreview.frozenIntentChanged) {
+    reasons.push('Frozen intent changed: restart review before any future wallet action.');
+  }
 
   return reasons;
 }
 
 function renderWalletGuardPanel(intent) {
+  const walletPreview = getWalletPreviewState(intent);
+  walletProviderState.textContent = walletPreview.providerDetected ? 'Detected / read-only' : 'Not detected';
+  walletAddressState.textContent = walletPreview.selectedAddress || 'Not requested';
+  walletChainState.textContent = walletPreview.chainMatches ? 'Arc Testnet observed / still disabled' : 'Blocked';
   const reasons = getWalletGuardReasons(intent);
   walletGuardReasons.replaceChildren(
     ...reasons.map((reason) => {
@@ -270,6 +356,8 @@ function buildSigningPreflightReport(intent) {
     guardReasons: getWalletGuardReasons(intent),
     unitPreview: buildUnitPreview(intent),
     validationSummary: buildValidationSummary(intent),
+    walletPreview: getWalletPreviewState(intent),
+    frozenIntent: frozenIntentSnapshot ? frozenIntentSnapshot.fields : null,
     checks: {
       chainGate: {
         expectedChainId: ARC_TESTNET_STATUS.expectedChainIdDecimal,
@@ -289,6 +377,12 @@ function buildSigningPreflightReport(intent) {
       expiryWindow: {
         passed: hasFutureExpiry(intent.expiry),
         value: intent.expiry || null,
+      },
+      frozenIntent: {
+        passed: Boolean(frozenIntentSnapshot) && !hasFrozenIntentChanged(intent),
+        present: Boolean(frozenIntentSnapshot),
+        changedAfterFreeze: hasFrozenIntentChanged(intent),
+        note: 'Future wallet PRs must sign exactly the frozen reviewed fields.',
       },
       humanApproval: {
         passed: currentStatus === 'approved_local',
@@ -354,14 +448,20 @@ prepareButton.addEventListener('click', () => {
   const intent = readIntent();
   const nextStatus = nextStatusAfterPrepare(intent);
   if (nextStatus === 'ready_for_review') {
-    appendEvent('ready_for_review', 'Agent prepared a reviewable intent object. No wallet prompt was opened.');
+    freezeIntentForReview(intent);
+    appendEvent('ready_for_review', 'Agent prepared and froze a reviewable intent object. No wallet prompt was opened.');
     return;
   }
   appendEvent('draft', 'Intent needs valid recipient, amount, and future expiry before review.');
 });
 
 approveButton.addEventListener('click', () => {
-  appendEvent('approved_local', 'Human approval was recorded as local UI state only.');
+  const intent = readIntent();
+  if (!frozenIntentSnapshot || hasFrozenIntentChanged(intent)) {
+    appendEvent('draft', 'Approval blocked until the current intent is prepared and frozen again.');
+    return;
+  }
+  appendEvent('approved_local', 'Human approval was recorded as local UI state only for the frozen intent.');
 });
 
 submitButton.addEventListener('click', () => {
@@ -375,6 +475,7 @@ copyPreflightButton.addEventListener('click', () => {
 resetButton.addEventListener('click', () => {
   currentStatus = 'draft';
   events = [...initialEvents];
+  frozenIntentSnapshot = null;
   form.reset();
   render();
 });
