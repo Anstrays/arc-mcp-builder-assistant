@@ -24,6 +24,7 @@ const nativeGasDecimals = document.querySelector('#native-gas-decimals');
 const finalConfirmationCheckbox = document.querySelector('#final-confirmation-checkbox');
 const finalConfirmationButton = document.querySelector('#final-confirmation-button');
 const finalConfirmationReasons = document.querySelector('#final-confirmation-reasons');
+const unsignedTransactionDraft = document.querySelector('#unsigned-transaction-draft');
 
 const ARC_TESTNET_STATUS = Object.freeze({
   network: 'Arc Testnet',
@@ -162,11 +163,67 @@ function buildUnitPreview(intent) {
   };
 }
 
+function toPaddedHexFromDecimalString(decimalString) {
+  if (!/^(?:0|[1-9]\d*)$/.test(decimalString)) return null;
+  return BigInt(decimalString).toString(16).padStart(64, '0');
+}
+
+function buildErc20TransferCalldata(intent) {
+  if (!hasValidRecipient(intent.recipient) || !hasValidUsdcAmount(intent.amount)) return null;
+  const baseUnits = formatUsdcBaseUnits(intent.amount);
+  const paddedRecipient = intent.recipient.toLowerCase().replace(/^0x/, '').padStart(64, '0');
+  const paddedAmount = toPaddedHexFromDecimalString(baseUnits);
+  if (!paddedAmount) return null;
+  return `0xa9059cbb${paddedRecipient}${paddedAmount}`;
+}
+
+function buildUnsignedTransactionDraft(intent) {
+  const baseUnits = formatUsdcBaseUnits(intent.amount);
+  const isSupportedAsset = intent.asset === 'USDC';
+  const calldata = isSupportedAsset ? buildErc20TransferCalldata(intent) : null;
+  const readyForDraft = Boolean(calldata) && hasFutureExpiry(intent.expiry);
+
+  return {
+    type: 'unsigned_erc20_transfer_preview',
+    status: readyForDraft ? 'draft_ready_for_review' : 'blocked',
+    localOnly: true,
+    unsignedOnly: true,
+    walletRequestEnabled: false,
+    gasEstimateIncluded: false,
+    simulationIncluded: false,
+    chainId: ARC_TESTNET_STATUS.expectedChainIdDecimal,
+    chainIdHex: ARC_TESTNET_STATUS.expectedChainIdHex,
+    to: ARC_TESTNET_STATUS.erc20UsdcAddress,
+    value: '0x0',
+    data: calldata,
+    decoded: {
+      method: 'transfer(address,uint256)',
+      recipient: hasValidRecipient(intent.recipient) ? intent.recipient : null,
+      amountDecimal: hasValidUsdcAmount(intent.amount) ? intent.amount : null,
+      amountBaseUnits: baseUnits === 'invalid' ? null : baseUnits,
+      asset: intent.asset,
+      assetSupported: isSupportedAsset,
+      assetDecimals: ARC_TESTNET_STATUS.erc20UsdcDecimals,
+    },
+    blockers: [
+      ...(!isSupportedAsset ? ['Only USDC is supported for the first transaction draft.'] : []),
+      ...(!hasValidRecipient(intent.recipient) ? ['Recipient is not a 0x-prefixed 40-byte address.'] : []),
+      ...(!hasValidUsdcAmount(intent.amount) ? ['Amount must be positive with at most 6 decimals.'] : []),
+      ...(!hasFutureExpiry(intent.expiry) ? ['Expiry must be in the future.'] : []),
+      'Draft is not a wallet request and cannot move funds.',
+    ],
+  };
+}
+
 function renderUnitPreview(intent) {
   const preview = buildUnitPreview(intent);
   erc20BaseUnits.textContent = preview.baseUnits;
   erc20Decimals.textContent = String(preview.erc20Decimals);
   nativeGasDecimals.textContent = String(preview.nativeGasDecimals);
+}
+
+function renderUnsignedTransactionDraft(intent) {
+  unsignedTransactionDraft.textContent = JSON.stringify(buildUnsignedTransactionDraft(intent), null, 2);
 }
 
 function hasFutureExpiry(expiry) {
@@ -412,6 +469,7 @@ function buildSigningPreflightReport(intent) {
     generatedFrom: 'browser-local intent state only',
     guardReasons: getWalletGuardReasons(intent),
     unitPreview: buildUnitPreview(intent),
+    unsignedTransactionDraft: buildUnsignedTransactionDraft(intent),
     validationSummary: buildValidationSummary(intent),
     walletPreview: getWalletPreviewState(intent),
     frozenIntent: frozenIntentSnapshot ? frozenIntentSnapshot.fields : null,
@@ -495,6 +553,7 @@ function render() {
   statusPill.textContent = currentStatus;
   renderWalletGuardPanel(intent);
   renderUnitPreview(intent);
+  renderUnsignedTransactionDraft(intent);
   renderValidationSummary(intent);
   renderSigningPreflightReport(intent);
   renderFinalConfirmationPanel(intent);

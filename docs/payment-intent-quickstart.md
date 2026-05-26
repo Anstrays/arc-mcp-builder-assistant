@@ -59,7 +59,8 @@ http://localhost:8080/examples/payment-intent-playground/
 - wallet guard reasons;
 - local validation summary;
 - signing preflight report;
-- final local confirmation gate that records review intent without enabling any transaction request.
+- final local confirmation gate that records review intent without enabling any transaction request;
+- unsigned ERC-20 transaction draft preview for the future wallet PR, with wallet requests still disabled.
 
 ### 5. Confirm local approval state
 
@@ -69,11 +70,15 @@ Click the local approval control and confirm the JSON changes. This only changes
 
 After preparing and manually approving the frozen intent, check the final review box and click the local confirmation button. This only records that a human reviewed the exact frozen fields. It still does not request wallet permissions, sign, or submit anything.
 
-### 7. Copy the preflight report
+### 7. Inspect the unsigned transaction draft
+
+Review the generated ERC-20 transfer payload preview. It shows the future wallet request shape (`chainId`, token `to`, `value`, encoded `data`, recipient, and USDC base units) while keeping `walletRequestEnabled: false` and `unsignedOnly: true`.
+
+### 8. Copy the preflight report
 
 Copy the signing preflight report and paste it into an AI coding tool or review note. The report is useful because it separates facts that are ready from facts that still require a wallet confirmation and a separate send PR.
 
-### 8. Stop the preview server
+### 9. Stop the preview server
 
 Stop the local server when finished.
 
@@ -87,6 +92,7 @@ The current project is a safe builder kit, not a live payment app. A reviewer sh
 - a preflight report that explains what still blocks signing;
 - frozen recipient, amount, memo, expiry, chain, token, and base-unit fields after review starts;
 - a final local confirmation gate that remains separate from wallet consent;
+- an unsigned ERC-20 transfer payload preview that stays separate from wallet requests;
 - a read-only wallet preview that never calls account-request, signing, switching, or broadcast APIs;
 - a USDC unit preview that keeps 6-decimal ERC-20 transfer math separate from 18-decimal native gas accounting;
 - test commands that prove the local-only boundary stays intact.
@@ -106,7 +112,7 @@ The current project is a safe builder kit, not a live payment app. A reviewer sh
 The next code slice should stay guard-first:
 
 1. verify current Arc docs and Circle wallet details through MCP or official docs;
-2. keep transaction request controls disabled until chain ID, recipient, amount, expiry, frozen intent, human approval, and final confirmation all pass;
+2. keep transaction request controls disabled until chain ID, recipient, amount, expiry, frozen intent, unsigned transaction draft, human approval, and final confirmation all pass;
 3. add regression tests that prove the UI cannot call signing, chain-switching, account-request, or broadcast code while guards are failing;
 4. only then consider a separate testnet signing PR.
 
