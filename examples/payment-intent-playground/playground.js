@@ -320,7 +320,7 @@ function buildWalletHandoffReadinessManifest(intent) {
   const transactionDraftConsistency = buildTransactionDraftConsistencyCheck(intent);
   const walletPreview = getWalletPreviewState(intent);
   const frozenIntentPassed = Boolean(frozenIntentSnapshot) && !hasFrozenIntentChanged(intent);
-  const humanApprovalPassed = currentStatus === 'approved_local' || currentStatus === 'final_review_confirmed';
+  const humanApprovalPassed = hasHumanApprovalMarker();
   const checks = [
     {
       id: 'valid-intent-fields',
@@ -537,7 +537,12 @@ function markStatusStep(currentStatusId) {
   });
 }
 
+function hasHumanApprovalMarker() {
+  return currentStatus === 'approved_local' || currentStatus === 'final_review_confirmed';
+}
+
 function buildValidationSummary(intent) {
+  const humanApprovalMarked = hasHumanApprovalMarker();
   return [
     {
       id: 'recipient',
@@ -566,8 +571,8 @@ function buildValidationSummary(intent) {
     {
       id: 'approval',
       label: 'Human approval marker',
-      passed: currentStatus === 'approved_local',
-      detail: currentStatus === 'approved_local'
+      passed: humanApprovalMarked,
+      detail: humanApprovalMarked
         ? 'Local approval marker is present.'
         : 'Click Approve manually after reviewing the intent.',
     },
@@ -681,7 +686,7 @@ function buildSigningPreflightReport(intent) {
         note: 'Future wallet PRs must sign exactly the frozen reviewed fields.',
       },
       humanApproval: {
-        passed: currentStatus === 'approved_local' || currentStatus === 'final_review_confirmed',
+        passed: hasHumanApprovalMarker(),
         required: true,
         note: 'Local approval is only a review marker, not wallet consent.',
       },

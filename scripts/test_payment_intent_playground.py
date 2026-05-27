@@ -257,6 +257,9 @@ def test_validation_summary_panel_shows_local_readiness_without_wallet_actions()
         "label: 'Future expiry'",
         "id: 'approval'",
         "label: 'Human approval marker'",
+        "function hasHumanApprovalMarker()",
+        "currentStatus === 'approved_local' || currentStatus === 'final_review_confirmed'",
+        "const humanApprovalMarked = hasHumanApprovalMarker()",
         "function renderValidationSummary(intent)",
         "validationSummaryList.replaceChildren(",
     ):
@@ -387,6 +390,8 @@ if __name__ == "__main__":
     test_intent_json_includes_arc_network_readiness_fields()
     test_usdc_unit_preview_distinguishes_erc20_units_from_native_gas()
     test_unsigned_transaction_draft_preview_is_local_only()
+    test_unsigned_transaction_draft_consistency_check_decodes_payload()
+    test_wallet_handoff_readiness_manifest_keeps_send_pr_blocked()
     test_signing_preflight_report_is_rendered_without_wallet_actions()
     test_validation_summary_panel_shows_local_readiness_without_wallet_actions()
     test_signing_preflight_report_can_be_copied_without_network_or_wallet()
