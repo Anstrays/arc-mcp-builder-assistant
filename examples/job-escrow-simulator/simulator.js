@@ -1,10 +1,11 @@
-const stateOrder = ['draft', 'posted', 'accepted_by_agent', 'escrow_funded_simulation', 'work_submitted', 'payout_approved_simulation'];
+const stateOrder = ['draft', 'posted', 'accepted_by_agent', 'escrow_funded_simulation', 'work_submitted', 'changes_requested', 'payout_approved_simulation'];
 const statusLabels = {
   draft: 'Draft job',
   posted: 'Posted for agent review',
   accepted_by_agent: 'Accepted by agent',
   escrow_funded_simulation: 'Escrow funded simulation',
   work_submitted: 'Work submitted for human review',
+  changes_requested: 'Changes requested',
   payout_approved_simulation: 'Payout approved simulation',
 };
 const buttons = {
@@ -12,6 +13,8 @@ const buttons = {
   accept: document.querySelector('#accept-job'),
   fund: document.querySelector('#fund-escrow'),
   submit: document.querySelector('#submit-work'),
+  requestChanges: document.querySelector('#request-changes'),
+  revise: document.querySelector('#revise-work'),
   approve: document.querySelector('#approve-payout'),
   reset: document.querySelector('#reset-flow'),
 };
@@ -20,12 +23,14 @@ const fields = {
   budget: document.querySelector('#budget'),
   agent: document.querySelector('#agent'),
   deliverable: document.querySelector('#deliverable'),
+  revisionNote: document.querySelector('#revision-note'),
 };
 const statusPill = document.querySelector('#status-pill');
 const jsonPanel = document.querySelector('#escrow-json');
 const timeline = document.querySelector('#timeline');
 let status = 'draft';
 let events = [];
+let changesRequestedCount = 0;
 
 function nowIso() {
   return new Date().toISOString();
@@ -50,10 +55,23 @@ function escrowObject() {
     },
     controls: {
       walletConnected: false,
+      walletActionEnabled: false,
       broadcastsTransactions: false,
+      transactionBroadcast: false,
       talksToBackend: false,
+      signingEnabled: false,
       humanApprovalRequired: true,
       mainnetEnabled: false,
+      localOnly: true,
+      realEscrowContract: false,
+      arcTestnetChainId: 5042002,
+      arcTestnetChainIdHex: '0x4cef52',
+    },
+    review: {
+      changesRequestedCount,
+      latestRevisionNote: fields.revisionNote.value.trim(),
+      payoutRelease: 'simulated_only_after_human_approval',
+      agentOutputTrustedOnlyAfterReview: true,
     },
     events,
   };
@@ -64,6 +82,9 @@ function addEvent(label) {
 }
 
 function setStatus(nextStatus, label) {
+  if (nextStatus === 'changes_requested') {
+    changesRequestedCount += 1;
+  }
   status = nextStatus;
   addEvent(label || statusLabels[nextStatus]);
   render();
@@ -83,11 +104,14 @@ function render() {
   buttons.accept.disabled = status !== 'posted';
   buttons.fund.disabled = status !== 'accepted_by_agent';
   buttons.submit.disabled = status !== 'escrow_funded_simulation';
+  buttons.requestChanges.disabled = status !== 'work_submitted';
+  buttons.revise.disabled = status !== 'changes_requested';
   buttons.approve.disabled = status !== 'work_submitted';
 }
 
 function reset() {
   status = 'draft';
+  changesRequestedCount = 0;
   events = [{ at: nowIso(), label: 'Draft created locally', status }];
   render();
 }
@@ -96,6 +120,8 @@ buttons.post.addEventListener('click', () => setStatus('posted', 'Human posted t
 buttons.accept.addEventListener('click', () => setStatus('accepted_by_agent', 'Agent accepted the job terms'));
 buttons.fund.addEventListener('click', () => setStatus('escrow_funded_simulation', 'Human simulated funding escrow'));
 buttons.submit.addEventListener('click', () => setStatus('work_submitted', 'Agent submitted the deliverable for review'));
+buttons.requestChanges.addEventListener('click', () => setStatus('changes_requested', 'Reviewer requested changes before payout approval'));
+buttons.revise.addEventListener('click', () => setStatus('work_submitted', 'Agent resubmitted revised work for review'));
 buttons.approve.addEventListener('click', () => setStatus('payout_approved_simulation', 'Human approved simulated payout release'));
 buttons.reset.addEventListener('click', reset);
 for (const field of Object.values(fields)) {

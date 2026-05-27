@@ -73,7 +73,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/build-log.md`](./docs/build-log.md) — public milestone note and community-update draft for sharing the current local-first builder kit.
 - [`examples/payment-intent-playground/`](./examples/payment-intent-playground/) — local-only interactive playground for editing a payment request, inspecting live JSON, viewing Arc Testnet read-only status constants, previewing injected wallet provider/address/chain state without requesting permissions, freezing reviewed intent fields, recording final local confirmation, reviewing an unsigned ERC-20 transaction draft and local calldata consistency check, reviewing a blocked wallet handoff manifest, reviewing disabled wallet guard reasons, and copying a preflight report while transaction requests remain disabled.
 - [`examples/transaction-status-playground/`](./examples/transaction-status-playground/) — read-only Arc Testnet transaction hash lookup with explicit `not_checked`, `pending`, `confirmed`, `failed`, and `unknown` states.
-- [`examples/job-escrow-simulator/`](./examples/job-escrow-simulator/) — local-only ERC-8183-style job escrow simulator for posting, accepting, funding, submitting, and approving a payout.
+- [`examples/job-escrow-simulator/`](./examples/job-escrow-simulator/) — local-only ERC-8183-style job escrow simulator for posting, accepting, simulated funding, submitting, requesting changes, resubmitting, and approving a payout.
 - [`examples/x402-local-challenge-server/`](./examples/x402-local-challenge-server/) — dependency-free local HTTP 402 challenge server with MCP-style manifest, JSON-RPC stdio tool mode, JSON CLI helpers, and a swappable verifier boundary for future Circle/x402 settlement work.
 - [`examples/payment-intent-demo/`](./examples/payment-intent-demo/) — tiny static mockup for the first payment-intent flow, including trust-boundary and review-state UI copy.
 
@@ -101,7 +101,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 - [x] Add agent identity notes around Arc's ERC-8004 tutorial.
 - [x] Add builder readiness checklist, MCP query examples, agent-commerce use cases, job escrow demo spec, and Arc House submission draft.
 - [x] Turn the payment-intent mockup into a local interactive playground with reviewable JSON and status transitions.
-- [x] Turn the job escrow spec into a local simulator with reviewable JSON and human-approved payout state.
+- [x] Turn the job escrow spec into a local simulator with reviewable JSON, change-request loop, and human-approved payout state.
 - [x] Add a styled Markdown docs viewer for GitHub Pages so docs links render like pages instead of raw text.
 - [x] Route community-health pages through the styled viewer and add committed screenshots for reviewer proof.
 - [x] Add a public build log and refreshed Arc House submission draft.
@@ -143,7 +143,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 ### Phase 3 — Agent commerce starter kit
 
 - Add agent identity notes around Arc's ERC-8004 tutorial.
-- Extend the local job escrow simulator with richer failure states after the payment-intent playground is wired to verified testnet status.
+- Extend the local job escrow simulator with richer failure states after the payment-intent playground is wired to verified testnet status. *(Started with a local-only change-request/resubmission loop; keep real wallet settlement out until guards exist.)*
 - Add reusable components for agent cards, payment requests, receipts, and logs.
 - Add example flows for creator payouts, API payments, and AI-agent commerce.
 
@@ -169,6 +169,7 @@ python3 scripts/test_x402_boundary.py
 python3 scripts/test_arc_production_deployment.py
 python3 scripts/test_receipt_verifier_playground.py
 python3 scripts/test_transaction_status_playground.py
+python3 scripts/test_job_escrow_simulator.py
 python3 scripts/validate_repo.py
 
 # Optional read-only Arc Testnet status check.

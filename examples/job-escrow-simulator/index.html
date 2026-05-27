@@ -72,8 +72,9 @@
         <h2>Safety boundary</h2>
         <ul>
           <li>Human keeps approval control.</li>
-          <li>Escrow funding and payout are simulated UI states.</li>
+          <li>Escrow funding, change requests, and payout are simulated UI states.</li>
           <li>No private keys, no custody, no mainnet, no autonomous spending.</li>
+          <li>Reviewer changes are simulated review notes; they do not message an agent or backend.</li>
           <li>Use this before adding any real Arc Testnet transaction path.</li>
         </ul>
       </div>
@@ -85,11 +86,14 @@
         <div class="field"><label for="budget">Budget, USDC</label><input id="budget" type="number" min="1" step="1" value="25" /></div>
         <div class="field"><label for="agent">Agent</label><input id="agent" value="Research Agent" /></div>
         <div class="field"><label for="deliverable">Expected deliverable</label><textarea id="deliverable">A concise build note with cited Arc docs, open questions, and next implementation tasks.</textarea></div>
+        <div class="field"><label for="revision-note">Reviewer change request / revision note</label><textarea id="revision-note">Add a risk section before payout approval.</textarea></div>
         <div class="actions">
           <button class="primary" id="post-job">Post job</button>
           <button id="accept-job" disabled>Agent accepts</button>
           <button id="fund-escrow" disabled>Fund escrow</button>
           <button id="submit-work" disabled>Submit work</button>
+          <button id="request-changes" disabled>Request changes</button>
+          <button id="revise-work" disabled>Revise work</button>
           <button id="approve-payout" disabled>Approve payout</button>
           <button id="reset-flow">Reset</button>
         </div>
