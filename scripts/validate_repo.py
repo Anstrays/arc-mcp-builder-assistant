@@ -90,6 +90,7 @@ REQUIRED_FILES = [
     "scripts/test_payment_intent_playground.py",
     "scripts/test_x402_boundary.py",
     "scripts/test_transaction_status_playground.py",
+    "scripts/test_job_escrow_simulator.py",
     "assets/screenshots/landing.png",
     "assets/screenshots/security-viewer.png",
     "assets/screenshots/payment-intent-playground.png",
@@ -607,6 +608,54 @@ def validate_transaction_status_playground() -> None:
             fail(f"{js_relative}: forbidden wallet/signing marker: {marker}")
 
 
+def validate_job_escrow_simulator() -> None:
+    """Keep the job escrow simulator local-only and review-gated."""
+    html_relative = "examples/job-escrow-simulator/index.html"
+    js_relative = "examples/job-escrow-simulator/simulator.js"
+    test_relative = "scripts/test_job_escrow_simulator.py"
+    html = (ROOT / html_relative).read_text(encoding="utf-8")
+    js = (ROOT / js_relative).read_text(encoding="utf-8")
+    tests = (ROOT / test_relative).read_text(encoding="utf-8")
+    for marker in (
+        'id="request-changes"',
+        'id="revise-work"',
+        'id="revision-note"',
+        "Request changes",
+        "Revise work",
+        "changes are simulated review notes",
+    ):
+        if marker not in html:
+            fail(f"{html_relative}: missing job escrow review marker: {marker}")
+    for marker in (
+        "changes_requested",
+        "changesRequestedCount",
+        "latestRevisionNote",
+        "payoutRelease: 'simulated_only_after_human_approval'",
+        "arcTestnetChainId: 5042002",
+        "arcTestnetChainIdHex: '0x4cef52'",
+        "walletActionEnabled: false",
+        "signingEnabled: false",
+        "transactionBroadcast: false",
+        "localOnly: true",
+        "realEscrowContract: false",
+        "buttons.requestChanges.disabled = status !== 'work_submitted'",
+        "buttons.revise.disabled = status !== 'changes_requested'",
+    ):
+        if marker not in js:
+            fail(f"{js_relative}: missing job escrow safety marker: {marker}")
+    for marker in (
+        "test_job_escrow_review_loop_controls_are_present",
+        "test_job_escrow_json_exposes_review_and_arc_safety_flags",
+        "test_job_escrow_state_machine_allows_revisions_before_payout",
+        "test_job_escrow_simulator_forbids_wallet_network_and_secret_surface",
+    ):
+        if marker not in tests:
+            fail(f"{test_relative}: missing job escrow regression marker: {marker}")
+    for marker in ("fetch(", "XMLHttpRequest", "WebSocket", "window.ethereum", "ethereum.request", "eth_sendTransaction", "wallet_switchEthereumChain", "sendTransaction", "signTransaction", "PRIVATE_KEY", "localStorage"):
+        if marker in html or marker in js:
+            fail(f"{html_relative}/{js_relative}: forbidden network/wallet marker: {marker}")
+
+
 def validate_robots_txt() -> None:
     relative = "robots.txt"
     text = (ROOT / relative).read_text(encoding="utf-8")
@@ -647,6 +696,7 @@ def main() -> None:
     validate_payment_intent_playground_status_panel()
     validate_receipt_verifier_playground()
     validate_transaction_status_playground()
+    validate_job_escrow_simulator()
     validate_robots_txt()
     validate_sitemap_xml()
     print("validation passed", file=sys.stdout)

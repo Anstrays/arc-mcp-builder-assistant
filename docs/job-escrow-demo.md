@@ -69,7 +69,7 @@ Design a safe Arc Testnet demo for agentic commerce where an AI agent can earn a
 ## Build path
 
 1. Add a static UI card for the job object.
-2. Add a local simulator for status transitions.
+2. Add a local simulator for status transitions, including change requests and resubmission before payout approval.
 3. Add Arc MCP query examples for ERC-8183/job escrow docs.
 4. Add testnet integration only after the current contract path and wallet flow are confirmed.
 5. Publish a build log with what was verified and what remains unknown.
