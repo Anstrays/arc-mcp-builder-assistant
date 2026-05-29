@@ -20,8 +20,8 @@ Design a safe Arc Testnet demo for agentic commerce where an AI agent can earn a
 3. Requester manually approves funding the job escrow.
 4. Agent accepts the job and receives the task context.
 5. Agent submits output plus evidence URI or notes.
-6. Reviewer approves, requests changes, or rejects.
-7. On approval, payout is released to the agent recipient.
+6. Reviewer approves, requests changes, rejects, opens a dispute, or marks the job expired/cancelled.
+7. On approval, payout is released to the agent recipient. On rejection/dispute/expiry/cancellation, no payout is released in this local model.
 8. App records status changes and links to ArcScan when available.
 
 ## Minimal job object
@@ -53,6 +53,8 @@ Design a safe Arc Testnet demo for agentic commerce where an AI agent can earn a
 - `accepted_by_agent`
 - `submitted_for_review`
 - `changes_requested`
+- `rejected_no_payout`
+- `disputed_manual_review`
 - `approved_for_release`
 - `paid`
 - `expired`
@@ -64,12 +66,14 @@ Design a safe Arc Testnet demo for agentic commerce where an AI agent can earn a
 - No autonomous mainnet spending in v0.
 - Human approval is required for funding and release.
 - Agent output is treated as untrusted until reviewed.
+- Rejection, dispute, expiry, and cancellation are terminal local states unless a human resets or creates a new job.
+- Dispute notes are local review notes only; they do not contact an arbitrator, validator, agent, wallet, or backend.
 - Contract addresses and event names must be re-verified through Arc docs or MCP before implementation.
 
 ## Build path
 
 1. Add a static UI card for the job object.
-2. Add a local simulator for status transitions, including change requests and resubmission before payout approval.
+2. Add a local simulator for status transitions, including change requests, resubmission, rejection, dispute, expiry, and cancellation before payout approval.
 3. Add Arc MCP query examples for ERC-8183/job escrow docs.
 4. Add testnet integration only after the current contract path and wallet flow are confirmed.
 5. Publish a build log with what was verified and what remains unknown.

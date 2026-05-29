@@ -51,6 +51,7 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/arc-docs-map.md`](./docs/arc-docs-map.md) — practical map of Arc Testnet config, contracts, agent primitives, tutorials, tools, and the recommended build path.
 - [`docs/deploy-contracts-arc.md`](./docs/deploy-contracts-arc.md) — builder notes from Arc's deploy-contracts tutorial using Circle Contracts and Arc Testnet.
 - [`docs/agent-identity-erc8004.md`](./docs/agent-identity-erc8004.md) — ERC-8004 agent identity notes and trust-boundary guidance.
+- [`docs/agent-identity-profile-preview.md`](./docs/agent-identity-profile-preview.md) — local-only ERC-8004 profile preview before any agent registration transaction exists.
 - [`docs/builder-workflows.md`](./docs/builder-workflows.md) — practical Arc + AI builder workflows.
 - [`docs/payment-intent-demo.md`](./docs/payment-intent-demo.md) — first demo specification.
 - [`docs/payment-intent-quickstart.md`](./docs/payment-intent-quickstart.md) — 5-minute reviewer path for showing the local payment-intent playground without wallet or transaction side effects.
@@ -64,6 +65,9 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/arc-wallet-integration-notes.md`](./docs/arc-wallet-integration-notes.md) — Circle Wallets vs browser-wallet decision notes for the next Phase 2 integration slice.
 - [`docs/wallet-preflight-contract.md`](./docs/wallet-preflight-contract.md) — secret-free wallet preflight contract for the next Arc Testnet wallet preview/send PRs.
 - [`docs/agent-commerce-use-cases.md`](./docs/agent-commerce-use-cases.md) — practical use cases for API-call payments, creator payouts, job escrow, AI-service marketplace flows, and report agents.
+- [`docs/agent-commerce-components.md`](./docs/agent-commerce-components.md) — reusable local-first agent cards, payment request cards, receipt cards, and event logs for future Arc commerce flows.
+- [`docs/agent-commerce-flow-library.md`](./docs/agent-commerce-flow-library.md) — local-only paid API call, creator payout, and AI-agent commerce flow templates.
+- [`docs/agent-commerce-review-packet.md`](./docs/agent-commerce-review-packet.md) — local-only final review packet schema before any live wallet, settlement, or registration handoff.
 - [`docs/job-escrow-demo.md`](./docs/job-escrow-demo.md) — ERC-8183-style flow for posting jobs, funding escrow, reviewing agent output, and releasing stablecoin payouts.
 - [`docs/x402-mcp-manifest.md`](./docs/x402-mcp-manifest.md) — machine-readable paid-agent manifest and JSON-RPC tool surface for the local x402 boundary.
 - [`docs/x402-demo-transcript.md`](./docs/x402-demo-transcript.md) — copy-paste local `402 -> proof -> protected response` transcript with explicit no-wallet/no-settlement guardrails.
@@ -73,7 +77,11 @@ This kit turns those steps into reusable guides, prompts, and examples.
 - [`docs/build-log.md`](./docs/build-log.md) — public milestone note and community-update draft for sharing the current local-first builder kit.
 - [`examples/payment-intent-playground/`](./examples/payment-intent-playground/) — local-only interactive playground for editing a payment request, inspecting live JSON, viewing Arc Testnet read-only status constants, previewing injected wallet provider/address/chain state without requesting permissions, freezing reviewed intent fields, recording final local confirmation, reviewing an unsigned ERC-20 transaction draft and local calldata consistency check, reviewing a blocked wallet handoff manifest, reviewing disabled wallet guard reasons, and copying a preflight report while transaction requests remain disabled.
 - [`examples/transaction-status-playground/`](./examples/transaction-status-playground/) — read-only Arc Testnet transaction hash lookup with explicit `not_checked`, `pending`, `confirmed`, `failed`, and `unknown` states.
-- [`examples/job-escrow-simulator/`](./examples/job-escrow-simulator/) — local-only ERC-8183-style job escrow simulator for posting, accepting, simulated funding, submitting, requesting changes, resubmitting, and approving a payout.
+- [`examples/agent-commerce-components/`](./examples/agent-commerce-components/) — reusable local-only agent/payment/receipt/log cards that freeze money fields before any future wallet handoff.
+- [`examples/agent-commerce-flows/`](./examples/agent-commerce-flows/) — local-only product-flow templates for paid API calls, creator payouts, and AI-agent commerce with frozen review artifacts.
+- [`examples/agent-commerce-review-packet/`](./examples/agent-commerce-review-packet/) — local-only exporter that combines agent identity, commerce flow, escrow outcome, approval note, and disabled-surface controls into a review JSON packet.
+- [`examples/agent-identity-profile-preview/`](./examples/agent-identity-profile-preview/) — local-only ERC-8004 profile preview for agent metadata, controller notes, reputation notes, and validation requirements.
+- [`examples/job-escrow-simulator/`](./examples/job-escrow-simulator/) — local-only ERC-8183-style job escrow simulator for posting, accepting, simulated funding, submitting, requesting changes, resubmitting, rejection, dispute, expiry/cancellation, and payout approval.
 - [`examples/x402-local-challenge-server/`](./examples/x402-local-challenge-server/) — dependency-free local HTTP 402 challenge server with MCP-style manifest, JSON-RPC stdio tool mode, JSON CLI helpers, and a swappable verifier boundary for future Circle/x402 settlement work.
 - [`examples/payment-intent-demo/`](./examples/payment-intent-demo/) — tiny static mockup for the first payment-intent flow, including trust-boundary and review-state UI copy.
 
@@ -142,10 +150,12 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 
 ### Phase 3 — Agent commerce starter kit
 
-- Add agent identity notes around Arc's ERC-8004 tutorial.
-- Extend the local job escrow simulator with richer failure states after the payment-intent playground is wired to verified testnet status. *(Started with a local-only change-request/resubmission loop; keep real wallet settlement out until guards exist.)*
-- Add reusable components for agent cards, payment requests, receipts, and logs.
-- Add example flows for creator payouts, API payments, and AI-agent commerce.
+- [x] Add agent identity notes around Arc's ERC-8004 tutorial.
+- [x] Add a local-only ERC-8004 identity profile preview before any registration transaction exists.
+- [x] Extend the local job escrow simulator with richer failure states after the payment-intent playground is wired to verified testnet status. *(Includes local-only change-request/resubmission, rejection, dispute, expiry, and cancellation; keep real wallet settlement out until guards exist.)*
+- [x] Add reusable components for agent cards, payment requests, receipts, and logs.
+- [x] Add example flows for creator payouts, API payments, and AI-agent commerce.
+- [x] Add a local review packet exporter that combines agent identity, commerce flow, escrow outcome, and disabled wallet/network controls.
 
 ## Suggested use
 
@@ -169,6 +179,10 @@ python3 scripts/test_x402_boundary.py
 python3 scripts/test_arc_production_deployment.py
 python3 scripts/test_receipt_verifier_playground.py
 python3 scripts/test_transaction_status_playground.py
+python3 scripts/test_agent_commerce_components.py
+python3 scripts/test_agent_commerce_flows.py
+python3 scripts/test_agent_commerce_review_packet.py
+python3 scripts/test_agent_identity_profile_preview.py
 python3 scripts/test_job_escrow_simulator.py
 python3 scripts/validate_repo.py
 

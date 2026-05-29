@@ -353,13 +353,33 @@ Arc Testnet · USDC · ArcScan status</code></pre>
             <span class="meta"><a href="./docs/view.html#agent-commerce-use-cases.md">docs/agent-commerce-use-cases.md →</a></span>
           </article>
           <article class="card">
+            <h3>Agent commerce components</h3>
+            <p>Reusable local-only agent cards, payment requests, receipts, and event logs for review-first Arc commerce flows.</p>
+            <span class="meta"><a href="./examples/agent-commerce-components/">examples/agent-commerce-components →</a> · <a href="./docs/view.html#agent-commerce-components.md">docs/agent-commerce-components.md →</a></span>
+          </article>
+          <article class="card">
+            <h3>Agent commerce flows</h3>
+            <p>Local paid API, creator payout, and AI-agent commerce flow templates with frozen review artifacts.</p>
+            <span class="meta"><a href="./examples/agent-commerce-flows/">examples/agent-commerce-flows →</a> · <a href="./docs/view.html#agent-commerce-flow-library.md">docs/agent-commerce-flow-library.md →</a></span>
+          </article>
+          <article class="card">
+            <h3>Agent commerce review packet</h3>
+            <p>Local exporter that combines identity, commerce flow, escrow outcome, approval note, and disabled controls into one reviewer JSON packet.</p>
+            <span class="meta"><a href="./examples/agent-commerce-review-packet/">examples/agent-commerce-review-packet →</a> · <a href="./docs/view.html#agent-commerce-review-packet.md">docs/agent-commerce-review-packet.md →</a></span>
+          </article>
+          <article class="card">
+            <h3>Agent identity preview</h3>
+            <p>Draft ERC-8004 agent metadata, controller notes, reputation notes, and validation requirements without registration or signing.</p>
+            <span class="meta"><a href="./examples/agent-identity-profile-preview/">examples/agent-identity-profile-preview →</a> · <a href="./docs/view.html#agent-identity-profile-preview.md">docs/agent-identity-profile-preview.md →</a></span>
+          </article>
+          <article class="card">
             <h3>Job escrow demo</h3>
             <p>ERC-8183-style flow for posting a job, funding escrow, agent submission, human review, and stablecoin payout.</p>
             <span class="meta"><a href="./docs/view.html#job-escrow-demo.md">docs/job-escrow-demo.md →</a></span>
           </article>
           <article class="card">
             <h3>Job escrow simulator</h3>
-            <p>A local-only interactive walkthrough for job posting, agent acceptance, simulated escrow funding, work submission, and human-approved payout.</p>
+            <p>A local-only interactive walkthrough for job posting, agent acceptance, simulated escrow funding, work submission, changes, rejection, dispute, expiry/cancellation, and human-approved payout.</p>
             <span class="meta"><a href="./examples/job-escrow-simulator/">examples/job-escrow-simulator →</a></span>
           </article>
           <article class="card">
@@ -411,6 +431,10 @@ Arc Testnet · USDC · ArcScan status</code></pre>
             <a class="pill" href="./docs/view.html#arc-builder-readiness-checklist.md">Readiness checklist</a>
             <a class="pill" href="./docs/view.html#arc-testnet-integration-runbook.md">Testnet runbook</a>
             <a class="pill" href="./docs/view.html#wallet-preflight-contract.md">Wallet preflight contract</a>
+            <a class="pill" href="./examples/agent-identity-profile-preview/">Agent identity preview</a>
+            <a class="pill" href="./examples/agent-commerce-components/">Agent commerce components</a>
+            <a class="pill" href="./examples/agent-commerce-flows/">Agent commerce flows</a>
+            <a class="pill" href="./examples/agent-commerce-review-packet/">Review packet</a>
             <a class="pill" href="./docs/view.html#payment-intent-quickstart.md">Payment quickstart</a>
             <a class="pill" href="./docs/view.html#payment-status-tutorial.md">Payment status tutorial</a>
             <a class="pill" href="./docs/view.html#contest-demo-script.md">Contest demo script</a>
@@ -463,6 +487,11 @@ Arc Testnet · USDC · ArcScan status</code></pre>
           <li>Done: added unsigned ERC-20 transaction draft preview with wallet requests still disabled.</li>
           <li>Done: added local calldata consistency checks for the unsigned transaction draft.</li>
           <li>Done: added a blocked wallet handoff readiness manifest for future send PR review.</li>
+          <li>Done: added reusable local agent-commerce components for agent cards, payment requests, receipts, and event logs.</li>
+          <li>Done: added local agent-commerce flow templates for paid API calls, creator payouts, and AI-agent commerce.</li>
+          <li>Done: added a local agent-commerce review packet exporter for final human review before live wallet or settlement work.</li>
+          <li>Done: added a local ERC-8004 identity profile preview before live registration work.</li>
+          <li>Done: expanded the local job escrow simulator with terminal no-payout paths for rejection, dispute, expiry, and cancellation.</li>
           <li>Next: verify current wallet/send details and prepare a separate reviewed testnet send PR only after all guards pass.</li>
         </ul>
       </div>

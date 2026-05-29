@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Local-only reusable agent commerce components for Arc MCP Builder Assistant." />
+  <title>Agent Commerce Components · Arc MCP Builder Assistant</title>
+  <style>
+    :root { color-scheme: dark; --bg: #080a12; --panel: rgba(255,255,255,.07); --line: rgba(255,255,255,.14); --text: #f7f3ff; --muted: #beb6d8; --accent: #7cf7d4; --accent2: #b388ff; --warn: #ffd166; --good: #7cf7a8; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; min-height: 100vh; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text); background: radial-gradient(circle at 18% 0%, rgba(124,247,212,.18), transparent 32rem), radial-gradient(circle at 88% 8%, rgba(179,136,255,.2), transparent 34rem), linear-gradient(180deg, #080a12 0%, #11152a 62%, #080a12 100%); line-height: 1.65; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    .skip-link { position: absolute; left: -9999px; top: 12px; z-index: 10; padding: 10px 14px; border-radius: 999px; background: var(--accent); color: #06110d; font-weight: 900; }
+    .skip-link:focus { left: 12px; }
+    .wrap { width: min(1160px, calc(100% - 32px)); margin: 0 auto; }
+    header { padding: 26px 0 10px; }
+    .topbar, .hero, .grid, .actions, .cards { display: flex; gap: 16px; }
+    .topbar { align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .brand { color: var(--text); font-weight: 950; letter-spacing: -.02em; }
+    nav { display: flex; gap: 10px; flex-wrap: wrap; }
+    nav a, button, .button { border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.055); color: var(--text); padding: 10px 14px; font-weight: 850; cursor: pointer; }
+    button.primary { background: var(--accent); color: #07110f; border-color: transparent; }
+    button:disabled { cursor: not-allowed; opacity: .46; }
+    .hero { padding: 34px 0 22px; align-items: stretch; }
+    .hero > * { flex: 1; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 950; text-transform: uppercase; letter-spacing: .16em; }
+    h1, h2, h3 { letter-spacing: -.035em; line-height: 1.08; }
+    h1 { margin: 12px 0 14px; font-size: clamp(2.1rem, 7vw, 4.8rem); }
+    h2 { margin-top: 0; font-size: clamp(1.35rem, 3vw, 2.05rem); }
+    p, li, label, .meta { color: var(--muted); }
+    .panel, .component-card { border: 1px solid var(--line); border-radius: 28px; background: linear-gradient(180deg, rgba(255,255,255,.09), var(--panel)); box-shadow: 0 24px 80px rgba(0,0,0,.34); padding: clamp(20px, 4vw, 32px); }
+    .grid { display: grid; grid-template-columns: .95fr 1.05fr; align-items: start; padding-bottom: 72px; }
+    .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .field { display: grid; gap: 8px; margin-bottom: 14px; }
+    input, textarea, select { width: 100%; border: 1px solid var(--line); border-radius: 16px; background: rgba(0,0,0,.24); color: var(--text); padding: 12px 14px; font: inherit; }
+    textarea { min-height: 88px; resize: vertical; }
+    pre { white-space: pre-wrap; word-break: break-word; overflow-x: auto; padding: 18px; border-radius: 18px; border: 1px solid var(--line); background: rgba(0,0,0,.38); color: #eafff8; }
+    code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+    .status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(124,247,212,.3); color: var(--accent); background: rgba(124,247,212,.08); font-weight: 900; }
+    .warning { border-color: rgba(255,209,102,.38); background: rgba(255,209,102,.08); }
+    .meta { font-size: .9rem; }
+    .component-card h3 { margin-top: 0; }
+    .event-log { list-style: none; padding: 0; display: grid; gap: 10px; }
+    .event-log li { border-left: 3px solid var(--good); padding-left: 12px; }
+    @media (max-width: 900px) { .hero, .grid, .cards { display: grid; grid-template-columns: 1fr; } nav { display: none; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="wrap">
+    <div class="topbar">
+      <a class="brand" href="../../">Arc MCP Builder Assistant</a>
+      <nav aria-label="Component navigation">
+        <a href="../../">Home</a>
+        <a href="../../docs/view.html#agent-commerce-components.md">Component docs</a>
+        <a href="../../docs/view.html#agent-commerce-use-cases.md">Use cases</a>
+        <a href="../job-escrow-simulator/">Job escrow</a>
+      </nav>
+    </div>
+  </header>
+  <main id="content" class="wrap">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Local-only starter kit · no wallet connection</p>
+        <h1>Reusable agent commerce cards.</h1>
+        <p>Compose an agent card, payment request, receipt preview, and event log before any Arc Testnet wallet path exists. The output is a reviewable JSON contract for future PRs.</p>
+        <p class="status" id="status-pill">Draft review object</p>
+      </div>
+      <div class="panel warning">
+        <h2>Safety boundary</h2>
+        <ul>
+          <li>Human approval is required before any future wallet action.</li>
+          <li>No private keys, no custody, no wallet permissions, no backend calls.</li>
+          <li>No transaction broadcast and no mainnet path.</li>
+          <li>Arc Testnet facts stay explicit: chain ID 5042002, USDC, ERC-20 USDC 6 decimals.</li>
+        </ul>
+      </div>
+    </section>
+    <section class="grid">
+      <div class="panel">
+        <h2>Scenario builder</h2>
+        <div class="field"><label for="agent-name">Agent name</label><input id="agent-name" value="Research Agent" /></div>
+        <div class="field"><label for="agent-role">Agent role</label><select id="agent-role"><option value="docs-grounded-research">Docs-grounded research</option><option value="paid-api-gateway">Paid API gateway</option><option value="creator-payout-agent">Creator payout agent</option><option value="escrow-worker">Escrow worker</option></select></div>
+        <div class="field"><label for="purpose">Payment purpose</label><input id="purpose" value="Pay for a cited Arc docs summary" /></div>
+        <div class="field"><label for="amount">Amount, USDC</label><input id="amount" type="number" min="0" step="0.01" value="3.50" /></div>
+        <div class="field"><label for="recipient">Recipient placeholder</label><input id="recipient" value="0x0000000000000000000000000000000000000000" /></div>
+        <div class="field"><label for="review-note">Review note</label><textarea id="review-note">Human reviewer checks recipient, amount, asset, chain, expiry, and source notes before any wallet handoff.</textarea></div>
+        <div class="actions">
+          <button class="primary" id="freeze-request">Freeze request</button>
+          <button id="mark-approved" disabled>Mark local approval</button>
+          <button id="mark-receipt" disabled>Add simulated receipt</button>
+          <button id="reset-components">Reset</button>
+        </div>
+      </div>
+      <div>
+        <div class="cards" aria-label="Reusable component cards">
+          <article class="component-card"><h3>Agent card</h3><pre id="agent-card"></pre></article>
+          <article class="component-card"><h3>Payment request</h3><pre id="payment-card"></pre></article>
+          <article class="component-card"><h3>Receipt card</h3><pre id="receipt-card"></pre></article>
+          <article class="component-card"><h3>Event log</h3><ol class="event-log" id="event-log"></ol></article>
+        </div>
+        <div class="panel" style="margin-top:16px">
+          <h2>Combined review object</h2>
+          <pre id="components-json"></pre>
+          <p class="meta">This JSON is the handoff: future wallet integration should consume the frozen fields instead of asking an AI model to regenerate money-critical values.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="./components.js" defer></script>
+</body>
+</html>
