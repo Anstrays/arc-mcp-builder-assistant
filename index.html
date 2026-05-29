@@ -3,131 +3,243 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Arc MCP Builder Assistant · AI-assisted Arc builder kit for MCP, agents, and stablecoin payments</title>
-  <meta name="description" content="Independent Arc builder resource that turns Arc's MCP/docs surface into reusable AI-coding prompts and a safe payment-intent demo for agentic commerce on Arc Testnet." />
-  <meta name="keywords" content="Arc, Arc Network, MCP, Model Context Protocol, AI coding tools, agentic commerce, stablecoin payments, USDC, ERC-8004, Circle Contracts, Arc Testnet, builder kit, payment intent" />
+  <title>Arc MCP Builder Assistant · Arc-ready MCP agents, USDC workflows, and safe build plans</title>
+  <meta name="description" content="Independent Arc builder kit for turning MCP/docs context into reviewable agent workflows, USDC payment plans, local playgrounds, and safe Arc Testnet runbooks." />
+  <meta name="keywords" content="Arc, Arc Network, MCP, Model Context Protocol, AI agents, agentic commerce, USDC, x402, ERC-8004, ERC-8183, Arc Testnet, builder kit" />
   <meta name="author" content="Arc MCP Builder Assistant contributors" />
   <meta name="robots" content="index,follow" />
-  <meta name="theme-color" content="#06070c" />
-  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#f8fafc" />
+  <meta name="color-scheme" content="light dark" />
   <meta name="referrer" content="no-referrer" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests" />
   <link rel="canonical" href="https://anstrays.github.io/arc-mcp-builder-assistant/" />
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%236b7cff'/%3E%3Cstop offset='1' stop-color='%235eead4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-size='38' font-weight='900' fill='%2304050a'%3EA%3C/text%3E%3C/svg%3E" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232563eb'/%3E%3Cstop offset='1' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Ctext x='50%25' y='55%25' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-size='38' font-weight='900' fill='white'%3EA%3C/text%3E%3C/svg%3E" />
   <meta property="og:title" content="Arc MCP Builder Assistant" />
-  <meta property="og:description" content="Independent builder kit for using Arc's MCP/docs context with AI coding tools and prototyping agentic commerce on Arc Testnet." />
+  <meta property="og:description" content="Build Arc-ready MCP agent workflows with docs-grounded prompts, payment safety boundaries, local demos, and reviewable deployment plans." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://anstrays.github.io/arc-mcp-builder-assistant/" />
   <meta property="og:site_name" content="Arc MCP Builder Assistant" />
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="Arc MCP Builder Assistant" />
-  <meta name="twitter:description" content="Independent builder kit for using Arc's MCP/docs context with AI coding tools and prototyping agentic commerce on Arc Testnet." />
+  <meta name="twitter:description" content="Arc-ready MCP agent workflows, USDC payment plans, local demos, and safe testnet runbooks." />
   <style>
     :root {
-      --bg: #06070c;
-      --panel: #0d1020;
-      --panel-2: #11162b;
-      --text: #f7f8ff;
-      --muted: #a9b1d6;
-      --line: rgba(255,255,255,.12);
-      --blue: #6b7cff;
-      --cyan: #5eead4;
-      --lime: #d9ff72;
-      --shadow: 0 30px 90px rgba(0,0,0,.38);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      --bg: #f6f8fc;
+      --bg-soft: #eef4ff;
+      --panel: rgba(255,255,255,.86);
+      --panel-solid: #ffffff;
+      --ink: #07111f;
+      --muted: #475569;
+      --soft: #64748b;
+      --line: rgba(15,23,42,.11);
+      --blue: #2563eb;
+      --blue-2: #1d4ed8;
+      --cyan: #06b6d4;
+      --green: #16a34a;
+      --amber: #d97706;
+      --violet: #7c3aed;
+      --shadow: 0 24px 80px rgba(15,23,42,.12);
+      --radius: 28px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
       margin: 0;
-      color: var(--text);
+      color: var(--ink);
       background:
-        radial-gradient(circle at 10% -10%, rgba(107,124,255,.42), transparent 32rem),
-        radial-gradient(circle at 90% 0%, rgba(94,234,212,.18), transparent 28rem),
-        linear-gradient(180deg, #080a14 0%, var(--bg) 42%, #04050a 100%);
+        radial-gradient(circle at 12% 0%, rgba(37,99,235,.17), transparent 34rem),
+        radial-gradient(circle at 88% 4%, rgba(6,182,212,.18), transparent 32rem),
+        linear-gradient(180deg, #fbfdff 0%, var(--bg) 42%, #eef2f9 100%);
       min-height: 100vh;
     }
     a { color: inherit; text-decoration: none; }
     a:focus-visible,
-    button:focus-visible,
-    .button:focus-visible {
-      outline: 2px solid var(--cyan);
+    .button:focus-visible,
+    .tab:focus-visible,
+    .recipe:focus-visible {
+      outline: 3px solid rgba(6,182,212,.42);
       outline-offset: 3px;
-      border-radius: 8px;
+      border-radius: 14px;
     }
     .skip-link {
       position: absolute;
       left: -9999px;
       top: 0;
-      background: var(--cyan);
-      color: #04050a;
+      z-index: 20;
+      background: var(--ink);
+      color: #fff;
       padding: 10px 14px;
-      border-radius: 8px;
+      border-radius: 999px;
       font-weight: 800;
-      z-index: 10;
     }
-    .skip-link:focus { left: 12px; top: 12px; }
-    .wrap { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
-    header { padding: 24px 0; position: sticky; top: 0; z-index: 2; backdrop-filter: blur(18px); background: rgba(6,7,12,.66); border-bottom: 1px solid rgba(255,255,255,.06); }
-    nav { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
-    .brand { display: flex; gap: 10px; align-items: center; font-weight: 800; letter-spacing: -.02em; }
-    .mark { width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, var(--blue), var(--cyan)); color: #04050a; font-weight: 950; box-shadow: 0 12px 30px rgba(107,124,255,.35); }
-    .links { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
-    .links a, .button { border: 1px solid var(--line); background: rgba(255,255,255,.06); padding: 10px 14px; border-radius: 999px; color: var(--muted); font-size: 14px; }
-    .button.primary { background: var(--text); color: #06070c; border-color: var(--text); font-weight: 800; }
-    .repo-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--text);
+    .skip-link:focus { left: 16px; top: 16px; }
+    .wrap { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+    .shell { padding: 18px 0 0; }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      backdrop-filter: blur(18px);
+      background: rgba(246,248,252,.78);
+      border-bottom: 1px solid rgba(15,23,42,.08);
+    }
+    nav { display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 72px; }
+    .brand { display: inline-flex; gap: 11px; align-items: center; min-width: max-content; }
+    .mark { width: 40px; height: 40px; border-radius: 15px; display: grid; place-items: center; color: #fff; font-weight: 950; background: linear-gradient(135deg, var(--blue), var(--cyan)); box-shadow: 0 16px 35px rgba(37,99,235,.24); }
+    .brand-text strong { display: block; font-size: 15px; letter-spacing: -.02em; }
+    .brand-text span { display: block; color: var(--muted); font-size: 12px; margin-top: 1px; }
+    .links { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: flex-end; }
+    .links a, .button, .tab {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.72);
+      color: #1e293b;
+      padding: 10px 13px;
+      border-radius: 999px;
+      font-size: 13px;
       font-weight: 700;
+      box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;
     }
+    .links a:hover, .button:hover, .tab:hover, .recipe:hover { transform: translateY(-1px); border-color: rgba(37,99,235,.28); }
+    .button.primary { background: #0f172a; border-color: #0f172a; color: #fff; box-shadow: 0 18px 40px rgba(15,23,42,.2); }
+    .button.blue { background: linear-gradient(135deg, var(--blue), var(--blue-2)); border: 0; color: #fff; box-shadow: 0 18px 38px rgba(37,99,235,.24); }
+    .repo-link { display: inline-flex; align-items: center; gap: 7px; color: var(--ink) !important; }
     .repo-link svg { width: 16px; height: 16px; fill: currentColor; }
-    .hero { padding: 92px 0 52px; }
-    .hero-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 28px; align-items: center; }
-    .eyebrow { color: var(--cyan); text-transform: uppercase; letter-spacing: .18em; font-size: 12px; font-weight: 900; }
-    h1 { margin: 14px 0 18px; font-size: clamp(44px, 7vw, 88px); line-height: .9; letter-spacing: -.075em; text-wrap: balance; }
-    .lead { color: #d9defe; font-size: clamp(18px, 2vw, 22px); line-height: 1.65; max-width: 760px; }
-    .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
-    .terminal { border: 1px solid var(--line); border-radius: 24px; background: rgba(8,10,20,.82); box-shadow: var(--shadow); overflow: hidden; }
-    .bar { display: flex; gap: 8px; padding: 14px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.04); }
-    .dot { width: 10px; height: 10px; border-radius: 50%; background: #ff6b6b; }
-    .dot:nth-child(2) { background: #ffd166; }
-    .dot:nth-child(3) { background: #5eead4; }
-    pre { margin: 0; padding: 22px; overflow: auto; color: #cfd6ff; line-height: 1.55; font-size: 13px; }
-    code .green { color: var(--cyan); }
-    code .lime { color: var(--lime); }
-    section { padding: 44px 0; }
-    .section-title { font-size: clamp(30px, 4vw, 52px); line-height: 1; letter-spacing: -.045em; margin: 0 0 16px; }
-    .section-copy { color: var(--muted); line-height: 1.7; max-width: 760px; }
-    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
-    .card { border: 1px solid var(--line); background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.035)); border-radius: 24px; padding: 22px; min-height: 210px; display: flex; flex-direction: column; }
-    .card .meta { color: var(--cyan); font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; margin-top: auto; padding-top: 16px; }
-    .num { width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center; background: rgba(107,124,255,.18); color: var(--cyan); font-weight: 900; margin-bottom: 18px; }
-    h3 { margin: 0 0 10px; font-size: 21px; letter-spacing: -.025em; }
-    .card p, li { color: var(--muted); line-height: 1.6; }
-    .split { display: grid; grid-template-columns: .9fr 1.1fr; gap: 18px; align-items: start; }
-    .panel { border: 1px solid var(--line); background: var(--panel); border-radius: 28px; padding: 26px; box-shadow: var(--shadow); }
-    .checklist { margin: 0; padding-left: 18px; }
-    .pill-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
-    .pill { border: 1px solid rgba(255,255,255,.12); color: #dce2ff; background: rgba(255,255,255,.05); border-radius: 999px; padding: 8px 11px; font-size: 13px; }
-    .mock { background: linear-gradient(180deg, #111735, #070912); }
-    .intent-row { display: flex; justify-content: space-between; gap: 20px; padding: 14px 0; border-bottom: 1px solid var(--line); color: var(--muted); }
-    .intent-row strong { color: var(--text); }
-    .path-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 24px; }
-    .path-step { border: 1px solid var(--line); background: rgba(255,255,255,.045); border-radius: 22px; padding: 18px; }
-    .path-step strong { display: block; color: var(--text); margin-bottom: 8px; }
-    .path-step span { color: var(--muted); line-height: 1.55; font-size: 14px; }
-    .notice { border: 1px solid rgba(94,234,212,.28); background: rgba(94,234,212,.08); border-radius: 22px; padding: 18px; color: #d9fffb; margin-top: 18px; }
-    footer { padding: 56px 0 36px; color: #7f87ad; border-top: 1px solid rgba(255,255,255,.08); margin-top: 40px; font-size: 14px; }
-    .footer-row { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; }
-    .footer-links { display: inline-flex; gap: 18px; flex-wrap: wrap; }
-    .footer-links a:hover { color: var(--text); }
+    main { padding-bottom: 80px; }
+    section { padding: 54px 0; scroll-margin-top: 96px; }
+    .hero { padding: 72px 0 38px; }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, 1.06fr) minmax(360px, .94fr); gap: 32px; align-items: center; }
+    .eyebrow { display: inline-flex; gap: 8px; align-items: center; color: var(--blue); text-transform: uppercase; letter-spacing: .16em; font-size: 12px; font-weight: 950; }
+    .eyebrow::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 0 7px rgba(6,182,212,.12); }
+    h1 { margin: 16px 0 18px; font-size: clamp(46px, 7vw, 86px); line-height: .92; letter-spacing: -.075em; text-wrap: balance; }
+    h2 { margin: 0; }
+    h3 { margin: 0 0 10px; letter-spacing: -.03em; }
+    .lead { color: #1e293b; font-size: clamp(18px, 2vw, 22px); line-height: 1.65; max-width: 780px; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 28px; }
+    .hero-badges { display: flex; gap: 9px; flex-wrap: wrap; margin: 0 0 20px; }
+    .badge { border: 1px solid rgba(15,23,42,.1); background: rgba(255,255,255,.68); color: #1e293b; border-radius: 999px; padding: 8px 11px; font-size: 13px; font-weight: 800; }
+    .preview { border: 1px solid var(--line); border-radius: 32px; background: rgba(255,255,255,.72); box-shadow: var(--shadow); overflow: hidden; }
+    .preview-head { display: flex; justify-content: space-between; gap: 14px; padding: 18px; border-bottom: 1px solid var(--line); background: rgba(248,250,252,.78); }
+    .dots { display: inline-flex; gap: 7px; align-items: center; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #fb7185; }
+    .dot:nth-child(2) { background: #f59e0b; }
+    .dot:nth-child(3) { background: #22c55e; }
+    .status { color: var(--green); font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .12em; }
+    .preview-body { padding: 22px; }
+    .command { border: 1px solid rgba(15,23,42,.09); background: #08111f; color: #dbeafe; border-radius: 20px; padding: 18px; overflow: auto; line-height: 1.55; font-size: 13px; }
+    .command .accent { color: #67e8f9; }
+    .plan-card { margin-top: 16px; border: 1px solid rgba(37,99,235,.18); background: linear-gradient(180deg, rgba(37,99,235,.08), rgba(6,182,212,.05)); border-radius: 22px; padding: 18px; }
+    .plan-card h3 { font-size: 19px; }
+    .plan-meta { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
+    .mini { border: 1px solid rgba(15,23,42,.1); background: rgba(255,255,255,.7); color: #1e293b; border-radius: 999px; padding: 7px 9px; font-size: 12px; font-weight: 800; }
+    .plan-steps { margin: 0; padding-left: 18px; color: var(--muted); line-height: 1.65; }
+    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 26px; }
+    .metric { border: 1px solid var(--line); background: rgba(255,255,255,.7); border-radius: 22px; padding: 18px; }
+    .metric span { color: var(--muted); font-size: 13px; font-weight: 800; }
+    .metric strong { display: block; font-size: 28px; letter-spacing: -.04em; margin-top: 8px; }
+    .section-kicker { color: var(--blue); text-transform: uppercase; letter-spacing: .16em; font-size: 12px; font-weight: 950; margin-bottom: 12px; }
+    .section-title { font-size: clamp(32px, 4.6vw, 58px); line-height: .98; letter-spacing: -.055em; text-wrap: balance; }
+    .section-copy { color: var(--muted); line-height: 1.72; max-width: 790px; font-size: 16px; }
+    .section-head { display: flex; justify-content: space-between; gap: 24px; align-items: end; margin-bottom: 24px; }
+    .section-head .section-copy { margin: 0; max-width: 520px; }
+    .workflow-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .workflow, .panel, .doc-card, .recipe {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: var(--radius);
+      box-shadow: 0 12px 40px rgba(15,23,42,.06);
+    }
+    .workflow { padding: 22px; min-height: 300px; display: flex; flex-direction: column; }
+    .workflow-top { display: flex; justify-content: space-between; align-items: start; gap: 14px; margin-bottom: 18px; }
+    .num { width: 38px; height: 38px; border-radius: 14px; display: grid; place-items: center; color: var(--blue); background: rgba(37,99,235,.1); font-weight: 950; }
+    .ring { width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 950; color: var(--blue); background: conic-gradient(var(--blue) var(--p), rgba(37,99,235,.13) 0); position: relative; }
+    .ring::after { content: ""; position: absolute; inset: 6px; border-radius: 50%; background: #fff; }
+    .ring span { position: relative; z-index: 1; }
+    .workflow p, .doc-card p, .recipe p, .panel p { color: var(--muted); line-height: 1.65; }
+    .workflow ul { margin: auto 0 0; padding-left: 18px; color: var(--muted); line-height: 1.6; }
+    .split { display: grid; grid-template-columns: .95fr 1.05fr; gap: 18px; align-items: stretch; }
+    .panel { padding: 26px; }
+    .playground-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 18px; align-items: stretch; }
+    .prompt-box { display: grid; gap: 13px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 9px; }
+    .chip { border: 1px solid rgba(37,99,235,.18); background: rgba(37,99,235,.07); color: #1e40af; border-radius: 999px; padding: 8px 10px; font-size: 13px; font-weight: 800; }
+    .textarea { min-height: 156px; border: 1px solid var(--line); border-radius: 20px; background: #fff; padding: 16px; color: #1e293b; line-height: 1.65; }
+    .select-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .select { border: 1px solid var(--line); border-radius: 18px; background: #fff; padding: 14px; }
+    .select small { display: block; color: var(--muted); font-weight: 800; margin-bottom: 7px; }
+    .output { background: linear-gradient(180deg, rgba(15,23,42,.96), rgba(30,41,59,.96)); color: #e2e8f0; }
+    .output .section-kicker { color: #67e8f9; }
+    .output h3 { color: #fff; font-size: 25px; }
+    .output p, .output li { color: #cbd5e1; }
+    .output .mini { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.14); color: #e2e8f0; }
+    .analytics-grid { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 16px; }
+    .analytics-card { min-height: 210px; }
+    .big-number { font-size: clamp(42px, 5vw, 68px); line-height: 1; letter-spacing: -.06em; font-weight: 950; margin: 10px 0; }
+    .bar-list { display: grid; gap: 10px; margin-top: 16px; }
+    .bar-row { display: grid; grid-template-columns: 110px 1fr auto; gap: 10px; align-items: center; color: var(--muted); font-size: 14px; }
+    .bar-track { height: 9px; border-radius: 999px; background: rgba(37,99,235,.11); overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--blue), var(--cyan)); }
+    .recent { display: grid; gap: 12px; }
+    .recent-item { padding: 13px; border: 1px solid rgba(15,23,42,.08); background: rgba(255,255,255,.55); border-radius: 18px; }
+    .recent-item strong { display: block; margin-bottom: 8px; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 9px; margin: 8px 0 22px; }
+    .tab.active { background: #0f172a; color: #fff; border-color: #0f172a; }
+    .recipe-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .recipe { display: flex; flex-direction: column; padding: 20px; min-height: 238px; }
+    .recipe .meta { display: flex; flex-wrap: wrap; gap: 7px; margin: auto 0 16px; padding-top: 12px; }
+    .recipe-link { color: var(--blue); font-weight: 900; }
+    .docs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .doc-card { padding: 20px; min-height: 205px; display: flex; flex-direction: column; }
+    .doc-card .recipe-link { margin-top: auto; }
+    .roadmap { display: grid; gap: 12px; }
+    .roadmap-item { display: grid; grid-template-columns: 120px 1fr; gap: 18px; align-items: start; border: 1px solid var(--line); background: rgba(255,255,255,.66); border-radius: 20px; padding: 16px; }
+    .roadmap-item span { color: var(--blue); font-weight: 950; }
+    .roadmap-item p { margin: 0; color: var(--muted); line-height: 1.6; }
+    footer { padding: 44px 0; border-top: 1px solid var(--line); color: var(--muted); }
+    .footer-row { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; justify-content: space-between; }
+    .footer-links { display: inline-flex; gap: 16px; flex-wrap: wrap; font-weight: 800; }
+    .footer-links a:hover { color: var(--blue); }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #070a12;
+        --bg-soft: #0f172a;
+        --panel: rgba(15,23,42,.78);
+        --panel-solid: #0f172a;
+        --ink: #f8fafc;
+        --muted: #aab6cc;
+        --soft: #8a97ad;
+        --line: rgba(255,255,255,.12);
+        --shadow: 0 26px 90px rgba(0,0,0,.34);
+      }
+      body { background: radial-gradient(circle at 12% 0%, rgba(37,99,235,.32), transparent 34rem), radial-gradient(circle at 88% 2%, rgba(6,182,212,.20), transparent 30rem), linear-gradient(180deg, #080b14 0%, #070a12 52%, #03050a 100%); }
+      header { background: rgba(7,10,18,.76); border-bottom-color: rgba(255,255,255,.08); }
+      .links a, .button, .tab, .badge, .metric, .preview, .preview-head, .mini, .textarea, .select, .recent-item, .roadmap-item { background: rgba(15,23,42,.74); color: #dbe4f5; box-shadow: none; }
+      .button.primary, .tab.active { background: #f8fafc; color: #070a12; border-color: #f8fafc; }
+      .button.blue { color: #fff; }
+      .lead { color: #d7def0; }
+      .command { background: #020617; }
+      .ring::after { background: #0f172a; }
+      .workflow p, .doc-card p, .recipe p, .panel p, .workflow ul, .output p, .output li { color: var(--muted); }
+      .chip { background: rgba(37,99,235,.18); color: #bfdbfe; }
+      .output { background: linear-gradient(180deg, rgba(2,6,23,.98), rgba(15,23,42,.98)); }
+    }
+    @media (max-width: 980px) {
+      .hero-grid, .split, .playground-grid { grid-template-columns: 1fr; }
+      .workflow-grid, .metrics, .analytics-grid, .recipe-grid, .docs-grid { grid-template-columns: repeat(2, 1fr); }
+      .section-head { display: block; }
+      .section-head .section-copy { margin-top: 12px; }
+    }
     @media (max-width: 860px) {
-      .hero-grid, .split { grid-template-columns: 1fr; }
-      .cards, .path-grid { grid-template-columns: 1fr; }
+      .links { display: none; }
+      nav { min-height: 64px; }
+    }
+    @media (max-width: 700px) {
       header { position: static; }
-      .footer-row { flex-direction: column; align-items: flex-start; }
+      nav { align-items: flex-start; padding: 14px 0; }
+      .hero { padding-top: 44px; }
+      .workflow-grid, .metrics, .analytics-grid, .recipe-grid, .docs-grid, .select-row { grid-template-columns: 1fr; }
+      .roadmap-item { grid-template-columns: 1fr; }
+      h1 { font-size: clamp(40px, 13vw, 58px); }
     }
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
@@ -139,12 +251,16 @@
   <a class="skip-link" href="#top">Skip to content</a>
   <header>
     <nav class="wrap" aria-label="Primary navigation">
-      <a class="brand" href="#top" aria-label="Arc MCP Builder Assistant home"><span class="mark" aria-hidden="true">A</span><span>Arc MCP Builder Assistant</span></a>
+      <a class="brand" href="#top" aria-label="Arc MCP Builder Assistant home">
+        <span class="mark" aria-hidden="true">A</span>
+        <span class="brand-text"><strong>Arc MCP Builder</strong><span>Model Context Protocol</span></span>
+      </a>
       <div class="links">
         <a href="#workflows">Workflows</a>
-        <a href="#build-path">Build path</a>
-        <a href="#docs">Docs</a>
+        <a href="#playground">Playground</a>
+        <a href="#analytics">Analytics</a>
         <a href="#playbooks">Playbooks</a>
+        <a href="#docs">Docs</a>
         <a href="#roadmap">Roadmap</a>
         <a class="repo-link" href="https://github.com/Anstrays/arc-mcp-builder-assistant" target="_blank" rel="noopener noreferrer" aria-label="View Arc MCP Builder Assistant on GitHub">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.11.79-.25.79-.56v-2c-3.2.69-3.87-1.37-3.87-1.37-.52-1.34-1.27-1.7-1.27-1.7-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.76 2.69 1.25 3.34.95.1-.74.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.45.11-3.02 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.78 0c2.21-1.49 3.18-1.18 3.18-1.18.62 1.57.23 2.73.11 3.02.74.81 1.18 1.84 1.18 3.1 0 4.43-2.7 5.41-5.26 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
@@ -158,342 +274,274 @@
     <section class="hero">
       <div class="wrap hero-grid">
         <div>
-          <div class="eyebrow">Independent Arc builder experiment</div>
-          <h1>AI-assisted building for Arc MCP and agentic commerce.</h1>
-          <p class="lead">A lightweight resource for builders who want to use Arc's MCP/docs context with AI coding tools, then turn that context into practical stablecoin and agent payment prototypes.</p>
+          <div class="hero-badges">
+            <span class="badge">Open source</span>
+            <span class="badge">No private keys</span>
+            <span class="badge">Human approval</span>
+          </div>
+          <div class="eyebrow">Arc agent builder kit</div>
+          <h1>Build Arc-ready MCP agents from prompt to verified runtime.</h1>
+          <p class="lead">A practical workspace for turning Arc docs context into reviewable agent plans, USDC payment flows, x402 boundaries, and local-first playgrounds before any wallet or testnet action.</p>
           <div class="actions">
-            <a class="button primary" href="./docs/view.html#arc-mcp-setup.md">Start with MCP setup</a>
-            <a class="button" href="./docs/view.html#arc-docs-map.md">Read Arc docs map</a>
-            <a class="button" href="./docs/view.html#payment-intent-demo.md">Read demo spec</a>
-            <a class="button" href="./docs/view.html#mcp-query-examples.md">Use MCP prompts</a>
-            <a class="button" href="./examples/payment-intent-playground/">Open playground</a>
-            <a class="button" href="./examples/transaction-status-playground/">Check transaction status</a>
+            <a class="button blue" href="./examples/payment-intent-playground/">Open payment playground</a>
+            <a class="button primary" href="./docs/view.html#arc-builder-readiness-checklist.md">Readiness checklist</a>
+            <a class="button" href="./docs/view.html#arc-mcp-setup.md">MCP setup</a>
             <a class="button" href="./docs/view.html#arc-production-deployment.md">Production runbook</a>
-            <a class="button" href="./examples/payment-intent-demo/">View demo mockup</a>
+          </div>
+          <div class="metrics" aria-label="Honest project metrics">
+            <div class="metric"><span>MCP recipes</span><strong>6</strong></div>
+            <div class="metric"><span>Local demos</span><strong>5</strong></div>
+            <div class="metric"><span>Wallet default</span><strong>Off</strong></div>
+            <div class="metric"><span>Safety mode</span><strong>Review</strong></div>
           </div>
         </div>
-        <div class="terminal" aria-label="Prompt example">
-          <div class="bar" aria-hidden="true"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
-          <pre><code><span class="green">prompt</span>: Use Arc MCP/docs context to design
-        a minimal payment-intent demo.
-
-<span class="lime">scenario</span>: an AI agent creates a USDC
-          payment request, the user reviews it,
-          then approves manually.
-
-<span class="green">return</span>: docs pages, primitives, risks,
-        and a 1-day build plan.</code></pre>
-        </div>
+        <aside class="preview" aria-label="Arc builder preview">
+          <div class="preview-head">
+            <span class="dots" aria-hidden="true"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+            <span class="status">Database-free static kit</span>
+          </div>
+          <div class="preview-body">
+            <pre class="command"><code><span class="accent">prompt</span>: Draft an Arc USDC payment-intent agent
+runtime: Node 20 / Edge Worker
+surface: local playground + docs viewer
+safety: human approval, no custody, no broadcast</code></pre>
+            <div class="plan-card">
+              <h3>Scaffold: USDC payment-intent agent</h3>
+              <div class="plan-meta">
+                <span class="mini">Arc Testnet</span>
+                <span class="mini">USDC</span>
+                <span class="mini">Risk · Review-first</span>
+                <span class="mini">~1 day slice</span>
+              </div>
+              <ol class="plan-steps">
+                <li>Ground the plan with cited Arc MCP context.</li>
+                <li>Freeze intent fields before any wallet handoff.</li>
+                <li>Keep signing manual and transaction requests disabled in v0.</li>
+                <li>Verify status through read-only helpers and publish the result.</li>
+              </ol>
+            </div>
+          </div>
+        </aside>
       </div>
     </section>
 
     <section id="workflows">
       <div class="wrap">
-        <h2 class="section-title">What this ships first</h2>
-        <p class="section-copy">The first version is intentionally small: docs, prompts, and a simple UI mockup. It is designed to become public proof-of-work before expanding into a testnet-connected prototype.</p>
-        <div class="cards">
-          <article class="card"><div class="num" aria-hidden="true">1</div><h3>MCP setup notes</h3><p>Checklist for connecting AI tools to Arc docs through the official MCP surface and verifying retrieved context.</p></article>
-          <article class="card"><div class="num" aria-hidden="true">2</div><h3>Arc docs map</h3><p>Network config, core contract addresses, ERC-8004 agent identity, ERC-8183 job escrow, and event-monitoring roadmap.</p></article>
-          <article class="card"><div class="num" aria-hidden="true">3</div><h3>Payment-intent demo</h3><p>A safe first agentic commerce flow: an agent prepares a USDC request, while the human keeps approval control.</p></article>
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">01 · Workflows</div>
+            <h2 class="section-title">Four steps from Arc intent to reviewed agent flow.</h2>
+          </div>
+          <p class="section-copy">Each workflow keeps inputs, outputs, review checkpoints, and safety boundaries explicit. The goal is usable proof-of-work, not speculative autonomous spending.</p>
+        </div>
+        <div class="workflow-grid">
+          <article class="workflow">
+            <div class="workflow-top"><span class="num">1</span><span class="ring" style="--p: 92%;"><span>92%</span></span></div>
+            <h3>Discovery</h3>
+            <p>Map the actor, payment surface, docs source, and human approval boundary before code.</p>
+            <ul><li>Arc MCP context</li><li>Use-case thesis</li><li>Source citations</li><li>Non-goals</li></ul>
+          </article>
+          <article class="workflow">
+            <div class="workflow-top"><span class="num">2</span><span class="ring" style="--p: 86%;"><span>86%</span></span></div>
+            <h3>Architect</h3>
+            <p>Turn requirements into schemas, runtime constraints, and wallet-safe contracts.</p>
+            <ul><li>Intent JSON</li><li>Runtime choice</li><li>Idempotency</li><li>Approval gates</li></ul>
+          </article>
+          <article class="workflow">
+            <div class="workflow-top"><span class="num">3</span><span class="ring" style="--p: 74%;"><span>74%</span></span></div>
+            <h3>Compose</h3>
+            <p>Use local demos and prompts to produce reviewable outputs without side effects.</p>
+            <ul><li>Playground state</li><li>Prompt snapshot</li><li>Unsigned draft</li><li>Manifest preview</li></ul>
+          </article>
+          <article class="workflow">
+            <div class="workflow-top"><span class="num">4</span><span class="ring" style="--p: 68%;"><span>68%</span></span></div>
+            <h3>Verify</h3>
+            <p>Check safety contracts, status helpers, and public documentation before next PR.</p>
+            <ul><li>No keys</li><li>No broadcast</li><li>Human approval</li><li>Publish log</li></ul>
+          </article>
         </div>
       </div>
     </section>
 
-    <section>
-      <div class="wrap split">
-        <div>
-          <h2 class="section-title">Why this fits Arc</h2>
-          <p class="section-copy">Arc's public narrative points toward stablecoin-native finance, agentic economy apps, autonomous agents, onchain identity, and predictable payment infrastructure. This kit turns that narrative into builder-facing workflows.</p>
-          <div class="pill-row">
-            <span class="pill">MCP verified</span><span class="pill">Docs-grounded</span><span class="pill">No custody</span><span class="pill">Human approval</span><span class="pill">Testnet-first</span><span class="pill">ERC-8004 agents</span><span class="pill">ERC-8183 jobs</span><span class="pill">Event monitoring</span>
+    <section id="playground">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">02 · Playground</div>
+            <h2 class="section-title">Draft a build plan from one practical Arc prompt.</h2>
+          </div>
+          <p class="section-copy">This static homepage links into local-only playgrounds. No LLM call, wallet request, private key access, or transaction broadcast is performed from the landing page.</p>
+        </div>
+        <div class="playground-grid">
+          <div class="panel prompt-box">
+            <h3>Prompt presets</h3>
+            <div class="chips" aria-label="Prompt presets">
+              <span class="chip">USDC payment intent</span>
+              <span class="chip">x402 paid API gateway</span>
+              <span class="chip">Arc wallet policy monitor</span>
+              <span class="chip">Webhook reconciliation</span>
+              <span class="chip">Job escrow simulator</span>
+              <span class="chip">Receipt verifier</span>
+            </div>
+            <div class="textarea" aria-label="Example prompt">Draft an Arc payment-intent agent for a single-merchant storefront. Include webhook reconciliation, idempotency keys, a retry policy, and a hard human-approval gate before any wallet action.</div>
+            <div class="select-row">
+              <div class="select"><small>Runtime</small><strong>Node 20 / Edge Worker</strong></div>
+              <div class="select"><small>Surface</small><strong>API route / CLI / local demo</strong></div>
+            </div>
+            <div class="actions">
+              <a class="button blue" href="./examples/payment-intent-playground/">Open live playground</a>
+              <a class="button" href="./examples/receipt-verifier-playground/index.html">Verify receipt JSON</a>
+            </div>
+          </div>
+          <div class="panel output">
+            <div class="section-kicker">Generated plan preview</div>
+            <h3>Scaffold: Arc payment-intent workflow</h3>
+            <div class="plan-meta">
+              <span class="mini">Node 20</span>
+              <span class="mini">API route</span>
+              <span class="mini">Risk · Medium until reviewed</span>
+              <span class="mini">Human signs manually</span>
+            </div>
+            <ol class="plan-steps">
+              <li>Capture amount, asset, recipient, memo, expiry, and status as frozen intent fields.</li>
+              <li>Load Arc facts from MCP docs and cite the pages used in the plan.</li>
+              <li>Generate unsigned transaction preview only after validation passes.</li>
+              <li>Block wallet handoff until chain, recipient, decimals, and approval copy are reviewed.</li>
+              <li>Record local confirmation and publish what is verified, unknown, and deferred.</li>
+            </ol>
+            <div class="actions">
+              <a class="button" href="./docs/view.html#wallet-preflight-contract.md">Wallet preflight</a>
+              <a class="button" href="./docs/view.html#payment-intent-quickstart.md">5-minute quickstart</a>
+            </div>
           </div>
         </div>
-        <div class="panel mock">
-          <div class="eyebrow">Demo concept</div>
-          <h3>Agent Payment Intent</h3>
-          <div class="intent-row"><span>Agent</span><strong>Research Agent</strong></div>
-          <div class="intent-row"><span>Asset</span><strong>USDC</strong></div>
-          <div class="intent-row"><span>Amount</span><strong>5.00</strong></div>
-          <div class="intent-row"><span>Status</span><strong>Pending human approval</strong></div>
-          <p>No custody, no private keys, no autonomous mainnet spending in v0. The first prototype keeps user approval explicit.</p>
-        </div>
       </div>
     </section>
 
-    <section id="build-path">
-      <div class="wrap panel">
-        <div class="eyebrow">Builder path</div>
-        <h2 class="section-title">From docs context to a safe Arc testnet prototype.</h2>
-        <p class="section-copy">The app now shows the intended implementation sequence instead of leaving the demo as a loose mockup. Each step keeps private keys and autonomous spending out of scope until the testnet flow is reviewed.</p>
-        <div class="path-grid" aria-label="Recommended build path">
-          <div class="path-step"><strong>1 · Ground the agent</strong><span>Connect an AI coding tool to Arc MCP, then ask it to cite the docs it used before scaffolding code.</span></div>
-          <div class="path-step"><strong>2 · Create intent data</strong><span>Represent amount, asset, recipient, memo, expiry, and status as reviewable JSON before any wallet action.</span></div>
-          <div class="path-step"><strong>3 · Require human approval</strong><span>Keep signing manual. The agent can prepare context, but the user confirms every transaction.</span></div>
-          <div class="path-step"><strong>4 · Observe and document</strong><span>Track status through ArcScan or app logs, then publish the findings back into the docs and prompts.</span></div>
-        </div>
-        <p class="notice"><strong>Safety default:</strong> v0 is non-custodial and review-first. No backend custody, no private-key handling, and no autonomous mainnet spending.</p>
-        <div class="terminal" aria-label="Architecture diagram" style="margin-top: 18px;">
-          <div class="bar" aria-hidden="true"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
-          <pre><code>User review/approval
-  ↓
-AI coding tool or agent
-  ↓ uses cited context
-Arc MCP docs
-  ↓
-Payment intent / job escrow object
-  ↓ later, after verification
-Arc Testnet · USDC · ArcScan status</code></pre>
-        </div>
-      </div>
-    </section>
-
-    <section id="docs">
+    <section id="analytics">
       <div class="wrap">
-        <h2 class="section-title">Docs and community files</h2>
-        <p class="section-copy">Every page stays as plain Markdown in the repo, while the live site opens a styled reader so builders do not land on raw text files.</p>
-        <div class="cards">
-          <article class="card">
-            <h3>MCP setup</h3>
-            <p>Connect Claude Code, Claude Desktop, Cursor, VS Code, Windsurf, and HTTP MCP clients to Arc's <code>docs.arc.network/mcp</code> server.</p>
-            <span class="meta"><a href="./docs/view.html#arc-mcp-setup.md">docs/arc-mcp-setup.md →</a></span>
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">03 · Analytics</div>
+            <h2 class="section-title">Honest project state instead of fake vanity metrics.</h2>
+          </div>
+          <p class="section-copy">The homepage now reports real surfaces shipped in the repo: docs, demos, prompts, validators, and safety runbooks.</p>
+        </div>
+        <div class="analytics-grid">
+          <article class="panel analytics-card">
+            <span class="badge">Repository surfaces</span>
+            <div class="big-number">28+</div>
+            <p>Docs, prompts, local demos, validation scripts, and community files.</p>
           </article>
-          <article class="card">
-            <h3>Arc docs map</h3>
-            <p>Practical map of Arc Testnet config, contracts, agent primitives (ERC-8004, ERC-8183), tutorials, tools, and the recommended build path.</p>
-            <span class="meta"><a href="./docs/view.html#arc-docs-map.md">docs/arc-docs-map.md →</a></span>
+          <article class="panel analytics-card">
+            <span class="badge">Safety boundaries</span>
+            <div class="big-number">5</div>
+            <p>No custody, no private keys, no wallet connect, no app backend/custody calls, no broadcast by default.</p>
           </article>
-          <article class="card">
-            <h3>Deploy contracts on Arc</h3>
-            <p>Builder notes from Arc's deploy-contracts tutorial with Circle Contracts on Arc Testnet (ERC-20, ERC-721, ERC-1155, Airdrop).</p>
-            <span class="meta"><a href="./docs/view.html#deploy-contracts-arc.md">docs/deploy-contracts-arc.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Builder workflows</h3>
-            <p>Four practical Arc + AI workflows: docs-aware coding, payment intents, agent identity, and a builder content loop.</p>
-            <span class="meta"><a href="./docs/view.html#builder-workflows.md">docs/builder-workflows.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Payment-intent playground</h3>
-            <p>Local-only interactive app for editing a payment request, inspecting live JSON, previewing wallet provider/address/chain state without permissions, freezing reviewed fields, recording final local confirmation, previewing an unsigned ERC-20 transaction draft, checking decoded calldata consistency, reviewing a blocked wallet handoff manifest, and simulating explicit human approval states.</p>
-            <span class="meta"><a href="./examples/payment-intent-playground/">examples/payment-intent-playground →</a></span>
-          </article>
-          <article class="card">
-            <h3>Payment-intent demo spec</h3>
-            <p>Thesis, user story, MVP flow, data model, non-goals, and open Arc docs questions to verify before testnet integration.</p>
-            <span class="meta"><a href="./docs/view.html#payment-intent-demo.md">docs/payment-intent-demo.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Payment-intent quickstart</h3>
-            <p>A 5-minute reviewer path for running the local playground, checking guardrails, and proving there are no wallet or transaction side effects.</p>
-            <span class="meta"><a href="./docs/view.html#payment-intent-quickstart.md">docs/payment-intent-quickstart.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Payment status tutorial</h3>
-            <p>Step-by-step local status review: draft intent, validation summary, preflight report, future ArcScan confirmation states, and honest sharing copy.</p>
-            <span class="meta"><a href="./docs/view.html#payment-status-tutorial.md">docs/payment-status-tutorial.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Contest demo script</h3>
-            <p>A 60-90 second recording path with safety boundaries, community post copy, and contest submission bullets for public proof-of-work.</p>
-            <span class="meta"><a href="./docs/view.html#contest-demo-script.md">docs/contest-demo-script.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Blog and contest content pack</h3>
-            <p>Russian Telegram copy, X and Discord drafts, thumbnail prompts, vertical video storyboard, carousel slides, and screenshot checklist.</p>
-            <span class="meta"><a href="./docs/view.html#content-pack.md">docs/content-pack.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Arc Discord introduction pack</h3>
-            <p>Copy-ready Arc server onboarding answers, builder-intro drafts, office-hours questions, and no-speculation guardrails.</p>
-            <span class="meta"><a href="./docs/view.html#arc-discord-introduction.md">docs/arc-discord-introduction.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Receipt verifier playground</h3>
-            <p>Local-only Arc receipt JSON checker for chain ID, recipient, amount, asset, intent hash, expiry, and transaction hash shape.</p>
-            <span class="meta"><a href="./examples/receipt-verifier-playground/index.html">examples/receipt-verifier-playground/index.html →</a> · <a href="./docs/view.html#receipt-verifier-playground.md">docs/receipt-verifier-playground.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Transaction status playground</h3>
-            <p>Read-only Arc Testnet transaction hash lookup using public RPC states: not checked, pending, confirmed, failed, or unknown.</p>
-            <span class="meta"><a href="./examples/transaction-status-playground/index.html">examples/transaction-status-playground/index.html →</a> · <a href="./docs/view.html#transaction-status-playground.md">docs/transaction-status-playground.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Prompt library</h3>
-            <p>Source-grounded prompts for MCP setup, Arc docs mapping, payment intents, ERC-8004 identity, ERC-8183 jobs, and contract templates.</p>
-            <span class="meta"><a href="./docs/view.html#prompt-library.md">docs/prompt-library.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Agent identity notes</h3>
-            <p>ERC-8004 registry notes for adding onchain agent identity without weakening the human-approved payment boundary.</p>
-            <span class="meta"><a href="./docs/view.html#agent-identity-erc8004.md">docs/agent-identity-erc8004.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Builder readiness checklist</h3>
-            <p>Pre-submit checklist for docs grounding, payment safety, UX states, repo quality, and public proof-of-work.</p>
-            <span class="meta"><a href="./docs/view.html#arc-builder-readiness-checklist.md">docs/arc-builder-readiness-checklist.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Arc Testnet integration runbook</h3>
-            <p>Safe next sequence: verify Arc facts, add read-only status, gate wallet approval, and only then submit testnet transactions.</p>
-            <span class="meta"><a href="./docs/view.html#arc-testnet-integration-runbook.md">docs/arc-testnet-integration-runbook.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Arc wallet integration notes</h3>
-            <p>Circle Wallets and browser-wallet decision notes for the next Phase 2 slice: read-only status first, signing later, backend custody separate.</p>
-            <span class="meta"><a href="./docs/view.html#arc-wallet-integration-notes.md">docs/arc-wallet-integration-notes.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Wallet preflight contract</h3>
-            <p>Secret-free review contract for future Arc Testnet wallet preview and send PRs: chain gating, USDC units, frozen intent fields, human approval, and final confirmation.</p>
-            <span class="meta"><a href="./docs/view.html#wallet-preflight-contract.md">docs/wallet-preflight-contract.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Agent commerce use cases</h3>
-            <p>Practical Arc use cases: API-call payments, creator payouts, job escrow, AI service marketplace, and report agents.</p>
-            <span class="meta"><a href="./docs/view.html#agent-commerce-use-cases.md">docs/agent-commerce-use-cases.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Agent commerce components</h3>
-            <p>Reusable local-only agent cards, payment requests, receipts, and event logs for review-first Arc commerce flows.</p>
-            <span class="meta"><a href="./examples/agent-commerce-components/">examples/agent-commerce-components →</a> · <a href="./docs/view.html#agent-commerce-components.md">docs/agent-commerce-components.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Agent commerce flows</h3>
-            <p>Local paid API, creator payout, and AI-agent commerce flow templates with frozen review artifacts.</p>
-            <span class="meta"><a href="./examples/agent-commerce-flows/">examples/agent-commerce-flows →</a> · <a href="./docs/view.html#agent-commerce-flow-library.md">docs/agent-commerce-flow-library.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Agent commerce review packet</h3>
-            <p>Local exporter that combines identity, commerce flow, escrow outcome, approval note, and disabled controls into one reviewer JSON packet.</p>
-            <span class="meta"><a href="./examples/agent-commerce-review-packet/">examples/agent-commerce-review-packet →</a> · <a href="./docs/view.html#agent-commerce-review-packet.md">docs/agent-commerce-review-packet.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Agent identity preview</h3>
-            <p>Draft ERC-8004 agent metadata, controller notes, reputation notes, and validation requirements without registration or signing.</p>
-            <span class="meta"><a href="./examples/agent-identity-profile-preview/">examples/agent-identity-profile-preview →</a> · <a href="./docs/view.html#agent-identity-profile-preview.md">docs/agent-identity-profile-preview.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Job escrow demo</h3>
-            <p>ERC-8183-style flow for posting a job, funding escrow, agent submission, human review, and stablecoin payout.</p>
-            <span class="meta"><a href="./docs/view.html#job-escrow-demo.md">docs/job-escrow-demo.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Job escrow simulator</h3>
-            <p>A local-only interactive walkthrough for job posting, agent acceptance, simulated escrow funding, work submission, changes, rejection, dispute, expiry/cancellation, and human-approved payout.</p>
-            <span class="meta"><a href="./examples/job-escrow-simulator/">examples/job-escrow-simulator →</a></span>
-          </article>
-          <article class="card">
-            <h3>MCP query examples</h3>
-            <p>Copy-paste prompts for testnet config, payment intents, ERC-8004 identity, ERC-8183 escrow, and safety review.</p>
-            <span class="meta"><a href="./docs/view.html#mcp-query-examples.md">docs/mcp-query-examples.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Arc House submission draft</h3>
-            <p>A ready-to-edit public builder update with links, safety boundaries, next task, and community asks.</p>
-            <span class="meta"><a href="./docs/view.html#arc-house-submission.md">docs/arc-house-submission.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Build log</h3>
-            <p>Public milestone note with what shipped, safety boundaries, verification commands, and a community-update draft.</p>
-            <span class="meta"><a href="./docs/view.html#build-log.md">docs/build-log.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>x402 local boundary</h3>
-            <p>Dependency-free HTTP 402 challenge server with a safe MCP-style manifest, JSON-RPC stdio tools, JSON helpers, and swappable verifier boundary for future paid API settlement work.</p>
-            <span class="meta"><a href="https://github.com/Anstrays/arc-mcp-builder-assistant/tree/main/examples/x402-local-challenge-server" target="_blank" rel="noopener noreferrer">examples/x402-local-challenge-server →</a> · <a href="./docs/view.html#x402-mcp-manifest.md">docs/x402-mcp-manifest.md →</a> · <a href="./docs/view.html#x402-demo-transcript.md">demo transcript →</a></span>
-          </article>
-          <article class="card">
-            <h3>Arc production deployment</h3>
-            <p>Secret-free deployment checklist for a future Circle Gateway/x402 verifier: placeholder env, challenge-only live smoke, and rollback gates.</p>
-            <span class="meta"><a href="./docs/view.html#arc-production-deployment.md">docs/arc-production-deployment.md →</a></span>
-          </article>
-          <article class="card">
-            <h3>Security &amp; conduct</h3>
-            <p>What never to commit, demo safety rules, code of conduct, and how to file a private security report.</p>
-            <span class="meta">
-              <a href="./docs/view.html#security.md">SECURITY.md</a> ·
-              <a href="./docs/view.html#contributing.md">CONTRIBUTING.md</a> ·
-              <a href="./docs/view.html#code-of-conduct.md">CODE_OF_CONDUCT.md</a>
-            </span>
+          <article class="panel analytics-card">
+            <h3>By builder surface</h3>
+            <div class="bar-list">
+              <div class="bar-row"><span>Docs</span><span class="bar-track"><span class="bar-fill" style="width: 92%"></span></span><strong>rich</strong></div>
+              <div class="bar-row"><span>Playgrounds</span><span class="bar-track"><span class="bar-fill" style="width: 72%"></span></span><strong>5</strong></div>
+              <div class="bar-row"><span>Runbooks</span><span class="bar-track"><span class="bar-fill" style="width: 64%"></span></span><strong>ready</strong></div>
+            </div>
           </article>
         </div>
       </div>
     </section>
 
     <section id="playbooks">
-      <div class="wrap split">
-        <div>
-          <div class="eyebrow">Builder playbooks</div>
-          <h2 class="section-title">Make the project useful for other Arc builders.</h2>
-          <p class="section-copy">The new docs turn the site from a static map into a starter kit: reusable prompts, readiness checks, practical agent-commerce examples, and a submission draft for public build updates.</p>
-          <div class="pill-row">
-            <a class="pill" href="./docs/view.html#mcp-query-examples.md">MCP query examples</a>
-            <a class="pill" href="./docs/view.html#arc-builder-readiness-checklist.md">Readiness checklist</a>
-            <a class="pill" href="./docs/view.html#arc-testnet-integration-runbook.md">Testnet runbook</a>
-            <a class="pill" href="./docs/view.html#wallet-preflight-contract.md">Wallet preflight contract</a>
-            <a class="pill" href="./examples/agent-identity-profile-preview/">Agent identity preview</a>
-            <a class="pill" href="./examples/agent-commerce-components/">Agent commerce components</a>
-            <a class="pill" href="./examples/agent-commerce-flows/">Agent commerce flows</a>
-            <a class="pill" href="./examples/agent-commerce-review-packet/">Review packet</a>
-            <a class="pill" href="./docs/view.html#payment-intent-quickstart.md">Payment quickstart</a>
-            <a class="pill" href="./docs/view.html#payment-status-tutorial.md">Payment status tutorial</a>
-            <a class="pill" href="./docs/view.html#contest-demo-script.md">Contest demo script</a>
-            <a class="pill" href="./docs/view.html#content-pack.md">Content pack</a>
-            <a class="pill" href="./docs/view.html#arc-discord-introduction.md">Discord intro</a>
-            <a class="pill" href="./examples/receipt-verifier-playground/index.html">Receipt verifier</a>
-            <a class="pill" href="./examples/transaction-status-playground/index.html">Transaction status</a>
-            <a class="pill" href="./docs/view.html#x402-demo-transcript.md">x402 transcript</a>
-            <a class="pill" href="./docs/view.html#arc-production-deployment.md">Production runbook</a>
-            <a class="pill" href="./docs/view.html#arc-house-submission.md">Arc House draft</a>
-            <a class="pill" href="./docs/view.html#build-log.md">Build log</a>
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">04 · Playbooks</div>
+            <h2 class="section-title">Ship-ready recipes for Arc agent builders.</h2>
           </div>
+          <p class="section-copy">The created-app reference had recipe cards; here each one opens a real doc or local playground instead of a dead button.</p>
         </div>
-        <div class="panel">
-          <h3>Next product shape</h3>
-          <ol class="checklist">
-            <li>Ground the agent with cited Arc MCP context.</li>
-            <li>Create a reviewable payment or job object.</li>
-            <li>Require explicit human approval before wallet action.</li>
-            <li>Track status through logs, ArcScan, or a local simulator.</li>
-            <li>Publish what was verified, what failed, and what is still unknown.</li>
-          </ol>
+        <div class="tabs" aria-label="Playbook categories">
+          <a class="tab active" href="#playbooks">All</a>
+          <a class="tab" href="./docs/view.html#agent-commerce-use-cases.md">Commerce</a>
+          <a class="tab" href="./docs/view.html#arc-production-deployment.md">Infrastructure</a>
+          <a class="tab" href="./docs/view.html#prompt-library.md">Prompts</a>
+          <a class="tab" href="./docs/view.html#content-pack.md">Content</a>
+        </div>
+        <div class="recipe-grid">
+          <a class="recipe" href="./examples/payment-intent-playground/">
+            <h3>USDC payment-intent agent</h3>
+            <p>Prepare a payment request, freeze reviewed fields, preview unsigned calldata, and keep final approval manual.</p>
+            <span class="meta"><span class="mini">Commerce</span><span class="mini">Node 20</span><span class="mini">Local-only</span></span>
+            <span class="recipe-link">Open playground →</span>
+          </a>
+          <a class="recipe" href="./docs/view.html#x402-mcp-manifest.md">
+            <h3>x402 paid API boundary</h3>
+            <p>Challenge-only 402 flow with a swappable verifier boundary for future paid API settlement work.</p>
+            <span class="meta"><span class="mini">Commerce</span><span class="mini">HTTP 402</span><span class="mini">No payment created</span></span>
+            <span class="recipe-link">Open recipe →</span>
+          </a>
+          <a class="recipe" href="./examples/job-escrow-simulator/">
+            <h3>Job escrow simulator</h3>
+            <p>Walk through ERC-8183-style job posting, simulated funding, agent submission, and human-approved payout.</p>
+            <span class="meta"><span class="mini">Agent jobs</span><span class="mini">Escrow</span><span class="mini">Simulator</span></span>
+            <span class="recipe-link">Open simulator →</span>
+          </a>
+          <a class="recipe" href="./examples/transaction-status-playground/index.html" data-doc="docs/transaction-status-playground.md">
+            <h3>Read-only status checker</h3>
+            <p>Check Arc Testnet transaction hash states without wallet connection, signing, or transaction broadcast.</p>
+            <span class="meta"><span class="mini">Infrastructure</span><span class="mini">RPC</span><span class="mini">Read-only</span></span>
+            <span class="recipe-link">Check status →</span>
+          </a>
+          <a class="recipe" href="./examples/receipt-verifier-playground/index.html" data-doc="docs/receipt-verifier-playground.md">
+            <h3>Receipt verifier</h3>
+            <p>Review chain ID, recipient, amount, asset, intent hash, expiry, and transaction hash shape from local JSON.</p>
+            <span class="meta"><span class="mini">Verification</span><span class="mini">JSON</span><span class="mini">No backend</span></span>
+            <span class="recipe-link">Verify receipt →</span>
+          </a>
+          <a class="recipe" href="./docs/view.html#content-pack.md">
+            <h3>Builder content pack</h3>
+            <p>Turn the build into Russian Telegram copy, X drafts, Discord updates, thumbnails, and a demo storyboard.</p>
+            <span class="meta"><span class="mini">Content</span><span class="mini">Public update</span><span class="mini">Proof-of-work</span></span>
+            <span class="recipe-link">Open pack →</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="docs">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">05 · Docs</div>
+            <h2 class="section-title">Docs, changelog, and safety pages are real links.</h2>
+          </div>
+          <p class="section-copy">No placeholder <code>#</code> links: every public entry routes to the styled docs viewer, local playground, repository, or community file.</p>
+        </div>
+        <div class="docs-grid">
+          <a class="doc-card" href="./docs/view.html#arc-mcp-setup.md"><h3>MCP setup</h3><p>Connect AI coding tools to Arc docs through the MCP surface and verify retrieved context.</p><span class="recipe-link">Read setup →</span></a>
+          <a class="doc-card" href="./docs/view.html#arc-docs-map.md"><h3>Arc docs map</h3><p>Network config, contracts, agent primitives, tutorials, tools, and recommended build path.</p><span class="recipe-link">Open map →</span></a>
+          <a class="doc-card" href="./docs/view.html#prompt-library.md"><h3>Prompt library</h3><p>Copy-ready prompts for docs-aware coding, payment intents, agent identity, escrow, and reviews.</p><span class="recipe-link">Use prompts →</span></a>
+          <a class="doc-card" href="./docs/view.html#arc-builder-readiness-checklist.md"><h3>Readiness checklist</h3><p>Pre-submit gates for docs grounding, payment safety, UX states, repo quality, and public proof.</p><span class="recipe-link">Check gates →</span></a>
+          <a class="doc-card" href="./docs/view.html#build-log.md"><h3>Changelog / build log</h3><p>What shipped, what was verified, current safety boundaries, and the next reviewed slice.</p><span class="recipe-link">Read changelog →</span></a>
+          <a class="doc-card" href="./docs/view.html#security.md"><h3>Security</h3><p>Secret handling, report path, non-custodial defaults, and safe demo boundaries.</p><span class="recipe-link">Security page →</span></a>
         </div>
       </div>
     </section>
 
     <section id="roadmap">
-      <div class="wrap panel">
-        <h2 class="section-title">Roadmap</h2>
-        <ul class="checklist">
-          <li>Done: published the MCP setup checklist and prompt library.</li>
-          <li>Done: Arc MCP setup verified: HTTP server at <code>https://docs.arc.network/mcp</code>, no auth required.</li>
-          <li>Done: published Arc docs map: Testnet config, USDC/EURC contracts, ERC-8004 registries, ERC-8183 job escrow, providers, and tutorials.</li>
-          <li>Done: added contract-template notes from Arc deploy-contracts tutorial for ERC-20, ERC-721, ERC-1155, and Airdrop.</li>
-          <li>Done: added agent identity notes around Arc's ERC-8004 tutorial.</li>
-          <li>Done: added builder readiness checklist, MCP query examples, agent-commerce use cases, job escrow demo spec, and Arc House submission draft.</li>
-          <li>Done: turned the payment-intent mockup into a local interactive playground with reviewable JSON and status transitions.</li>
-          <li>Done: added a local job escrow simulator for ERC-8183-style posting, acceptance, simulated funding, work submission, and payout approval.</li>
-          <li>Done: added a local x402 challenge boundary and public build log for community review.</li>
-          <li>Done: added an Arc Testnet integration runbook and read-only RPC status helper.</li>
-          <li>Done: added a short payment status tutorial for local review and future testnet confirmation states.</li>
-          <li>Done: added a contest/demo script for recording, community updates, and submission copy.</li>
-          <li>Done: added an Arc Discord introduction pack for builder onboarding and public updates.</li>
-          <li>Done: added a local receipt verifier playground for simulated Arc payment receipt review.</li>
-          <li>Done: added a read-only Arc Testnet transaction status playground for hash lookup without signing or broadcast.</li>
-          <li>Done: added a secret-free Arc/x402 production deployment runbook, placeholder env contract, challenge-only live smoke script, and local demo transcript.</li>
-          <li>Done: added a secret-free wallet preflight contract for future Arc Testnet wallet preview/send PRs.</li>
-          <li>Done: added read-only wallet preview guard UI with provider/address/chain visibility, frozen intent fields, and no wallet permission requests.</li>
-          <li>Done: added final local confirmation UX while keeping transaction requests disabled.</li>
-          <li>Done: added unsigned ERC-20 transaction draft preview with wallet requests still disabled.</li>
-          <li>Done: added local calldata consistency checks for the unsigned transaction draft.</li>
-          <li>Done: added a blocked wallet handoff readiness manifest for future send PR review.</li>
-          <li>Done: added reusable local agent-commerce components for agent cards, payment requests, receipts, and event logs.</li>
-          <li>Done: added local agent-commerce flow templates for paid API calls, creator payouts, and AI-agent commerce.</li>
-          <li>Done: added a local agent-commerce review packet exporter for final human review before live wallet or settlement work.</li>
-          <li>Done: added a local ERC-8004 identity profile preview before live registration work.</li>
-          <li>Done: expanded the local job escrow simulator with terminal no-payout paths for rejection, dispute, expiry, and cancellation.</li>
-          <li>Next: verify current wallet/send details and prepare a separate reviewed testnet send PR only after all guards pass.</li>
-        </ul>
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">06 · Roadmap</div>
+            <h2 class="section-title">What we are working on next.</h2>
+          </div>
+          <p class="section-copy">Keep the project useful and monetization-aware without weakening the safety posture.</p>
+        </div>
+        <div class="roadmap">
+          <div class="roadmap-item"><span>Now</span><p>Polish the Arc builder homepage, route all recipes to real docs/playgrounds, and keep validation green.</p></div>
+          <div class="roadmap-item"><span>Next</span><p>Prepare a reviewed Arc Testnet send PR only after wallet/send details, chain gates, decimals, and approval copy are verified.</p></div>
+          <div class="roadmap-item"><span>Then</span><p>Package a Circle Gateway/x402 verifier handoff with placeholder env, challenge-only smoke test, and rollback gates.</p></div>
+          <div class="roadmap-item"><span>Later</span><p>Turn the best workflows into small paid API or agent-commerce primitives with transparent unit economics.</p></div>
+        </div>
       </div>
     </section>
   </main>
@@ -502,10 +550,11 @@ Arc Testnet · USDC · ArcScan status</code></pre>
     <div class="wrap footer-row">
       <span>Independent early-stage builder resource. Not an official Arc product or endorsement.</span>
       <span class="footer-links">
-        <a href="https://github.com/Anstrays/arc-mcp-builder-assistant" target="_blank" rel="noopener noreferrer">GitHub</a>
-        <a href="./LICENSE">License</a>
+        <a href="https://github.com/Anstrays/arc-mcp-builder-assistant" target="_blank" rel="noopener noreferrer">Repository</a>
+        <a href="https://anstrays.github.io/arc-mcp-builder-assistant/" target="_blank" rel="noopener noreferrer">GitHub Pages</a>
+        <a href="./docs/view.html#arc-mcp-setup.md">Docs</a>
+        <a href="./docs/view.html#build-log.md">Changelog</a>
         <a href="./docs/view.html#security.md">Security</a>
-        <a href="./docs/view.html#code-of-conduct.md">Code of Conduct</a>
       </span>
     </div>
   </footer>
@@ -515,9 +564,9 @@ Arc Testnet · USDC · ArcScan status</code></pre>
     "@context": "https://schema.org",
     "@type": "SoftwareSourceCode",
     "name": "Arc MCP Builder Assistant",
-    "description": "Independent Arc builder kit that turns Arc's MCP/docs surface into reusable AI-coding prompts and a safe payment-intent demo for agentic commerce on Arc Testnet.",
+    "description": "Independent Arc builder kit for turning MCP/docs context into reviewable agent workflows, USDC payment plans, local playgrounds, and safe Arc Testnet runbooks.",
     "codeRepository": "https://github.com/Anstrays/arc-mcp-builder-assistant",
-    "programmingLanguage": ["HTML", "Markdown"],
+    "programmingLanguage": ["HTML", "Markdown", "Python", "JavaScript"],
     "license": "https://opensource.org/licenses/MIT",
     "url": "https://anstrays.github.io/arc-mcp-builder-assistant/"
   }
