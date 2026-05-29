@@ -192,6 +192,7 @@ class HtmlInspector(HTMLParser):
         self.has_charset = False
         self.has_viewport = False
         self.has_description = False
+        self.has_csp = False
 
         self.script_type_stack: list[str] = []
         self.script_text_segments: list[str] = []
@@ -212,6 +213,8 @@ class HtmlInspector(HTMLParser):
                 self.has_viewport = True
             if name == "description" and attr.get("content"):
                 self.has_description = True
+            if attr.get("http-equiv", "").lower() == "content-security-policy" and attr.get("content"):
+                self.has_csp = True
 
         if tag == "script":
             script_type = attr.get("type", "").lower()
@@ -308,6 +311,9 @@ def validate_html_file(relative: str) -> None:
         fail(f"{relative}: missing <meta name=\"viewport\">")
     if not inspector.has_description:
         fail(f"{relative}: missing a non-empty <meta name=\"description\">")
+    if not inspector.has_csp:
+        fail(f"{relative}: missing Content-Security-Policy meta tag")
+
 def validate_html() -> None:
     for relative in HTML_FILES_TO_VALIDATE:
         validate_html_file(relative)

@@ -2,7 +2,7 @@
 
 [![Validate static site](https://github.com/Anstrays/arc-mcp-builder-assistant/actions/workflows/validate.yml/badge.svg)](https://github.com/Anstrays/arc-mcp-builder-assistant/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-[![Status: early MVP](https://img.shields.io/badge/status-early%20MVP-orange.svg)](#status)
+[![Status: public-ready kit](https://img.shields.io/badge/status-public--ready%20kit-2dba4e.svg)](#status)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-2dba4e.svg)](https://anstrays.github.io/arc-mcp-builder-assistant/)
 
 > Independent early-stage builder resource for exploring Arc's MCP server, AI-assisted development workflows, and agentic commerce prototypes.
@@ -13,16 +13,16 @@ The first version focuses on three practical workflows:
 
 1. **Connect AI tools to Arc docs through MCP** — so builders can ask targeted questions and retrieve relevant docs while coding.
 2. **Generate better Arc app plans** — prompts for payment flows, agent registration, stablecoin FX, and agentic commerce.
-3. **Prototype Arc agent payment concepts** — a minimal payment-intent demo spec that can evolve into a working testnet app.
+3. **Review Arc agent payment concepts** — local playgrounds and review artifacts for safe payment-intent, receipt, status, and escrow flows before any live testnet app.
 
 This repository is intentionally scoped as a builder enablement kit, not an official Arc product.
 
 ## Table of contents
 
 - [Why this matters](#why-this-matters)
-- [Current MVP](#current-mvp)
+- [Current kit](#current-kit)
 - [Screenshots](#screenshots)
-- [Roadmap](#roadmap)
+- [Completion status](#completion-status)
 - [Suggested use](#suggested-use)
 - [Local development](#local-development)
 - [Repository structure](#repository-structure)
@@ -44,7 +44,7 @@ Many builders want to explore that direction, but the first step is often messy:
 
 This kit turns those steps into reusable guides, prompts, and examples.
 
-## Current MVP
+## Current kit
 
 - [`docs/view.html`](./docs/view.html) — styled GitHub Pages Markdown reader so landing-page docs and community-health links open readable pages instead of raw text.
 - [`docs/arc-mcp-setup.md`](./docs/arc-mcp-setup.md) — real Arc MCP setup steps for Claude Code, Claude Desktop, Cursor, VS Code, Windsurf, and HTTP MCP clients.
@@ -97,65 +97,34 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 
 ![Job escrow simulator screenshot](./assets/screenshots/job-escrow-simulator.png)
 
-## Roadmap
+## Completion status
 
-### Phase 1 — Documentation kit
+The public static kit is complete for its current safe scope: docs-grounded Arc/MCP workflows, local playgrounds, review packets, screenshots, and CI validation. It intentionally stops before wallet permissions, private keys, signing, custody, live settlement, or transaction broadcast.
 
-- [x] Publish MCP setup checklist.
-- [x] Publish Arc builder prompt library.
-- [x] Publish payment-intent demo spec.
-- [x] Publish Arc docs map with network config, core contracts, ERC-8004, ERC-8183, and event-monitoring roadmap.
-- [x] Add contract-template notes from Arc's deploy-contracts tutorial for ERC-20, ERC-721, ERC-1155, and Airdrop.
-- [x] Add agent identity notes around Arc's ERC-8004 tutorial.
-- [x] Add builder readiness checklist, MCP query examples, agent-commerce use cases, job escrow demo spec, and Arc House submission draft.
-- [x] Turn the payment-intent mockup into a local interactive playground with reviewable JSON and status transitions.
-- [x] Turn the job escrow spec into a local simulator with reviewable JSON, change-request loop, and human-approved payout state.
-- [x] Add a styled Markdown docs viewer for GitHub Pages so docs links render like pages instead of raw text.
-- [x] Route community-health pages through the styled viewer and add committed screenshots for reviewer proof.
-- [x] Add a public build log and refreshed Arc House submission draft.
-- [x] Add Arc Testnet integration runbook and read-only RPC status helper.
-- [x] Add a 5-minute local payment-intent quickstart for reviewers and contest judges.
-- [x] Add a short payment status tutorial for local review and future testnet confirmation states.
-- [x] Add a contest/demo script with recording checklist and community copy.
-- [x] Add a blog/contest content pack with visual prompts, social copy, storyboard, and screenshot checklist.
-- [x] Add an Arc Discord introduction pack for builder onboarding and public updates.
-- [x] Add a local receipt verifier playground for simulated Arc payment receipt review.
-- [x] Add a read-only Arc Testnet transaction status playground for hash lookup without signing or broadcast.
-- [x] Add a secret-free Arc/x402 production deployment runbook, `.env.example` placeholders, live-smoke script, and local demo transcript.
-- [ ] Share build log in Arc community.
+### Shipped surfaces
 
-### Phase 2 — Working prototype
+- MCP setup checklist, Arc docs map, prompt library, deploy-contract notes, and agent identity notes.
+- Builder readiness checklist, MCP query examples, agent-commerce use cases, job escrow demo spec, Arc House submission draft, public build log, and community copy packs.
+- Styled GitHub Pages docs viewer so docs and community-health pages render like web pages instead of raw Markdown.
+- Local payment-intent playground with reviewable JSON, status transitions, USDC unit preview, unsigned transaction draft preview, and calldata consistency check.
+- Local receipt verifier playground (`examples/receipt-verifier-playground/index.html`, `docs/receipt-verifier-playground.md`), read-only transaction-status playground (`examples/transaction-status-playground/index.html`, `docs/transaction-status-playground.md`), and local-only job escrow simulator with change-request, rejection, dispute, expiry, cancellation, and human-approved payout states.
+- x402 local challenge boundary with machine-readable manifest, JSON-RPC/MCP-style stdio helpers, `.env.example`, local transcript, and production deployment runbook.
+- Agent commerce starter-kit examples: components, flows, identity profile preview, and review packet exporter.
+- Committed screenshots for the landing page, docs viewer, payment-intent playground, and job escrow simulator.
 
-- Build a small web UI for agent payment intents.
-- Use the local playground as the review-first baseline before wallet integration.
-- Use Arc Testnet config from the docs map: RPC, chain ID, USDC gas, and ArcScan.
-- Use Arc MCP docs to verify current testnet and wallet details.
-- Start with the read-only `scripts/check_arc_testnet_status.py` helper before adding wallet signing.
-- Add Circle Dev-Controlled SCA Wallet notes for Arc Testnet.
-- Add optional Circle Contracts template deployment notes for receipts, credits, or payout demos.
-- [x] Add explicit local payment status states in the playground (`draft`, `ready_for_review`, `approved_local`, `blocked_wallet_unavailable`).
-- [x] Add a USDC unit preview that keeps ERC-20 6-decimal transfer amounts separate from 18-decimal native gas accounting.
-- [x] Add a short local payment status tutorial.
-- [x] Add a local receipt verifier playground (`examples/receipt-verifier-playground/index.html`) with notes in `docs/receipt-verifier-playground.md`.
-- [x] Add a read-only transaction-status playground (`examples/transaction-status-playground/index.html`) with notes in `docs/transaction-status-playground.md`.
-- [x] Add a machine-readable x402 MCP-style manifest to the local paid-agent boundary (`docs/x402-mcp-manifest.md`).
-- [x] Add dependency-free JSON-RPC/MCP-style stdio mode and JSON CLI helpers for the local paid-agent tools.
-- [x] Add a secret-free wallet preflight contract before any browser-wallet or send flow.
-- [x] Add a read-only wallet preview guard UI without requesting permissions, signing, or broadcasting.
-- [x] Add final local confirmation UX while keeping transaction requests disabled.
-- [x] Add an unsigned ERC-20 transaction draft preview without wallet requests.
-- [x] Add a local calldata consistency check for the unsigned transaction draft.
-- [x] Add a blocked wallet handoff readiness manifest for future send PR review.
-- Add a real wallet-submission tutorial after wallet integration exists.
+### Safe default
 
-### Phase 3 — Agent commerce starter kit
+- No wallet connection.
+- No private-key, seed-phrase, API-key, or token collection.
+- No signing or transaction broadcast.
+- No custody or real fund movement.
+- Human approval stays required for any future send path.
 
-- [x] Add agent identity notes around Arc's ERC-8004 tutorial.
-- [x] Add a local-only ERC-8004 identity profile preview before any registration transaction exists.
-- [x] Extend the local job escrow simulator with richer failure states after the payment-intent playground is wired to verified testnet status. *(Includes local-only change-request/resubmission, rejection, dispute, expiry, and cancellation; keep real wallet settlement out until guards exist.)*
-- [x] Add reusable components for agent cards, payment requests, receipts, and logs.
-- [x] Add example flows for creator payouts, API payments, and AI-agent commerce.
-- [x] Add a local review packet exporter that combines agent identity, commerce flow, escrow outcome, and disabled wallet/network controls.
+### Optional future extensions
+
+- Real wallet-submission tutorial after wallet integration exists and has a separate review.
+- Optional Circle Wallets or Circle Contracts notes for teams that want a live integration path.
+- Public community sharing of the build log as a distribution step, not a missing product feature.
 
 ## Suggested use
 
@@ -293,4 +262,4 @@ expectations.
 
 ## Status
 
-Early MVP scaffold. Built in public as an Arc builder experiment.
+Public-ready static builder kit for the current safe scope. Built in public as an independent Arc builder experiment, with wallet/signing/broadcast work kept behind separate future review gates.

@@ -175,16 +175,22 @@ function verifyReceipt(receipt) {
   };
 }
 
+function buildCheckListItem(state, message, className) {
+  const listItem = document.createElement('li');
+  listItem.className = className;
+  const stateLabel = document.createElement('strong');
+  stateLabel.textContent = state;
+  listItem.append(stateLabel, ` — ${message}`);
+  return listItem;
+}
+
 function renderVerification(result) {
   verdictPill.textContent = result.passed ? 'locally consistent' : 'needs review';
   verdictPill.classList.toggle('fail', !result.passed);
   receiptCheckList.replaceChildren(
     ...result.checks.map((item) => {
-      const listItem = document.createElement('li');
-      listItem.className = item.passed ? 'pass' : 'fail';
       const state = item.passed ? 'PASS' : 'REVIEW';
-      listItem.innerHTML = `<strong>${state}</strong> — ${item.label}: ${item.detail}`;
-      return listItem;
+      return buildCheckListItem(state, `${item.label}: ${item.detail}`, item.passed ? 'pass' : 'fail');
     })
   );
   normalizedReceipt.textContent = JSON.stringify(result.normalized, null, 2);
@@ -193,11 +199,7 @@ function renderVerification(result) {
 function renderParseError(message) {
   verdictPill.textContent = 'invalid JSON';
   verdictPill.classList.add('fail');
-  receiptCheckList.replaceChildren();
-  const listItem = document.createElement('li');
-  listItem.className = 'fail';
-  listItem.innerHTML = `<strong>REVIEW</strong> — ${message}`;
-  receiptCheckList.append(listItem);
+  receiptCheckList.replaceChildren(buildCheckListItem('REVIEW', message, 'fail'));
   normalizedReceipt.textContent = JSON.stringify({ error: message, localOnly: true }, null, 2);
 }
 
