@@ -13,6 +13,7 @@ import os
 import sys
 import urllib.error
 import urllib.request
+from urllib.parse import urlparse
 from dataclasses import dataclass
 from typing import Any
 
@@ -70,6 +71,18 @@ def load_config(args: argparse.Namespace) -> SmokeConfig:
     )
 
 
+def validate_live_payment_target(config: SmokeConfig) -> None:
+    """Do not transmit live X-Payment proofs to insecure or malformed URLs."""
+    if not config.x_payment:
+        return
+    parsed = urlparse(config.target_url)
+    if parsed.scheme != "https" or not parsed.netloc:
+        raise SystemExit(
+            "Refusing to send ARC_LIVE_X_PAYMENT to a non-HTTPS or malformed ARC_PAID_AGENT_URL. "
+            "Run without ARC_LIVE_X_PAYMENT and --expect-402-only for local challenge checks."
+        )
+
+
 def http_json(url: str, timeout: float, x_payment: str | None = None) -> tuple[int, dict[str, Any]]:
     headers = {"Accept": "application/json"}
     if x_payment:
@@ -125,6 +138,7 @@ def main() -> int:
     args = parse_args()
     try:
         config = load_config(args)
+        validate_live_payment_target(config)
         status, payload = http_json(config.target_url, config.timeout_seconds)
         validate_402(status, payload)
         print(

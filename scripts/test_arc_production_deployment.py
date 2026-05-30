@@ -103,6 +103,23 @@ class ArcProductionDeploymentTests(unittest.TestCase):
         self.assertIn("unpaid 402 challenge accepted", completed.stdout.lower())
         self.assertIn("transactionbroadcast=false", completed.stdout.lower())
 
+    def test_live_smoke_refuses_to_send_payment_proof_to_http_url(self) -> None:
+        env = dict(os.environ)
+        env["ARC_PAID_AGENT_URL"] = "http://127.0.0.1:8091/protected"
+        env["ARC_LIVE_X_PAYMENT"] = "live-proof-placeholder"
+        completed = subprocess.run(
+            [sys.executable, str(SMOKE_SCRIPT)],
+            text=True,
+            capture_output=True,
+            env=env,
+            timeout=10,
+        )
+
+        self.assertEqual(completed.returncode, 2)
+        combined = completed.stdout + completed.stderr
+        self.assertIn("refusing to send arc_live_x_payment", combined.lower())
+        self.assertIn("non-https", combined.lower())
+
 
 if __name__ == "__main__":
     unittest.main()

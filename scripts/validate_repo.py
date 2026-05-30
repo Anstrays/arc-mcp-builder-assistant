@@ -163,11 +163,28 @@ SECRET_PATTERNS = [
     re.compile(r"xox[baprs]-[A-Za-z0-9-]{10,}"),
     re.compile(r"[0-9]{8,10}:[A-Za-z0-9_-]{35}"),  # Telegram bot token shape
     re.compile(
-        r"(?i)(api[_-]?key|secret|password|private[_-]?key|entity[_-]?secret|bot[_-]?token)"
-        r"\s*=\s*['\"][^'\"]{8,}['\"]"
+        r"(?i)(?:export\s+)?[A-Z0-9_]*(?:api[_-]?key|secret|password|private[_-]?key|"
+        r"entity[_-]?secret|bot[_-]?token)[A-Z0-9_]*[ \t]*[:=][ \t]*['\"]?"
+        r"(?![ \t]*(?:process\.env\.|os\.environ|placeholder|example|changeme|todo|your[_-]?|\*+|<|\[|$))[^'\"\s#]{8,}"
     ),
     re.compile(r"-----BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY-----"),
 ]
+
+TEXT_SUFFIXES_TO_SECRET_SCAN = {
+    "",
+    ".css",
+    ".env",
+    ".example",
+    ".html",
+    ".js",
+    ".json",
+    ".md",
+    ".py",
+    ".txt",
+    ".xml",
+    ".yaml",
+    ".yml",
+}
 
 # Files we never want to scan for secrets — they only describe patterns,
 # not real credentials.
@@ -252,7 +269,13 @@ def validate_no_secrets() -> None:
         relative = path.relative_to(ROOT)
         if relative in SECRET_SCAN_SKIP:
             continue
-        text = path.read_text(encoding="utf-8", errors="ignore")
+        if path.suffix.lower() not in TEXT_SUFFIXES_TO_SECRET_SCAN:
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            fail(f"non-UTF-8 text file blocks secret scan: {relative}")
+            continue
         for pattern in SECRET_PATTERNS:
             if pattern.search(text):
                 fail(f"potential secret pattern in {relative}")
@@ -378,9 +401,6 @@ def validate_no_raw_markdown_links() -> None:
     """Keep user-facing HTML Markdown links on the styled viewer, not raw files."""
     raw_markdown_link_re = re.compile(r"href=[\"']([^\"']+\.md(?:#[^\"']*)?)[\"']", re.IGNORECASE)
     for relative in HTML_FILES_TO_VALIDATE:
-        if relative == "docs/view.html":
-            # The viewer intentionally exposes one explicit "Open raw Markdown" action.
-            continue
         html = (ROOT / relative).read_text(encoding="utf-8")
         for href in raw_markdown_link_re.findall(html):
             if "docs/view.html#" not in href:

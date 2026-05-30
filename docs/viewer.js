@@ -40,7 +40,7 @@ const docTitle = document.querySelector('#doc-title');
 const docMeta = document.querySelector('#doc-meta');
 const docBody = document.querySelector('#doc-body');
 const docList = document.querySelector('#doc-list');
-const rawLink = document.querySelector('#raw-link');
+const docsHomeLink = document.querySelector('#docs-home-link');
 const githubLink = document.querySelector('#github-link');
 
 function escapeHtml(value) {
@@ -53,7 +53,12 @@ function escapeHtml(value) {
 }
 
 function currentPage() {
-  const fromHash = decodeURIComponent(window.location.hash.replace(/^#/, '')).trim().toLowerCase();
+  let fromHash = '';
+  try {
+    fromHash = decodeURIComponent(window.location.hash.replace(/^#/, '')).trim().toLowerCase();
+  } catch (_error) {
+    fromHash = '';
+  }
   return pagesById.get(fromHash) || PAGES[0];
 }
 
@@ -266,7 +271,7 @@ async function loadDoc() {
   renderList(page);
   docTitle.textContent = page.label;
   docMeta.textContent = `Rendering ${page.githubPath} as a styled GitHub Pages document.`;
-  rawLink.href = page.path;
+  docsHomeLink.href = '../index.html#docs';
   githubLink.href = `https://github.com/Anstrays/arc-mcp-builder-assistant/blob/main/${page.githubPath}`;
   try {
     const response = await fetch(page.path, { cache: 'no-store' });
