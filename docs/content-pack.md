@@ -289,7 +289,7 @@ Next step is a guarded Arc Testnet slice: read-only status, chain checks, wallet
 
 Before posting or submitting:
 
-- Run `python3 scripts/validate_repo.py`.
+- Run `python3 scripts/test_all.py`.
 - Record the local site or GitHub Pages site, not private dashboards.
 - Show the payment state names on screen.
 - Say "local-first" or "local-only" for the current payment playground.

@@ -23,7 +23,7 @@ site improvements.
 
 - [ ] I read [`CONTRIBUTING.md`](https://github.com/Anstrays/arc-mcp-builder-assistant/blob/main/CONTRIBUTING.md) and followed its expectations.
 - [ ] No secrets, tokens, private keys, wallet seed phrases, or production credentials are included.
-- [ ] `python3 scripts/validate_repo.py` passes locally.
+- [ ] `python3 scripts/test_all.py` passes locally.
 - [ ] Documentation/README is updated if the change affects user-visible behavior.
 - [ ] External links use `rel="noopener noreferrer"` when `target="_blank"`.
 - [ ] Claims about Arc behavior are sourced from `https://docs.arc.network/` or marked as unverified.

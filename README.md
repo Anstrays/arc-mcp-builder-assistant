@@ -5,25 +5,22 @@
 [![Status: public-ready kit](https://img.shields.io/badge/status-public--ready%20kit-2dba4e.svg)](#status)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-2dba4e.svg)](https://anstrays.github.io/arc-mcp-builder-assistant/)
 
-> Independent early-stage builder resource for exploring Arc's MCP server, AI-assisted development workflows, and agentic commerce prototypes.
+> Independent local-first builder kit for Arc MCP, stablecoin payment intents, agent-wallet review flows, and x402-style paid-agent boundaries.
 
-Arc MCP Builder Assistant is a lightweight documentation + prompt kit that helps builders use Arc's official MCP/docs surface with AI coding tools to prototype faster.
+Arc MCP Builder Assistant helps developers turn Arc docs and MCP context into practical, reviewable agent-commerce prototypes. It ships a static docs site, source-grounded prompts, local playgrounds, regression tests, and a dependency-free x402-style challenge server that models `402 -> proof -> protected response` without wallets, custody, signing, settlement, or transaction broadcast.
 
-The first version focuses on three practical workflows:
-
-1. **Connect AI tools to Arc docs through MCP** — so builders can ask targeted questions and retrieve relevant docs while coding.
-2. **Generate better Arc app plans** — prompts for payment flows, agent registration, stablecoin FX, and agentic commerce.
-3. **Review Arc agent payment concepts** — local playgrounds and review artifacts for safe payment-intent, receipt, status, and escrow flows before any live testnet app.
-
-This repository is intentionally scoped as a builder enablement kit, not an official Arc product.
+Use this repo when you want to prototype Arc-focused payment infrastructure before a live wallet or production verifier exists. The safe default is always: Arc Testnet context, reviewable JSON first, explicit human approval, no private keys, no mainnet, and no autonomous spending.
 
 ## Table of contents
 
 - [Why this matters](#why-this-matters)
+- [Builder quickstart](#builder-quickstart)
+- [Arc-focused use cases](#arc-focused-use-cases)
+- [Configuration](#configuration)
+- [Troubleshooting](#troubleshooting)
 - [Current kit](#current-kit)
 - [Screenshots](#screenshots)
 - [Completion status](#completion-status)
-- [Suggested use](#suggested-use)
 - [Local development](#local-development)
 - [Repository structure](#repository-structure)
 - [Safety and honesty](#safety-and-honesty)
@@ -43,6 +40,67 @@ Many builders want to explore that direction, but the first step is often messy:
 - documenting what works and what fails.
 
 This kit turns those steps into reusable guides, prompts, and examples.
+
+## Builder quickstart
+
+The repo is static-site first and Python-only for tests. No npm install, package manager, database, wallet, or paid SaaS dependency is required.
+
+```bash
+# 1. Run the full local regression suite.
+python3 scripts/test_all.py
+
+# 2. Preview the GitHub Pages site locally.
+python3 -m http.server 8080
+# open http://localhost:8080/
+
+# 3. Run the local x402-style paid-agent boundary.
+python3 examples/x402-local-challenge-server/server.py --port 8087
+# in another terminal: curl -i http://127.0.0.1:8087/protected
+```
+
+Useful one-shot checks:
+
+```bash
+python3 examples/x402-local-challenge-server/server.py --print-challenge
+python3 examples/x402-local-challenge-server/server.py --print-manifest
+X402_DEMO_AMOUNT=0.05 python3 examples/x402-local-challenge-server/server.py --print-challenge
+```
+
+On Windows, use `python` instead of `python3` if that is how Python is installed.
+
+## Arc-focused use cases
+
+- **Paid API agent:** model an Arc Testnet USDC x402-style `402 -> proof -> protected response` boundary before production Gateway verification exists.
+- **Stablecoin payment request:** prepare reviewable payment-intent JSON with amount, recipient, memo, expiry, status, and human approval state.
+- **Job escrow workflow:** simulate ERC-8183-style job posting, agent acceptance, simulated funding, work review, disputes, expiry, and payout approval.
+- **Agent identity preview:** inspect ERC-8004-style agent metadata and controller/reputation notes before registration.
+- **MCP-assisted coding:** connect AI tools to Arc docs/MCP, then force retrieved facts, implementation suggestions, unknowns, and safety checks into the plan.
+
+## Configuration
+
+Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.env` is ignored by git; keep real API keys, verifier tokens, private proofs, and deployment secrets in a private shell or secret manager.
+
+| Variable | Used by | Default | Notes |
+| --- | --- | --- | --- |
+| `X402_DEMO_NETWORK` | Local x402 server | `arc-testnet` | Must stay `arc-testnet`; non-Arc networks are rejected. |
+| `X402_DEMO_ASSET` | Local x402 server | `USDC` | Display/payment asset for the local challenge. |
+| `X402_DEMO_AMOUNT` | Local x402 server | `0.01` | Positive decimal string, max 6 decimal places. |
+| `X402_DEMO_PAY_TO` | Local x402 server | `0xA11CE00000000000000000000000000000000000` | Safe placeholder EVM address. |
+| `X402_DEMO_MAINNET_ENABLED` | Local x402 server | `false` | Must remain false; true exits safely. |
+| `ARC_PAID_AGENT_URL` | Live smoke script | empty | Deployed protected endpoint for challenge-only smoke checks. |
+| `EXPECT_402_ONLY` | Live smoke script | `true` | Stops after validating the unpaid 402 challenge. |
+| `ARC_LIVE_X_PAYMENT` | Live smoke script | empty | Optional externally created proof; never commit it. |
+| `CIRCLE_GATEWAY_API_KEY` | Future verifier handoff | empty | Placeholder only. Store real values in a secret manager. |
+| `X402_GATEWAY_VERIFIER_URL` | Future verifier handoff | empty | Placeholder only. |
+
+## Troubleshooting
+
+- **`python3` is not found:** use `python scripts/test_all.py` or install Python 3.12+. CI uses Python 3.12.
+- **Port 8080 or 8087 is already in use:** choose another port, for example `python3 -m http.server 8090` or `python3 examples/x402-local-challenge-server/server.py --port 8097`.
+- **`ARC_PAID_AGENT_URL` is missing:** either skip live smoke or set it to a deployed `/protected` endpoint. The local x402 demo does not need it.
+- **Local x402 proof is rejected:** run `python3 examples/x402-local-challenge-server/server.py --print-challenge` and copy the exact `localDemoProof` value into the `X-Payment` header.
+- **Config exits with `Invalid x402 demo configuration`:** keep `X402_DEMO_NETWORK=arc-testnet`, `X402_DEMO_MAINNET_ENABLED=false`, a positive 6-decimal-or-less amount, and a 42-character EVM `X402_DEMO_PAY_TO`.
+- **A secret was pasted by mistake:** remove it from `.env` or shell history as needed, rotate the secret, and do not commit it. The repo scans common credential shapes during validation.
 
 ## Current kit
 
@@ -143,17 +201,7 @@ validator) and a web browser are required.
 
 ```bash
 # Validate the repo the same way CI does.
-python3 scripts/test_payment_intent_playground.py
-python3 scripts/test_x402_boundary.py
-python3 scripts/test_arc_production_deployment.py
-python3 scripts/test_receipt_verifier_playground.py
-python3 scripts/test_transaction_status_playground.py
-python3 scripts/test_agent_commerce_components.py
-python3 scripts/test_agent_commerce_flows.py
-python3 scripts/test_agent_commerce_review_packet.py
-python3 scripts/test_agent_identity_profile_preview.py
-python3 scripts/test_job_escrow_simulator.py
-python3 scripts/validate_repo.py
+python3 scripts/test_all.py
 
 # Optional read-only Arc Testnet status check.
 python3 scripts/check_arc_testnet_status.py
@@ -177,6 +225,8 @@ ARC_PAID_AGENT_URL="http://127.0.0.1:8087/protected" \
   python3 scripts/live_arc_gateway_smoke.py --expect-402-only
 ```
 
+For targeted debugging, run any individual `scripts/test_*.py` file directly.
+
 The validator checks for required files, obvious credential patterns,
 basic HTML safety / accessibility / SEO invariants on every public HTML page,
 local links, reduced-motion CSS coverage, payment-demo safety copy, styled-viewer
@@ -191,6 +241,7 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 ```text
 .
 ├── index.html                       # Landing page (GitHub Pages root)
+├── .env.example                     # Safe local config placeholders
 ├── 404.html                         # Branded GitHub Pages "Not found" page
 ├── robots.txt                       # Crawler directives + sitemap pointer
 ├── sitemap.xml                      # XML sitemap for the deployed site
@@ -228,6 +279,7 @@ via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 ├── assets/screenshots/              # Committed preview proof for reviewers
 ├── scripts/
 │   ├── check_arc_testnet_status.py  # Read-only Arc Testnet RPC status check
+│   ├── test_all.py                  # Canonical local / CI regression suite
 │   ├── test_x402_boundary.py        # Regression tests for the local x402 boundary
 │   ├── test_receipt_verifier_playground.py # Regression tests for receipt verifier UI
 │   ├── test_transaction_status_playground.py # Regression tests for transaction status UI

@@ -101,9 +101,7 @@ Use this when a contest form wants a compact demo:
 
 Before recording:
 
-- Run `python3 scripts/validate_repo.py`.
-- Run `python3 scripts/test_payment_intent_playground.py`.
-- Run `python3 scripts/test_x402_boundary.py`.
+- Run `python3 scripts/test_all.py`.
 - Serve locally with `python3 -m http.server 8090`.
 - Use browser tabs for:
   - `/`

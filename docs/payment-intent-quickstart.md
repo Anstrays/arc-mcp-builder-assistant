@@ -16,9 +16,7 @@ Use this 5-minute path when you want to show the project to an Arc builder, revi
 Run the same dependency-free checks that CI uses:
 
 ```bash
-python3 scripts/test_payment_intent_playground.py
-python3 scripts/test_x402_boundary.py
-python3 scripts/validate_repo.py
+python3 scripts/test_all.py
 ```
 
 Optional read-only Arc status probe:

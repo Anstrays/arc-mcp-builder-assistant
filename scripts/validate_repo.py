@@ -34,6 +34,7 @@ REQUIRED_FILES = [
     "CONTRIBUTING.md",
     "CODE_OF_CONDUCT.md",
     ".editorconfig",
+    ".env.example",
     ".github/workflows/validate.yml",
     ".github/PULL_REQUEST_TEMPLATE.md",
     ".github/ISSUE_TEMPLATE/config.yml",
@@ -98,6 +99,7 @@ REQUIRED_FILES = [
     "examples/x402-local-challenge-server/server.py",
     "scripts/check_arc_testnet_status.py",
     "scripts/live_arc_gateway_smoke.py",
+    "scripts/test_all.py",
     "scripts/test_arc_production_deployment.py",
     "scripts/test_payment_intent_playground.py",
     "scripts/test_x402_boundary.py",
@@ -441,8 +443,12 @@ def validate_x402_boundary_demo() -> None:
         "HTTPStatus.PAYMENT_REQUIRED",
         '"transactionBroadcast": False',
         '"mainnetEnabled": config.mainnet_enabled',
-        'network="arc-testnet"',
-        'asset="USDC"',
+        'DEFAULT_NETWORK = "arc-testnet"',
+        'DEFAULT_ASSET = "USDC"',
+        "def from_env",
+        "validate_payment_config",
+        "X402_DEMO_MAINNET_ENABLED",
+        "PaymentConfig.from_env()",
     )
     for marker in required_server_markers:
         if marker not in server:

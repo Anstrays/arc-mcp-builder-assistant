@@ -13,6 +13,18 @@ This example is a production-shaped boundary for a future Arc/Circle/x402 paymen
 python3 examples/x402-local-challenge-server/server.py --port 8087
 ```
 
+The server reads safe local overrides from environment variables documented in
+[`../../.env.example`](../../.env.example). Defaults stay Arc Testnet only:
+
+```bash
+X402_DEMO_AMOUNT=0.05 \
+  python3 examples/x402-local-challenge-server/server.py --print-challenge
+```
+
+Unsafe overrides are rejected with clear errors: non-Arc network,
+`X402_DEMO_MAINNET_ENABLED=true`, non-positive or over-precision amounts, and
+malformed `X402_DEMO_PAY_TO` addresses.
+
 In another terminal:
 
 ```bash

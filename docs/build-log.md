@@ -33,9 +33,7 @@ This repo now ships a GitHub Pages site, docs, prompts, and local demos that sho
 ## How to verify locally
 
 ```bash
-python3 scripts/test_payment_intent_playground.py
-python3 scripts/test_x402_boundary.py
-python3 scripts/validate_repo.py
+python3 scripts/test_all.py
 python3 -m http.server 8080
 ```
 

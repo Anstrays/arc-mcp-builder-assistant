@@ -27,32 +27,5 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Test payment intent playground
-        run: python scripts/test_payment_intent_playground.py
-
-      - name: Test local x402 boundary
-        run: python scripts/test_x402_boundary.py
-
-      - name: Test receipt verifier playground
-        run: python scripts/test_receipt_verifier_playground.py
-
-      - name: Test transaction status playground
-        run: python scripts/test_transaction_status_playground.py
-
-      - name: Test agent commerce components
-        run: python scripts/test_agent_commerce_components.py
-
-      - name: Test agent commerce flows
-        run: python scripts/test_agent_commerce_flows.py
-
-      - name: Test agent commerce review packet
-        run: python scripts/test_agent_commerce_review_packet.py
-
-      - name: Test agent identity profile preview
-        run: python scripts/test_agent_identity_profile_preview.py
-
-      - name: Test job escrow simulator
-        run: python scripts/test_job_escrow_simulator.py
-
-      - name: Validate repository files
-        run: python scripts/validate_repo.py
+      - name: Run local regression suite
+        run: python scripts/test_all.py

@@ -29,7 +29,7 @@ Use this checklist before sharing an Arc demo, opening a PR, or submitting the p
 
 ## 4. Repository quality
 
-- [ ] `python3 scripts/validate_repo.py` passes locally.
+- [ ] `python3 scripts/test_all.py` passes locally.
 - [ ] README explains the purpose, current MVP, local preview, and safety boundaries.
 - [ ] GitHub Pages links resolve and the sitemap includes public demo pages.
 - [ ] Docs link to specific files instead of vague folders when used from GitHub Pages.

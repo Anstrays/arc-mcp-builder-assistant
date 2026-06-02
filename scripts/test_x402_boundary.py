@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 import unittest
@@ -12,6 +13,21 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SERVER_PATH = ROOT / "examples" / "x402-local-challenge-server" / "server.py"
+DEMO_ENV_KEYS = [
+    "X402_DEMO_NETWORK",
+    "X402_DEMO_ASSET",
+    "X402_DEMO_AMOUNT",
+    "X402_DEMO_PAY_TO",
+    "X402_DEMO_MAINNET_ENABLED",
+]
+
+
+def clean_demo_env(**overrides: str) -> dict[str, str]:
+    env = os.environ.copy()
+    for key in DEMO_ENV_KEYS:
+        env.pop(key, None)
+    env.update(overrides)
+    return env
 
 
 def load_server_module():
@@ -103,6 +119,44 @@ class X402BoundaryTests(unittest.TestCase):
         self.assertFalse(self.config.mainnet_enabled)
         self.assertIn("0x", self.config.pay_to)
 
+    def test_env_config_defaults_match_demo_config(self) -> None:
+        config = self.server.PaymentConfig.from_env({})
+
+        self.assertEqual(config, self.config)
+
+    def test_env_override_changes_challenge_and_manifest(self) -> None:
+        pay_to = "0xBEEF000000000000000000000000000000000000"
+        config = self.server.PaymentConfig.from_env(
+            {
+                "X402_DEMO_AMOUNT": "0.05",
+                "X402_DEMO_PAY_TO": pay_to,
+            }
+        )
+        challenge = self.server.build_payment_challenge(config)
+        manifest = self.server.build_mcp_manifest(config)
+
+        self.assertEqual(challenge["accepts"][0]["amount"], "0.05")
+        self.assertEqual(challenge["accepts"][0]["payTo"], pay_to)
+        self.assertEqual(challenge["unitEconomics"]["priceMicroUsd"], 50000)
+        self.assertEqual(manifest["payment"]["amount"], "0.05")
+        self.assertEqual(manifest["payment"]["payTo"], pay_to)
+
+    def test_env_rejects_invalid_amount(self) -> None:
+        with self.assertRaisesRegex(ValueError, "X402_DEMO_AMOUNT"):
+            self.server.PaymentConfig.from_env({"X402_DEMO_AMOUNT": "0.0000001"})
+        with self.assertRaisesRegex(ValueError, "greater than 0"):
+            self.server.PaymentConfig.from_env({"X402_DEMO_AMOUNT": "0"})
+
+    def test_env_rejects_invalid_pay_to_address(self) -> None:
+        with self.assertRaisesRegex(ValueError, "X402_DEMO_PAY_TO"):
+            self.server.PaymentConfig.from_env({"X402_DEMO_PAY_TO": "not-an-address"})
+
+    def test_env_rejects_mainnet_and_non_arc_network(self) -> None:
+        with self.assertRaisesRegex(ValueError, "arc-testnet"):
+            self.server.PaymentConfig.from_env({"X402_DEMO_NETWORK": "ethereum-mainnet"})
+        with self.assertRaisesRegex(ValueError, "MAINNET"):
+            self.server.PaymentConfig.from_env({"X402_DEMO_MAINNET_ENABLED": "true"})
+
     def test_jsonrpc_initialize_returns_mcp_capabilities(self) -> None:
         response = self.server.process_jsonrpc_request({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}})
 
@@ -168,6 +222,7 @@ class X402BoundaryTests(unittest.TestCase):
             text=True,
             capture_output=True,
             check=True,
+            env=clean_demo_env(),
             timeout=5,
         )
 
@@ -184,6 +239,7 @@ class X402BoundaryTests(unittest.TestCase):
             text=True,
             capture_output=True,
             check=True,
+            env=clean_demo_env(),
             timeout=5,
         )
 
@@ -191,12 +247,31 @@ class X402BoundaryTests(unittest.TestCase):
         self.assertEqual(lines[0]["id"], "stdio")
         self.assertIn("get_paid_resource", {tool["name"] for tool in lines[0]["result"]["tools"]})
 
+    def test_mcp_stdio_mode_uses_env_config(self) -> None:
+        payload = json.dumps({"jsonrpc": "2.0", "id": "inspect", "method": "tools/call", "params": {"name": "inspect_payment_challenge"}}) + "\n"
+
+        completed = subprocess.run(
+            [sys.executable, str(SERVER_PATH), "--mcp-stdio"],
+            input=payload,
+            text=True,
+            capture_output=True,
+            check=True,
+            env=clean_demo_env(X402_DEMO_AMOUNT="0.05"),
+            timeout=5,
+        )
+
+        response = json.loads(completed.stdout)
+        structured = response["result"]["structuredContent"]
+        self.assertEqual(structured["challenge"]["accepts"][0]["amount"], "0.05")
+        self.assertEqual(structured["mcpManifest"]["payment"]["amount"], "0.05")
+
     def test_cli_print_manifest_emits_safe_agent_json(self) -> None:
         completed = subprocess.run(
             [sys.executable, str(SERVER_PATH), "--print-manifest"],
             text=True,
             capture_output=True,
             check=True,
+            env=clean_demo_env(),
             timeout=5,
         )
 
@@ -211,6 +286,7 @@ class X402BoundaryTests(unittest.TestCase):
             text=True,
             capture_output=True,
             check=True,
+            env=clean_demo_env(),
             timeout=5,
         )
 
@@ -225,6 +301,7 @@ class X402BoundaryTests(unittest.TestCase):
             text=True,
             capture_output=True,
             check=True,
+            env=clean_demo_env(),
             timeout=5,
         )
         rejected_body = json.loads(rejected.stdout)
@@ -238,11 +315,39 @@ class X402BoundaryTests(unittest.TestCase):
             text=True,
             capture_output=True,
             check=True,
+            env=clean_demo_env(),
             timeout=5,
         )
         accepted_body = json.loads(accepted.stdout)
         self.assertEqual(accepted_body["status"], 200)
         self.assertFalse(accepted_body["body"]["receipt"]["transactionBroadcast"])
+
+    def test_cli_helpers_use_env_config(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, str(SERVER_PATH), "--print-challenge"],
+            text=True,
+            capture_output=True,
+            check=True,
+            env=clean_demo_env(X402_DEMO_AMOUNT="0.05"),
+            timeout=5,
+        )
+
+        challenge = json.loads(completed.stdout)
+        self.assertEqual(challenge["challenge"]["accepts"][0]["amount"], "0.05")
+        self.assertEqual(challenge["mcpManifest"]["payment"]["amount"], "0.05")
+
+    def test_cli_invalid_env_exits_with_clear_error(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, str(SERVER_PATH), "--print-challenge"],
+            text=True,
+            capture_output=True,
+            env=clean_demo_env(X402_DEMO_MAINNET_ENABLED="true"),
+            timeout=5,
+        )
+
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn("Invalid x402 demo configuration", completed.stderr)
+        self.assertIn("MAINNET", completed.stderr)
 
 
 if __name__ == "__main__":

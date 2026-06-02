@@ -14,11 +14,22 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import re
 import sys
 from dataclasses import dataclass
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Mapping, Protocol
+
+DEFAULT_NETWORK = "arc-testnet"
+DEFAULT_ASSET = "USDC"
+DEFAULT_AMOUNT = "0.01"
+DEFAULT_PAY_TO = "0xA11CE00000000000000000000000000000000000"
+DEFAULT_RESOURCE = "arc-mcp-builder-assistant.local-report.v1"
+EVM_ADDRESS_RE = re.compile(r"^0x[a-fA-F0-9]{40}$")
+TRUTHY = {"1", "true", "yes", "on"}
+FALSY = {"", "0", "false", "no", "off"}
 
 
 @dataclass(frozen=True)
@@ -37,12 +48,26 @@ class PaymentConfig:
     @classmethod
     def demo(cls) -> "PaymentConfig":
         return cls(
-            network="arc-testnet",
-            asset="USDC",
-            amount="0.01",
-            pay_to="0xA11CE00000000000000000000000000000000000",
-            resource="arc-mcp-builder-assistant.local-report.v1",
+            network=DEFAULT_NETWORK,
+            asset=DEFAULT_ASSET,
+            amount=DEFAULT_AMOUNT,
+            pay_to=DEFAULT_PAY_TO,
+            resource=DEFAULT_RESOURCE,
         )
+
+    @classmethod
+    def from_env(cls, env: Mapping[str, str] | None = None) -> "PaymentConfig":
+        values = os.environ if env is None else env
+        config = cls(
+            network=values.get("X402_DEMO_NETWORK", DEFAULT_NETWORK).strip() or DEFAULT_NETWORK,
+            asset=values.get("X402_DEMO_ASSET", DEFAULT_ASSET).strip() or DEFAULT_ASSET,
+            amount=values.get("X402_DEMO_AMOUNT", DEFAULT_AMOUNT).strip() or DEFAULT_AMOUNT,
+            pay_to=values.get("X402_DEMO_PAY_TO", DEFAULT_PAY_TO).strip() or DEFAULT_PAY_TO,
+            resource=DEFAULT_RESOURCE,
+            mainnet_enabled=parse_env_bool(values.get("X402_DEMO_MAINNET_ENABLED", "false"), "X402_DEMO_MAINNET_ENABLED"),
+        )
+        validate_payment_config(config)
+        return config
 
 
 @dataclass(frozen=True)
@@ -104,6 +129,15 @@ class LocalDemoVerifier:
         )
 
 
+def parse_env_bool(value: str | None, name: str) -> bool:
+    normalized = (value or "").strip().lower()
+    if normalized in TRUTHY:
+        return True
+    if normalized in FALSY:
+        return False
+    raise ValueError(f"{name} must be one of true/false/1/0/yes/no/on/off")
+
+
 def amount_to_micro_usd(amount: str) -> int:
     """Convert a decimal USDC string to integer microUSD for agents."""
 
@@ -113,6 +147,25 @@ def amount_to_micro_usd(amount: str) -> int:
     if len(fractional) > 6:
         raise ValueError("USDC demo amounts use at most 6 decimal places")
     return int(whole) * 1_000_000 + int(fractional.ljust(6, "0") or "0")
+
+
+def validate_payment_config(config: PaymentConfig) -> None:
+    """Reject config that would weaken the local Arc Testnet boundary."""
+
+    if config.network != DEFAULT_NETWORK:
+        raise ValueError("X402_DEMO_NETWORK must stay arc-testnet for this Arc-focused demo")
+    if not config.asset:
+        raise ValueError("X402_DEMO_ASSET must not be empty")
+    try:
+        amount_micro_usd = amount_to_micro_usd(config.amount)
+    except ValueError as error:
+        raise ValueError(f"X402_DEMO_AMOUNT invalid: {error}") from error
+    if amount_micro_usd <= 0:
+        raise ValueError("X402_DEMO_AMOUNT must be greater than 0")
+    if not EVM_ADDRESS_RE.match(config.pay_to):
+        raise ValueError("X402_DEMO_PAY_TO must be a 42-character EVM address")
+    if config.mainnet_enabled:
+        raise ValueError("X402_DEMO_MAINNET_ENABLED must remain false in this local demo")
 
 
 def build_unit_economics(config: PaymentConfig) -> dict[str, object]:
@@ -366,9 +419,10 @@ def process_jsonrpc_request(message: Mapping[str, object], config: PaymentConfig
     return make_jsonrpc_error(request_id, -32601, f"unknown method: {method}")
 
 
-def run_mcp_stdio() -> None:
+def run_mcp_stdio(config: PaymentConfig | None = None) -> None:
     """Run a tiny newline-delimited JSON-RPC loop over stdin/stdout."""
 
+    config = config or PaymentConfig.demo()
     for line in sys.stdin:
         if not line.strip():
             continue
@@ -377,7 +431,7 @@ def run_mcp_stdio() -> None:
             if not isinstance(message, Mapping):
                 response = make_jsonrpc_error(None, -32600, "request must be a JSON object")
             else:
-                response = process_jsonrpc_request(message)
+                response = process_jsonrpc_request(message, config)
         except json.JSONDecodeError as error:
             response = make_jsonrpc_error(None, -32700, f"parse error: {error.msg}")
         if response is None:
@@ -462,20 +516,25 @@ def main() -> None:
         help="Verify one local-demo X-Payment value and print the simulated response JSON.",
     )
     args = parser.parse_args()
+    try:
+        config = PaymentConfig.from_env()
+    except ValueError as error:
+        raise SystemExit(f"Invalid x402 demo configuration: {error}") from error
 
     if args.print_manifest:
-        print_json(build_mcp_manifest(PaymentConfig.demo()))
+        print_json(build_mcp_manifest(config))
         return
     if args.print_challenge:
-        print_json(build_cli_challenge_payload(PaymentConfig.demo()))
+        print_json(build_cli_challenge_payload(config))
         return
     if args.verify_payment is not None:
-        print_json(build_cli_verification_payload(args.verify_payment, PaymentConfig.demo()))
+        print_json(build_cli_verification_payload(args.verify_payment, config))
         return
     if args.mcp_stdio:
-        run_mcp_stdio()
+        run_mcp_stdio(config)
         return
 
+    DemoHandler.config = config
     server = ThreadingHTTPServer((args.host, args.port), DemoHandler)
     print(f"local x402 challenge server listening on http://{args.host}:{args.port}")
     print("GET /protected returns a 402 challenge. No funds move in this demo.")
