@@ -100,6 +100,19 @@ When replacing the local verifier with a real Circle Gateway or x402 verifier:
 6. Fail closed: verifier timeout, invalid proof, wrong network, wrong amount, or wrong recipient must return `402`/`403`, not paid content.
 7. Add integration tests with fixture proofs before enabling paid `200` in staging.
 
+## Production gap list before a real verifier
+
+Do not enable a real paid `200` path until these gaps are closed in a separate reviewed PR:
+
+1. **Verifier boundary:** replace only the local `LocalDemoVerifier`, keep `PaymentVerifier` as the seam, and require a feature flag before production verifier calls run.
+2. **Proof binding:** verify network, resource, amount, asset, pay-to address ownership, expiry, and request method/path before paid content is returned.
+3. **Nonce and replay protection:** require a nonce or equivalent unique proof identifier, persist it server-side, and reject replayed or expired proofs.
+4. **Settlement finality:** define what Circle Gateway/x402 response counts as final settlement on Arc Testnet, and fail closed when settlement status is pending, unknown, reverted, or unverifiable.
+5. **Redacted audit log:** log request ID, verifier decision, network, resource, amount, and proof fingerprint only; never log raw `X-Payment`, API keys, private keys, seed phrases, or user wallet secrets.
+6. **Testnet-only wallet approval:** any wallet-created proof must come from explicit human approval on Arc Testnet first; no mainnet, no autonomous spending, and no hidden wallet/account requests.
+7. **Failure matrix:** wrong chain, wrong asset, wrong amount, wrong recipient, expired proof, replayed nonce, verifier timeout, and malformed proof must all return `402`/`403`, not protected content.
+8. **Operational rollback:** keep `--expect-402-only` challenge mode as the default fallback until staging proves the verifier with fixture proofs and redacted logs.
+
 ## Rollback plan
 
 If a deployed verifier behaves unexpectedly:

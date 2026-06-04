@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
+import re
 
 ROOT = Path(__file__).resolve().parents[1]
 HTML = ROOT / "examples/payment-intent-playground/index.html"
@@ -295,9 +297,15 @@ def test_default_demo_values_are_reviewable_without_real_wallet_details() -> Non
     for marker in (
         'value="0x1111111111111111111111111111111111111111"',
         'value="5.00"',
-        'value="2026-05-30T00:00"',
     ):
         assert_contains(html, marker, HTML)
+
+    match = re.search(r'id="expiry"[^>]*value="([^"]+)"', html)
+    assert match, "missing default expiry value"
+    default_expiry = datetime.fromisoformat(match.group(1))
+    assert default_expiry > datetime.now(), (
+        "default demo expiry must stay in the future so Prepare intent reaches ready_for_review"
+    )
 
 
 def test_status_state_machine_uses_review_safe_vocabulary() -> None:
