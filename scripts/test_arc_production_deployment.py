@@ -36,6 +36,22 @@ class ArcProductionDeploymentTests(unittest.TestCase):
         ):
             self.assertIn(marker, lowered)
 
+    def test_runbook_has_explicit_production_gap_list_before_real_verifier(self) -> None:
+        text = RUNBOOK.read_text(encoding="utf-8")
+        lowered = text.lower()
+
+        for marker in (
+            "production gap list",
+            "nonce",
+            "replay protection",
+            "settlement finality",
+            "redacted audit log",
+            "testnet-only wallet approval",
+            "feature flag",
+            "fail closed",
+        ):
+            self.assertIn(marker, lowered)
+
     def test_env_example_contains_only_placeholder_configuration(self) -> None:
         text = ENV_EXAMPLE.read_text(encoding="utf-8")
         lowered = text.lower()
