@@ -23,6 +23,7 @@ const PAGES = [
   { id: 'arc-testnet-integration-runbook.md', path: './arc-testnet-integration-runbook.md', githubPath: 'docs/arc-testnet-integration-runbook.md', label: 'Arc Testnet integration runbook', group: 'Playbooks' },
   { id: 'arc-wallet-integration-notes.md', path: './arc-wallet-integration-notes.md', githubPath: 'docs/arc-wallet-integration-notes.md', label: 'Arc wallet integration notes', group: 'Playbooks' },
   { id: 'wallet-preflight-contract.md', path: './wallet-preflight-contract.md', githubPath: 'docs/wallet-preflight-contract.md', label: 'Wallet preflight contract', group: 'Playbooks' },
+  { id: 'arc-testnet-send-readiness-gate.md', path: './arc-testnet-send-readiness-gate.md', githubPath: 'docs/arc-testnet-send-readiness-gate.md', label: 'Arc Testnet send readiness gate', group: 'Playbooks' },
   { id: 'agent-commerce-use-cases.md', path: './agent-commerce-use-cases.md', githubPath: 'docs/agent-commerce-use-cases.md', label: 'Agent commerce use cases', group: 'Playbooks' },
   { id: 'agent-commerce-components.md', path: './agent-commerce-components.md', githubPath: 'docs/agent-commerce-components.md', label: 'Agent commerce components', group: 'Playbooks' },
   { id: 'agent-commerce-flow-library.md', path: './agent-commerce-flow-library.md', githubPath: 'docs/agent-commerce-flow-library.md', label: 'Agent commerce flow library', group: 'Playbooks' },

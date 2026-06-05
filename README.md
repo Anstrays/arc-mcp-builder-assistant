@@ -124,6 +124,7 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 - [`docs/arc-testnet-integration-runbook.md`](./docs/arc-testnet-integration-runbook.md) — stepwise path from local-only demos to a reviewed Arc Testnet transfer, including no-secret and no-mainnet gates.
 - [`docs/arc-wallet-integration-notes.md`](./docs/arc-wallet-integration-notes.md) — Circle Wallets vs browser-wallet decision notes for the next Phase 2 integration slice.
 - [`docs/wallet-preflight-contract.md`](./docs/wallet-preflight-contract.md) — secret-free wallet preflight contract for the next Arc Testnet wallet preview/send PRs.
+- [`docs/arc-testnet-send-readiness-gate.md`](./docs/arc-testnet-send-readiness-gate.md) — guard-only evidence contract for any future Arc Testnet send PR after the unsigned transaction draft and final local confirmation.
 - [`docs/agent-commerce-use-cases.md`](./docs/agent-commerce-use-cases.md) — practical use cases for API-call payments, creator payouts, job escrow, AI-service marketplace flows, and report agents.
 - [`docs/agent-commerce-components.md`](./docs/agent-commerce-components.md) — reusable local-first agent cards, payment request cards, receipt cards, and event logs for future Arc commerce flows.
 - [`docs/agent-commerce-flow-library.md`](./docs/agent-commerce-flow-library.md) — local-only paid API call, creator payout, and AI-agent commerce flow templates.
@@ -168,7 +169,7 @@ For the shortest reviewer-facing checkpoint, see [`docs/current-readiness-report
 - MCP setup checklist, Arc docs map, prompt library, deploy-contract notes, and agent identity notes.
 - Builder readiness checklist, MCP query examples, agent-commerce use cases, job escrow demo spec, Arc House submission draft, public build log, and community copy packs.
 - Styled GitHub Pages docs viewer so docs and community-health pages render like web pages instead of raw Markdown.
-- Local payment-intent playground with reviewable JSON, status transitions, USDC unit preview, unsigned transaction draft preview, and calldata consistency check.
+- Local payment-intent playground with reviewable JSON, status transitions, USDC unit preview, unsigned transaction draft preview, final local confirmation, send-readiness gate, and calldata consistency check.
 - Local receipt verifier playground (`examples/receipt-verifier-playground/index.html`, `docs/receipt-verifier-playground.md`), read-only transaction-status playground (`examples/transaction-status-playground/index.html`, `docs/transaction-status-playground.md`), and local-only job escrow simulator with change-request, rejection, dispute, expiry, cancellation, and human-approved payout states.
 - x402 local challenge boundary with machine-readable manifest, JSON-RPC/MCP-style stdio helpers, `.env.example`, local transcript, and production deployment runbook.
 - Agent commerce starter-kit examples: components, flows, identity profile preview, and review packet exporter.
