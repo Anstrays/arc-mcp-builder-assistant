@@ -51,6 +51,7 @@ REQUIRED_FILES = [
     "docs/payment-status-tutorial.md",
     "docs/contest-demo-script.md",
     "docs/content-pack.md",
+    "docs/public-launch-packet.md",
     "docs/arc-discord-introduction.md",
     "docs/receipt-verifier-playground.md",
     "docs/transaction-status-playground.md",
@@ -434,6 +435,47 @@ def validate_demo_safety_copy() -> None:
             fail(f"{relative}: missing safety copy marker: {marker}")
 
 
+def validate_public_launch_packet() -> None:
+    """Keep public distribution copy discoverable and non-overclaiming."""
+    doc_relative = "docs/public-launch-packet.md"
+    viewer_relative = "docs/viewer.js"
+    index_relative = "index.html"
+
+    doc = (ROOT / doc_relative).read_text(encoding="utf-8")
+    doc_lower = doc.lower()
+    viewer = (ROOT / viewer_relative).read_text(encoding="utf-8")
+    index = (ROOT / index_relative).read_text(encoding="utf-8")
+
+    for marker in (
+        "# Public launch packet",
+        "## Launch verdict",
+        "## Do not post automatically",
+        "## Russian Telegram draft",
+        "## X draft under 280 chars",
+        "## Discord / Arc House update",
+        "## Submission checklist",
+        "## Claims to avoid",
+    ):
+        if marker not in doc:
+            fail(f"{doc_relative}: missing launch packet marker: {marker}")
+    for marker in (
+        "do not post automatically",
+        "no wallet",
+        "no private keys",
+        "no custody",
+        "no transaction broadcast",
+        "not an official arc product",
+        "local-only",
+        "public-ready arc builder kit",
+    ):
+        if marker not in doc_lower:
+            fail(f"{doc_relative}: missing safety wording marker: {marker}")
+    if "public-launch-packet.md" not in viewer:
+        fail(f"{viewer_relative}: missing public launch packet route")
+    if "./docs/view.html#public-launch-packet.md" not in index:
+        fail(f"{index_relative}: missing public launch packet link")
+
+
 def validate_x402_boundary_demo() -> None:
     """Keep the x402 example explicitly local-only and verifier-shaped."""
     server = (ROOT / "examples/x402-local-challenge-server/server.py").read_text(encoding="utf-8")
@@ -771,6 +813,7 @@ def main() -> None:
     validate_no_raw_markdown_links()
     validate_docs_viewer_registry()
     validate_demo_safety_copy()
+    validate_public_launch_packet()
     validate_x402_boundary_demo()
     validate_arc_production_deployment_assets()
     validate_arc_testnet_status_helper()
