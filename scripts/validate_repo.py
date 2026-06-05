@@ -64,6 +64,7 @@ REQUIRED_FILES = [
     "docs/arc-testnet-integration-runbook.md",
     "docs/arc-wallet-integration-notes.md",
     "docs/wallet-preflight-contract.md",
+    "docs/arc-testnet-send-readiness-gate.md",
     "docs/agent-commerce-use-cases.md",
     "docs/agent-commerce-components.md",
     "docs/agent-commerce-flow-library.md",
@@ -779,6 +780,41 @@ def validate_job_escrow_simulator() -> None:
             fail(f"{html_relative}/{js_relative}: forbidden network/wallet marker: {marker}")
 
 
+def validate_arc_testnet_send_readiness_gate() -> None:
+    """Keep the future Arc Testnet send handoff docs-only and guard-first."""
+    doc_relative = "docs/arc-testnet-send-readiness-gate.md"
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    index = (ROOT / "index.html").read_text(encoding="utf-8")
+    viewer = (ROOT / "docs/viewer.js").read_text(encoding="utf-8")
+    doc = (ROOT / doc_relative).read_text(encoding="utf-8")
+
+    for marker in (
+        "Arc Testnet Send Readiness Gate",
+        "5042002",
+        "0x4cef52",
+        "unsigned transaction draft",
+        "final local confirmation",
+        "No wallet connection in this increment",
+        "No private keys",
+        "No signing",
+        "No transaction broadcast",
+        "eth_sendTransaction remains forbidden",
+        "rollback criteria",
+    ):
+        if marker not in doc:
+            fail(f"{doc_relative}: missing send readiness marker: {marker}")
+    for surface, text in (
+        ("README.md", readme),
+        ("index.html", index),
+        ("docs/viewer.js", viewer),
+    ):
+        if "arc-testnet-send-readiness-gate.md" not in text:
+            fail(f"{surface}: missing Arc Testnet send readiness gate link")
+    for marker in ("ethereum.request", "eth_sendTransaction", "wallet_switchEthereumChain", "sendTransaction", "signTransaction", "PRIVATE_KEY"):
+        if marker in index:
+            fail(f"index.html: forbidden send readiness live-wallet marker: {marker}")
+
+
 def validate_robots_txt() -> None:
     relative = "robots.txt"
     text = (ROOT / relative).read_text(encoding="utf-8")
@@ -821,6 +857,7 @@ def main() -> None:
     validate_receipt_verifier_playground()
     validate_transaction_status_playground()
     validate_job_escrow_simulator()
+    validate_arc_testnet_send_readiness_gate()
     validate_robots_txt()
     validate_sitemap_xml()
     print("validation passed", file=sys.stdout)
