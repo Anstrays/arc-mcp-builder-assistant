@@ -117,6 +117,7 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 - [`docs/transaction-status-playground.md`](./docs/transaction-status-playground.md) — read-only Arc Testnet transaction status playground for checking hashes through public RPC without wallet or broadcast side effects.
 - [`docs/contest-demo-script.md`](./docs/contest-demo-script.md) — 60-90 second demo script, recording checklist, community post copy, and contest submission bullets.
 - [`docs/content-pack.md`](./docs/content-pack.md) — blog and contest content pack with Russian Telegram copy, X/Discord drafts, thumbnail prompts, video storyboard, and screenshot checklist.
+- [`docs/public-launch-packet.md`](./docs/public-launch-packet.md) — human-review launch packet with safe Russian Telegram, X, Discord/Arc House copy, submission checklist, links, and forbidden claims.
 - [`docs/prompt-library.md`](./docs/prompt-library.md) and [`prompts/`](./prompts/) — copy-paste prompts for AI coding tools, including the standalone Arc Testnet status prompt.
 - [`docs/arc-builder-readiness-checklist.md`](./docs/arc-builder-readiness-checklist.md) — pre-submit checklist for docs grounding, payment safety, UX states, repo quality, and public proof-of-work.
 - [`docs/current-readiness-report.md`](./docs/current-readiness-report.md) — concise current-scope verdict, local evidence commands, optional future extensions, and exact wording for public claims.

@@ -8,6 +8,7 @@ const PAGES = [
   { id: 'payment-status-tutorial.md', path: './payment-status-tutorial.md', githubPath: 'docs/payment-status-tutorial.md', label: 'Payment status tutorial', group: 'Builder kit' },
   { id: 'contest-demo-script.md', path: './contest-demo-script.md', githubPath: 'docs/contest-demo-script.md', label: 'Contest demo script', group: 'Builder kit' },
   { id: 'content-pack.md', path: './content-pack.md', githubPath: 'docs/content-pack.md', label: 'Blog and contest content pack', group: 'Builder kit' },
+  { id: 'public-launch-packet.md', path: './public-launch-packet.md', githubPath: 'docs/public-launch-packet.md', label: 'Public launch packet', group: 'Builder kit' },
   { id: 'arc-discord-introduction.md', path: './arc-discord-introduction.md', githubPath: 'docs/arc-discord-introduction.md', label: 'Arc Discord introduction pack', group: 'Builder kit' },
   { id: 'receipt-verifier-playground.md', path: './receipt-verifier-playground.md', githubPath: 'docs/receipt-verifier-playground.md', label: 'Receipt verifier playground', group: 'Builder kit' },
   { id: 'transaction-status-playground.md', path: './transaction-status-playground.md', githubPath: 'docs/transaction-status-playground.md', label: 'Transaction status playground', group: 'Builder kit' },
