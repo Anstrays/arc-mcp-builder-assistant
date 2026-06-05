@@ -119,7 +119,8 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 - [`docs/content-pack.md`](./docs/content-pack.md) — blog and contest content pack with Russian Telegram copy, X/Discord drafts, thumbnail prompts, video storyboard, and screenshot checklist.
 - [`docs/prompt-library.md`](./docs/prompt-library.md) and [`prompts/`](./prompts/) — copy-paste prompts for AI coding tools, including the standalone Arc Testnet status prompt.
 - [`docs/arc-builder-readiness-checklist.md`](./docs/arc-builder-readiness-checklist.md) — pre-submit checklist for docs grounding, payment safety, UX states, repo quality, and public proof-of-work.
-- [`docs/arc-testnet-integration-runbook.md`](./docs/arc-testnet-integration-runbook.md) — safe sequence for the next real Arc Testnet payment-intent integration.
+- [`docs/current-readiness-report.md`](./docs/current-readiness-report.md) — concise current-scope verdict, local evidence commands, optional future extensions, and exact wording for public claims.
+- [`docs/arc-testnet-integration-runbook.md`](./docs/arc-testnet-integration-runbook.md) — stepwise path from local-only demos to a reviewed Arc Testnet transfer, including no-secret and no-mainnet gates.
 - [`docs/arc-wallet-integration-notes.md`](./docs/arc-wallet-integration-notes.md) — Circle Wallets vs browser-wallet decision notes for the next Phase 2 integration slice.
 - [`docs/wallet-preflight-contract.md`](./docs/wallet-preflight-contract.md) — secret-free wallet preflight contract for the next Arc Testnet wallet preview/send PRs.
 - [`docs/agent-commerce-use-cases.md`](./docs/agent-commerce-use-cases.md) — practical use cases for API-call payments, creator payouts, job escrow, AI-service marketplace flows, and report agents.
@@ -158,6 +159,8 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 ## Completion status
 
 The public static kit is complete for its current safe scope: docs-grounded Arc/MCP workflows, local playgrounds, review packets, screenshots, and CI validation. It intentionally stops before wallet permissions, private keys, signing, custody, live settlement, or transaction broadcast.
+
+For the shortest reviewer-facing checkpoint, see [`docs/current-readiness-report.md`](./docs/current-readiness-report.md).
 
 ### Shipped surfaces
 

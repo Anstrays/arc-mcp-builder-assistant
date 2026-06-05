@@ -59,6 +59,7 @@ REQUIRED_FILES = [
     "docs/arc-production-deployment.md",
     "docs/prompt-library.md",
     "docs/arc-builder-readiness-checklist.md",
+    "docs/current-readiness-report.md",
     "docs/arc-testnet-integration-runbook.md",
     "docs/arc-wallet-integration-notes.md",
     "docs/wallet-preflight-contract.md",

@@ -18,6 +18,7 @@ const PAGES = [
   { id: 'agent-identity-erc8004.md', path: './agent-identity-erc8004.md', githubPath: 'docs/agent-identity-erc8004.md', label: 'Agent identity notes', group: 'Builder kit' },
   { id: 'agent-identity-profile-preview.md', path: './agent-identity-profile-preview.md', githubPath: 'docs/agent-identity-profile-preview.md', label: 'Agent identity profile preview', group: 'Builder kit' },
   { id: 'arc-builder-readiness-checklist.md', path: './arc-builder-readiness-checklist.md', githubPath: 'docs/arc-builder-readiness-checklist.md', label: 'Builder readiness checklist', group: 'Playbooks' },
+  { id: 'current-readiness-report.md', path: './current-readiness-report.md', githubPath: 'docs/current-readiness-report.md', label: 'Current readiness report', group: 'Playbooks' },
   { id: 'arc-testnet-integration-runbook.md', path: './arc-testnet-integration-runbook.md', githubPath: 'docs/arc-testnet-integration-runbook.md', label: 'Arc Testnet integration runbook', group: 'Playbooks' },
   { id: 'arc-wallet-integration-notes.md', path: './arc-wallet-integration-notes.md', githubPath: 'docs/arc-wallet-integration-notes.md', label: 'Arc wallet integration notes', group: 'Playbooks' },
   { id: 'wallet-preflight-contract.md', path: './wallet-preflight-contract.md', githubPath: 'docs/wallet-preflight-contract.md', label: 'Wallet preflight contract', group: 'Playbooks' },
