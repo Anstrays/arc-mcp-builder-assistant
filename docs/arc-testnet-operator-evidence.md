@@ -10,6 +10,18 @@ Validate the committed safe example:
 python scripts/validate_operator_evidence.py
 ```
 
+Generate a create-only local draft bound to a commit:
+
+```bash
+# Bash
+python scripts/generate_operator_evidence_draft.py --reviewed-commit "$(git rev-parse HEAD)"
+
+# PowerShell
+python scripts/generate_operator_evidence_draft.py --reviewed-commit (git rev-parse HEAD)
+```
+
+The default output is `arc.operator-evidence.local.json`. Generated `*.operator-evidence.local.json` files are gitignored, never overwrite an existing file, keep all live surfaces disabled, use `packetStatus: draft_operator_evidence`, keep `noSecretsObserved: false`, and intentionally fail strict validation until real evidence is reviewed.
+
 Validate a copied packet:
 
 ```bash
@@ -96,10 +108,12 @@ The abbreviated shape above is explanatory only. Start from the committed exampl
 ## Operator workflow
 
 1. Copy `evidence.example.json` outside the committed example path.
-2. Replace `review.reviewedCommit` with the full lowercase SHA under review.
+2. Prefer the create-only draft generator, or replace `review.reviewedCommit` with the full lowercase SHA under review.
 3. Confirm every referenced repository file exists and represents evidence for that commit.
-4. Keep all disabled controls false and all required safety controls true.
-5. Run the validator with `--expect-commit` set to the full SHA under review.
-6. Attach the validated baseline packet and command output to the separate guarded PR as starting evidence, not final approval.
+4. Complete the manual secret review before changing `noSecretsObserved` to `true`.
+5. Change `packetStatus` from `draft_operator_evidence` to `local_operator_evidence` only after every required evidence gate is complete.
+6. Keep all live-surface controls false and all required safety controls true.
+7. Run the validator with `--expect-commit` set to the full SHA under review.
+8. Attach the validated baseline packet and command output to the separate guarded PR as starting evidence, not final approval.
 
 Do not add secrets, private proofs, wallet data, authorization headers, or production user data to an evidence packet.
