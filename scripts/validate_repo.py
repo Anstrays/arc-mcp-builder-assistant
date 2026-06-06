@@ -878,6 +878,7 @@ def validate_arc_testnet_operator_evidence() -> None:
         "eth_sendTransaction",
         "separate guarded PR",
         "python scripts/validate_operator_evidence.py",
+        "--expect-commit",
     ):
         if marker not in doc:
             fail(f"{doc_relative}: missing operator evidence marker: {marker}")
@@ -896,6 +897,7 @@ def validate_arc_testnet_operator_evidence() -> None:
     for marker in (
         "require_exact_keys",
         "validate_references",
+        "validate_expected_commit",
         "SECRET_VALUE_PATTERNS",
         "controls.{field} must be false",
         "decision.status must be blocked_pending_separate_guarded_pr",
@@ -914,6 +916,9 @@ def validate_arc_testnet_operator_evidence() -> None:
         "test_duplicate_reference_fails_closed",
         "test_credential_like_value_fails_closed",
         "test_cli_missing_packet_has_clear_error",
+        "test_cli_accepts_matching_expected_commit",
+        "test_cli_rejects_mismatched_expected_commit",
+        "test_cli_rejects_malformed_expected_commit",
     ):
         if marker not in tests:
             fail(f"{test_relative}: missing evidence regression marker: {marker}")

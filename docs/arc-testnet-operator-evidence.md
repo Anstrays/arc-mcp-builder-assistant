@@ -16,6 +16,16 @@ Validate a copied packet:
 python scripts/validate_operator_evidence.py path/to/operator-evidence.json
 ```
 
+Bind the result to the exact commit under review:
+
+```bash
+# Bash
+python scripts/validate_operator_evidence.py path/to/operator-evidence.json --expect-commit "$(git rev-parse HEAD)"
+
+# PowerShell
+python scripts/validate_operator_evidence.py path/to/operator-evidence.json --expect-commit (git rev-parse HEAD)
+```
+
 A valid packet exits `0` and prints a concise JSON summary. Invalid JSON, missing evidence, unsafe controls, unknown fields, non-Arc chain values, credential-like values, or unsafe references exit `2` with a clear error.
 
 ## Why this exists
@@ -38,6 +48,7 @@ The validator fails closed unless all of these remain true:
 - the schema is `arc-mcp-builder-assistant.arcTestnet.operatorEvidence.v1`;
 - the packet is Arc Testnet only;
 - the reviewed surface is `pre_send_readiness_baseline`;
+- `--expect-commit`, when provided, exactly matches `review.reviewedCommit`;
 - manual review and all required evidence gates are complete;
 - `walletRequestSpyResult` is `not_applicable_no_wallet_surface`;
 - no wallet connection, signing, backend signer, mainnet, autonomous spending, or transaction broadcast is enabled;
@@ -88,7 +99,7 @@ The abbreviated shape above is explanatory only. Start from the committed exampl
 2. Replace `review.reviewedCommit` with the full lowercase SHA under review.
 3. Confirm every referenced repository file exists and represents evidence for that commit.
 4. Keep all disabled controls false and all required safety controls true.
-5. Run `python scripts/validate_operator_evidence.py path/to/operator-evidence.json`.
+5. Run the validator with `--expect-commit` set to the full SHA under review.
 6. Attach the validated baseline packet and command output to the separate guarded PR as starting evidence, not final approval.
 
 Do not add secrets, private proofs, wallet data, authorization headers, or production user data to an evidence packet.

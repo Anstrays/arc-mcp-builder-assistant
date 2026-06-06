@@ -106,7 +106,7 @@ Until that review is complete: no private keys, no signing, no transaction broad
 After completing this checklist, record the result with the [Arc Testnet Operator Evidence Packet](./arc-testnet-operator-evidence.md) and validate it with:
 
 ```bash
-python scripts/validate_operator_evidence.py path/to/operator-evidence.json
+python scripts/validate_operator_evidence.py path/to/operator-evidence.json --expect-commit FULL_LOWERCASE_COMMIT_SHA
 ```
 
-The packet stays blocked pending a separate guarded PR and cannot authorize signing or transaction broadcast.
+The expected commit must exactly match `review.reviewedCommit`. The packet stays blocked pending a separate guarded PR and cannot authorize signing or transaction broadcast.

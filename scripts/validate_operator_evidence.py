@@ -97,6 +97,16 @@ def require_nonempty_text(value: Any, location: str, minimum: int = 1) -> str:
     return value.strip()
 
 
+def validate_commit_sha(value: Any, location: str) -> str:
+    if (
+        not isinstance(value, str)
+        or not re.fullmatch(r"[0-9a-f]{40}", value)
+        or set(value) == {"0"}
+    ):
+        raise EvidenceValidationError(f"{location} must be a full lowercase commit SHA")
+    return value
+
+
 def walk_strings(value: Any) -> list[str]:
     if isinstance(value, str):
         return [value]
@@ -149,13 +159,7 @@ def validate_packet(packet: Any, root: Path = ROOT) -> dict[str, Any]:
 
     review = require_object(packet["review"], "review")
     require_exact_keys(review, REVIEW_KEYS, "review")
-    reviewed_commit = review["reviewedCommit"]
-    if (
-        not isinstance(reviewed_commit, str)
-        or not re.fullmatch(r"[0-9a-f]{40}", reviewed_commit)
-        or set(reviewed_commit) == {"0"}
-    ):
-        raise EvidenceValidationError("review.reviewedCommit must be a full lowercase commit SHA")
+    validate_commit_sha(review["reviewedCommit"], "review.reviewedCommit")
     if review["reviewedSurface"] != "pre_send_readiness_baseline":
         raise EvidenceValidationError("review.reviewedSurface must be pre_send_readiness_baseline")
     if review["manualReviewRequired"] is not True:
@@ -199,6 +203,15 @@ def validate_packet(packet: Any, root: Path = ROOT) -> dict[str, Any]:
     return packet
 
 
+def validate_expected_commit(packet: dict[str, Any], expected_commit: Any) -> None:
+    expected = validate_commit_sha(expected_commit, "expected commit")
+    reviewed = packet["review"]["reviewedCommit"]
+    if reviewed != expected:
+        raise EvidenceValidationError(
+            f"reviewed commit {reviewed} does not match expected commit {expected}"
+        )
+
+
 def display_path(path: Path) -> str:
     try:
         return path.resolve().relative_to(ROOT.resolve()).as_posix()
@@ -221,10 +234,16 @@ def main() -> int:
         description="Validate a local-only Arc Testnet operator evidence packet."
     )
     parser.add_argument("packet", nargs="?", type=Path, default=DEFAULT_PACKET)
+    parser.add_argument(
+        "--expect-commit",
+        help="Fail unless review.reviewedCommit equals this full lowercase commit SHA",
+    )
     args = parser.parse_args()
 
     try:
         packet = load_packet(args.packet)
+        if args.expect_commit is not None:
+            validate_expected_commit(packet, args.expect_commit)
     except (EvidenceValidationError, OSError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}, indent=2, sort_keys=True))
         return 2
@@ -237,6 +256,9 @@ def main() -> int:
                 "schema": packet["schema"],
                 "chainId": packet["network"]["chainId"],
                 "decision": packet["decision"]["status"],
+                "reviewedCommit": packet["review"]["reviewedCommit"],
+                "expectedCommitChecked": args.expect_commit is not None,
+                "commitMatchesExpected": True if args.expect_commit is not None else None,
                 "transactionBroadcast": packet["controls"]["transactionBroadcast"],
             },
             indent=2,
