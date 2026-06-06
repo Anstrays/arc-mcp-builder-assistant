@@ -100,3 +100,13 @@ Reject or pause the future PR when any of these conditions appear:
 A future live-send implementation may be considered only in a separate guarded PR with explicit human approval, test-first wallet-request coverage, fail-closed Arc Testnet checks, and complete operator evidence.
 
 Until that review is complete: no private keys, no signing, no transaction broadcast, and `eth_sendTransaction remains forbidden`.
+
+## Machine-readable evidence record
+
+After completing this checklist, record the result with the [Arc Testnet Operator Evidence Packet](./arc-testnet-operator-evidence.md) and validate it with:
+
+```bash
+python scripts/validate_operator_evidence.py path/to/operator-evidence.json
+```
+
+The packet stays blocked pending a separate guarded PR and cannot authorize signing or transaction broadcast.

@@ -1,0 +1,47 @@
+{
+  "schema": "arc-mcp-builder-assistant.arcTestnet.operatorEvidence.v1",
+  "packetStatus": "local_operator_evidence",
+  "network": {
+    "name": "arc-testnet",
+    "chainId": 5042002,
+    "chainIdHex": "0x4cef52"
+  },
+  "review": {
+    "reviewedCommit": "6540eb3cc56a8d3ee3824f8de7995316754a36bf",
+    "reviewedSurface": "pre_send_readiness_baseline",
+    "manualReviewRequired": true
+  },
+  "evidence": {
+    "frozenIntentReviewed": true,
+    "unsignedDraftMatchesIntent": true,
+    "finalLocalConfirmationReviewed": true,
+    "walletRequestSpyResult": "not_applicable_no_wallet_surface",
+    "testsPassed": true,
+    "browserSmokePassed": true,
+    "arcStatusCheckPassed": true,
+    "references": [
+      "docs/arc-testnet-send-readiness-gate.md",
+      "docs/arc-testnet-operator-runbook.md",
+      "scripts/test_all.py",
+      "scripts/check_arc_testnet_status.py"
+    ]
+  },
+  "controls": {
+    "walletConnected": false,
+    "signingEnabled": false,
+    "transactionBroadcast": false,
+    "backendSignerEnabled": false,
+    "mainnetEnabled": false,
+    "autonomousSpendingEnabled": false,
+    "ethSendTransactionForbidden": true,
+    "noSecretsObserved": true,
+    "humanApprovalRequired": true,
+    "separateGuardedPrRequired": true
+  },
+  "decision": {
+    "status": "blocked_pending_separate_guarded_pr",
+    "reason": "Current evidence documents readiness only; it does not approve a live-send implementation.",
+    "rollbackOwner": "repository maintainer",
+    "rollbackAction": "Keep wallet and transaction surfaces disabled or revert the separate guarded PR."
+  }
+}

@@ -64,6 +64,7 @@ Useful one-shot checks:
 python3 examples/x402-local-challenge-server/server.py --print-challenge
 python3 examples/x402-local-challenge-server/server.py --print-manifest
 X402_DEMO_AMOUNT=0.05 python3 examples/x402-local-challenge-server/server.py --print-challenge
+python3 scripts/validate_operator_evidence.py
 ```
 
 On Windows, use `python` instead of `python3` if that is how Python is installed.
@@ -126,6 +127,7 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 - [`docs/wallet-preflight-contract.md`](./docs/wallet-preflight-contract.md) — secret-free wallet preflight contract for the next Arc Testnet wallet preview/send PRs.
 - [`docs/arc-testnet-send-readiness-gate.md`](./docs/arc-testnet-send-readiness-gate.md) — guard-only evidence contract for any future Arc Testnet send PR after the unsigned transaction draft and final local confirmation.
 - [`docs/arc-testnet-operator-runbook.md`](./docs/arc-testnet-operator-runbook.md) — manual review checklist, stop conditions, and evidence record for any future guarded Arc Testnet live-send PR.
+- [`docs/arc-testnet-operator-evidence.md`](./docs/arc-testnet-operator-evidence.md) — strict machine-readable operator evidence packet and dependency-free fail-closed validator.
 - [`docs/agent-commerce-use-cases.md`](./docs/agent-commerce-use-cases.md) — practical use cases for API-call payments, creator payouts, job escrow, AI-service marketplace flows, and report agents.
 - [`docs/agent-commerce-components.md`](./docs/agent-commerce-components.md) — reusable local-first agent cards, payment request cards, receipt cards, and event logs for future Arc commerce flows.
 - [`docs/agent-commerce-flow-library.md`](./docs/agent-commerce-flow-library.md) — local-only paid API call, creator payout, and AI-agent commerce flow templates.
@@ -142,6 +144,7 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 - [`examples/agent-commerce-components/`](./examples/agent-commerce-components/) — reusable local-only agent/payment/receipt/log cards that freeze money fields before any future wallet handoff.
 - [`examples/agent-commerce-flows/`](./examples/agent-commerce-flows/) — local-only product-flow templates for paid API calls, creator payouts, and AI-agent commerce with frozen review artifacts.
 - [`examples/agent-commerce-review-packet/`](./examples/agent-commerce-review-packet/) — local-only exporter that combines agent identity, commerce flow, escrow outcome, approval note, and disabled-surface controls into a review JSON packet.
+- [`examples/arc-testnet-operator-evidence/`](./examples/arc-testnet-operator-evidence/) — safe example evidence packet for the Arc Testnet operator manual-review workflow.
 - [`examples/agent-identity-profile-preview/`](./examples/agent-identity-profile-preview/) — local-only ERC-8004 profile preview for agent metadata, controller notes, reputation notes, and validation requirements.
 - [`examples/job-escrow-simulator/`](./examples/job-escrow-simulator/) — local-only ERC-8183-style job escrow simulator for posting, accepting, simulated funding, submitting, requesting changes, resubmitting, rejection, dispute, expiry/cancellation, and payout approval.
 - [`examples/x402-local-challenge-server/`](./examples/x402-local-challenge-server/) — dependency-free local HTTP 402 challenge server with MCP-style manifest, JSON-RPC stdio tool mode, JSON CLI helpers, and a swappable verifier boundary for future Circle/x402 settlement work.

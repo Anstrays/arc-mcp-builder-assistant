@@ -24,6 +24,7 @@ CHECKS = [
     "scripts/test_agent_commerce_review_packet.py",
     "scripts/test_agent_identity_profile_preview.py",
     "scripts/test_job_escrow_simulator.py",
+    "scripts/test_operator_evidence.py",
     "scripts/validate_repo.py",
 ]
 

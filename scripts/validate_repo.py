@@ -66,6 +66,7 @@ REQUIRED_FILES = [
     "docs/wallet-preflight-contract.md",
     "docs/arc-testnet-send-readiness-gate.md",
     "docs/arc-testnet-operator-runbook.md",
+    "docs/arc-testnet-operator-evidence.md",
     "docs/agent-commerce-use-cases.md",
     "docs/agent-commerce-components.md",
     "docs/agent-commerce-flow-library.md",
@@ -98,6 +99,7 @@ REQUIRED_FILES = [
     "examples/agent-identity-profile-preview/identity.js",
     "examples/job-escrow-simulator/index.html",
     "examples/job-escrow-simulator/simulator.js",
+    "examples/arc-testnet-operator-evidence/evidence.example.json",
     "examples/x402-local-challenge-server/README.md",
     "examples/x402-local-challenge-server/.env.example",
     "examples/x402-local-challenge-server/server.py",
@@ -113,6 +115,8 @@ REQUIRED_FILES = [
     "scripts/test_agent_commerce_review_packet.py",
     "scripts/test_agent_identity_profile_preview.py",
     "scripts/test_job_escrow_simulator.py",
+    "scripts/validate_operator_evidence.py",
+    "scripts/test_operator_evidence.py",
     "assets/screenshots/landing.png",
     "assets/screenshots/security-viewer.png",
     "assets/screenshots/payment-intent-playground.png",
@@ -849,6 +853,81 @@ def validate_arc_testnet_operator_runbook() -> None:
             fail(f"index.html: forbidden operator runbook live-wallet marker: {marker}")
 
 
+def validate_arc_testnet_operator_evidence() -> None:
+    """Keep the operator evidence packet strict, discoverable, and fail-closed."""
+    doc_relative = "docs/arc-testnet-operator-evidence.md"
+    example_relative = "examples/arc-testnet-operator-evidence/evidence.example.json"
+    validator_relative = "scripts/validate_operator_evidence.py"
+    test_relative = "scripts/test_operator_evidence.py"
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    index = (ROOT / "index.html").read_text(encoding="utf-8")
+    viewer = (ROOT / "docs/viewer.js").read_text(encoding="utf-8")
+    doc = (ROOT / doc_relative).read_text(encoding="utf-8")
+    example = (ROOT / example_relative).read_text(encoding="utf-8")
+    validator = (ROOT / validator_relative).read_text(encoding="utf-8")
+    tests = (ROOT / test_relative).read_text(encoding="utf-8")
+    test_all = (ROOT / "scripts/test_all.py").read_text(encoding="utf-8")
+
+    for marker in (
+        "Arc Testnet Operator Evidence Packet",
+        "arc-mcp-builder-assistant.arcTestnet.operatorEvidence.v1",
+        "5042002",
+        "0x4cef52",
+        "blocked_pending_separate_guarded_pr",
+        "pre_send_readiness_baseline",
+        "eth_sendTransaction",
+        "separate guarded PR",
+        "python scripts/validate_operator_evidence.py",
+    ):
+        if marker not in doc:
+            fail(f"{doc_relative}: missing operator evidence marker: {marker}")
+    for marker in (
+        '"schema": "arc-mcp-builder-assistant.arcTestnet.operatorEvidence.v1"',
+        '"chainId": 5042002',
+        '"chainIdHex": "0x4cef52"',
+        '"reviewedSurface": "pre_send_readiness_baseline"',
+        '"transactionBroadcast": false',
+        '"ethSendTransactionForbidden": true',
+        '"separateGuardedPrRequired": true',
+        '"status": "blocked_pending_separate_guarded_pr"',
+    ):
+        if marker not in example:
+            fail(f"{example_relative}: missing safe evidence marker: {marker}")
+    for marker in (
+        "require_exact_keys",
+        "validate_references",
+        "SECRET_VALUE_PATTERNS",
+        "controls.{field} must be false",
+        "decision.status must be blocked_pending_separate_guarded_pr",
+    ):
+        if marker not in validator:
+            fail(f"{validator_relative}: missing fail-closed validator marker: {marker}")
+    for marker in (
+        "test_wrong_chain_fails_closed",
+        "test_placeholder_commit_fails_closed",
+        "test_non_string_commit_fails_closed",
+        "test_broadcast_enabled_fails_closed",
+        "test_unknown_field_fails_closed",
+        "test_missing_evidence_fails_closed",
+        "test_decision_cannot_approve_live_send",
+        "test_non_repository_reference_fails_closed",
+        "test_duplicate_reference_fails_closed",
+        "test_credential_like_value_fails_closed",
+        "test_cli_missing_packet_has_clear_error",
+    ):
+        if marker not in tests:
+            fail(f"{test_relative}: missing evidence regression marker: {marker}")
+    if "scripts/test_operator_evidence.py" not in test_all:
+        fail("scripts/test_all.py: missing operator evidence regression command")
+    for surface, text in (
+        ("README.md", readme),
+        ("index.html", index),
+        ("docs/viewer.js", viewer),
+    ):
+        if "arc-testnet-operator-evidence.md" not in text:
+            fail(f"{surface}: missing Arc Testnet operator evidence link")
+
+
 def validate_robots_txt() -> None:
     relative = "robots.txt"
     text = (ROOT / relative).read_text(encoding="utf-8")
@@ -893,6 +972,7 @@ def main() -> None:
     validate_job_escrow_simulator()
     validate_arc_testnet_send_readiness_gate()
     validate_arc_testnet_operator_runbook()
+    validate_arc_testnet_operator_evidence()
     validate_robots_txt()
     validate_sitemap_xml()
     print("validation passed", file=sys.stdout)
