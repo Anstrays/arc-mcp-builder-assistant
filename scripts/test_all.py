@@ -14,9 +14,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CHECKS = [
+    "scripts/check_completion.py",
+    "scripts/test_completion_contract.py",
     "scripts/test_payment_intent_playground.py",
     "scripts/test_x402_boundary.py",
     "scripts/test_arc_production_deployment.py",
+    "scripts/test_arc_testnet_status_helper.py",
     "scripts/test_receipt_verifier_playground.py",
     "scripts/test_transaction_status_playground.py",
     "scripts/test_agent_commerce_components.py",

@@ -87,6 +87,9 @@ python3 scripts/live_arc_gateway_smoke.py
 ```
 
 The script sends the proof as an `X-Payment` header. It redacts the proof in output and does not create payments.
+All smoke targets must be valid HTTP/HTTPS URLs without embedded credentials.
+Live `X-Payment` proofs are sent only to HTTPS targets, and request timeouts
+must be greater than zero and no more than 60 seconds.
 
 ## Circle Gateway / x402 verifier handoff
 

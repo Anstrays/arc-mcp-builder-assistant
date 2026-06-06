@@ -19,6 +19,8 @@ This repo now ships a GitHub Pages site, docs, prompts, and local demos that sho
 - Local-only ERC-8183-style job escrow simulator for posting, accepting, funding, submitting, reviewing, and approving payout state.
 - Local-only x402 challenge server that demonstrates an HTTP 402 payment boundary without wallet, RPC, verifier backend, transaction broadcast, or mainnet settlement.
 - Lightweight validator and GitHub Actions workflow covering required files, safety copy, static-page invariants, public links, and the x402 verifier boundary.
+- Safe-scope completion contract with a dependency-free completion check and canonical-suite coverage enforcement.
+- Arc Testnet operator evidence packet, fail-closed validator, create-only ignored draft generator, and read-only readiness report.
 
 ## Safety boundaries
 
@@ -33,6 +35,7 @@ This repo now ships a GitHub Pages site, docs, prompts, and local demos that sho
 ## How to verify locally
 
 ```bash
+python3 scripts/check_completion.py
 python3 scripts/test_all.py
 python3 -m http.server 8080
 ```
@@ -81,12 +84,15 @@ Links:
 
 Ask: feedback on the safest first Arc Testnet flow — direct payment intent, job escrow, or paid API/x402 request?
 
-## Next build task
+## Completion and future work
 
-Wire one flow to verified Arc Testnet status while keeping the same safety model:
+The current public builder-kit scope is complete according to the
+[safe-scope completion contract](./completion-contract.md). Remaining work is
+optional higher-risk extension work, not a hidden blocker:
 
-1. Re-check Arc Testnet RPC, chain ID, explorer, wallet/provider path, USDC assumptions, and relevant contract addresses through current docs/MCP.
-2. Pick the smallest useful integration path: payment intent first, then job escrow/x402.
-3. Add a manual wallet approval step.
-4. Show tx hash and ArcScan status.
-5. Keep examples testnet-first and secret-free.
+1. A guarded Arc Testnet wallet-send path in a separate reviewed PR.
+2. A real x402/Circle verifier handoff with secrets held outside the repo.
+3. Human-reviewed public distribution of the existing launch packet.
+
+Each extension must preserve explicit human approval, Arc-only positioning,
+testnet-first verification, and fail-closed safety gates.

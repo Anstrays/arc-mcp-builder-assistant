@@ -29,13 +29,21 @@ Use this checklist before sharing an Arc demo, opening a PR, or submitting the p
 
 ## 4. Repository quality
 
+- [ ] `python3 scripts/check_completion.py` passes locally.
 - [ ] `python3 scripts/test_all.py` passes locally.
 - [ ] README explains the purpose, current MVP, local preview, and safety boundaries.
 - [ ] GitHub Pages links resolve and the sitemap includes public demo pages.
 - [ ] Docs link to specific files instead of vague folders when used from GitHub Pages.
 - [ ] Security policy tells contributors how to report sensitive issues privately.
+- [ ] The [safe-scope completion contract](./completion-contract.md) still matches public claims and explicit non-goals.
 
-## 5. Builder proof-of-work
+## 5. Operator evidence
+
+- [ ] Any local operator evidence draft remains ignored and intentionally fails strict validation until reviewed.
+- [ ] `scripts/report_operator_evidence.py` reports gaps without mutating the packet or exposing credential-like values.
+- [ ] Strict evidence validation remains Arc Testnet only, commit-bound, fail-closed, and blocked from live send.
+
+## 6. Builder proof-of-work
 
 - [ ] There is a screenshot, mockup, or live playground that a reviewer can open in under 30 seconds.
 - [ ] There is a short build log or submission page describing what changed and what comes next.

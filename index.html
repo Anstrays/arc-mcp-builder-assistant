@@ -109,12 +109,14 @@
     section { padding: 54px 0; scroll-margin-top: 96px; }
     .hero { padding: 72px 0 38px; }
     .hero-grid { display: grid; grid-template-columns: minmax(0, 1.06fr) minmax(360px, .94fr); gap: 32px; align-items: center; }
+    .hero-grid > *, .split > *, .playground-grid > * { min-width: 0; }
     .eyebrow { display: inline-flex; gap: 8px; align-items: center; color: var(--blue); text-transform: uppercase; letter-spacing: .16em; font-size: 12px; font-weight: 950; }
     .eyebrow::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 0 7px rgba(6,182,212,.12); }
     h1 { margin: 16px 0 18px; font-size: clamp(46px, 7vw, 86px); line-height: .92; letter-spacing: -.075em; text-wrap: balance; }
     h2 { margin: 0; }
     h3 { margin: 0 0 10px; letter-spacing: -.03em; }
     .lead { color: #1e293b; font-size: clamp(18px, 2vw, 22px); line-height: 1.65; max-width: 780px; }
+    h1, h2, h3, p, li { overflow-wrap: anywhere; }
     .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 28px; }
     .hero-badges { display: flex; gap: 9px; flex-wrap: wrap; margin: 0 0 20px; }
     .badge { border: 1px solid rgba(15,23,42,.1); background: rgba(255,255,255,.68); color: #1e293b; border-radius: 999px; padding: 8px 11px; font-size: 13px; font-weight: 800; }
@@ -224,7 +226,7 @@
       .output { background: linear-gradient(180deg, rgba(2,6,23,.98), rgba(15,23,42,.98)); }
     }
     @media (max-width: 980px) {
-      .hero-grid, .split, .playground-grid { grid-template-columns: 1fr; }
+      .hero-grid, .split, .playground-grid { grid-template-columns: minmax(0, 1fr); }
       .workflow-grid, .metrics, .analytics-grid, .recipe-grid, .docs-grid { grid-template-columns: repeat(2, 1fr); }
       .section-head { display: block; }
       .section-head .section-copy { margin-top: 12px; }
@@ -240,6 +242,7 @@
       .workflow-grid, .metrics, .analytics-grid, .recipe-grid, .docs-grid, .select-row { grid-template-columns: 1fr; }
       .status-item { grid-template-columns: 1fr; }
       h1 { font-size: clamp(40px, 13vw, 58px); }
+      .actions > * { max-width: 100%; }
     }
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
@@ -285,13 +288,14 @@
           <div class="actions">
             <a class="button blue" href="./examples/payment-intent-playground/">Open payment playground</a>
             <a class="button primary" href="./docs/view.html#current-readiness-report.md">Readiness report</a>
+            <a class="button" href="./docs/view.html#completion-contract.md">Completion contract</a>
             <a class="button" href="./docs/view.html#arc-builder-readiness-checklist.md">Readiness checklist</a>
             <a class="button" href="./docs/view.html#arc-mcp-setup.md">MCP setup</a>
             <a class="button" href="./docs/view.html#arc-production-deployment.md">Production runbook</a>
           </div>
           <div class="metrics" aria-label="Honest project metrics">
-            <div class="metric"><span>Examples</span><strong>10</strong></div>
-            <div class="metric"><span>Docs</span><strong>31</strong></div>
+            <div class="metric"><span>Examples</span><strong>11</strong></div>
+            <div class="metric"><span>Docs</span><strong>36</strong></div>
             <div class="metric"><span>Prompt packs</span><strong>5</strong></div>
             <div class="metric"><span>Wallet/RPC</span><strong>Off</strong></div>
           </div>
@@ -442,8 +446,8 @@ safety: human approval, no custody, no broadcast</code></pre>
           <article class="panel analytics-card">
             <h3>By builder surface</h3>
             <div class="bar-list">
-              <div class="bar-row"><span>Docs</span><span class="bar-track"><span class="bar-fill" style="width: 93%"></span></span><strong>31</strong></div>
-              <div class="bar-row"><span>Examples</span><span class="bar-track"><span class="bar-fill" style="width: 76%"></span></span><strong>10</strong></div>
+              <div class="bar-row"><span>Docs</span><span class="bar-track"><span class="bar-fill" style="width: 93%"></span></span><strong>36</strong></div>
+              <div class="bar-row"><span>Examples</span><span class="bar-track"><span class="bar-fill" style="width: 76%"></span></span><strong>11</strong></div>
               <div class="bar-row"><span>Prompts</span><span class="bar-track"><span class="bar-fill" style="width: 64%"></span></span><strong>5</strong></div>
             </div>
           </article>
@@ -522,6 +526,7 @@ safety: human approval, no custody, no broadcast</code></pre>
           <a class="doc-card" href="./docs/view.html#arc-docs-map.md"><h3>Arc docs map</h3><p>Network config, contracts, agent primitives, tutorials, tools, and recommended build path.</p><span class="recipe-link">Open map →</span></a>
           <a class="doc-card" href="./docs/view.html#prompt-library.md"><h3>Prompt library</h3><p>Copy-ready prompts for docs-aware coding, payment intents, agent identity, escrow, and reviews.</p><span class="recipe-link">Use prompts →</span></a>
           <a class="doc-card" href="./docs/view.html#current-readiness-report.md"><h3>Current readiness report</h3><p>Scope verdict, local evidence commands, future-extension boundaries, and safe public wording.</p><span class="recipe-link">Read report →</span></a>
+          <a class="doc-card" href="./docs/view.html#completion-contract.md"><h3>Safe-scope completion contract</h3><p>Measurable acceptance criteria, canonical verification, explicit non-goals, and reviewer wording.</p><span class="recipe-link">Review contract →</span></a>
           <a class="doc-card" href="./docs/view.html#arc-testnet-send-readiness-gate.md"><h3>Send readiness gate</h3><p>Evidence contract for any future Arc Testnet send PR after the unsigned draft and final local confirmation.</p><span class="recipe-link">Review gate →</span></a>
           <a class="doc-card" href="./docs/view.html#arc-testnet-operator-runbook.md"><h3>Arc Testnet operator runbook</h3><p>Manual review steps, stop conditions, and evidence records before any future guarded live-send PR.</p><span class="recipe-link">Open runbook →</span></a>
           <a class="doc-card" href="./docs/view.html#arc-testnet-operator-evidence.md"><h3>Operator evidence packet</h3><p>Strict Arc Testnet review record with fail-closed validation and disabled live-send controls.</p><span class="recipe-link">Review schema →</span></a>
@@ -544,6 +549,7 @@ safety: human approval, no custody, no broadcast</code></pre>
         </div>
         <div class="status-grid">
           <div class="status-item"><span>Complete</span><p>Landing page, docs viewer, recipe links, local playgrounds, refreshed screenshots, and validation pipeline are shipped and green.</p></div>
+          <div class="status-item"><span>Measured</span><p>The safe-scope completion contract and dependency-free completion check keep the readiness claim reproducible.</p></div>
           <div class="status-item"><span>Safe default</span><p>Current demos remain local-first: no private keys, no wallet connection, no signing, no custody, and no transaction broadcast.</p></div>
           <div class="status-item"><span>Optional next</span><p>A reviewed Arc Testnet send PR can be scoped later only after the send-readiness gate proves chain gates, decimals, approval copy, unsigned draft parity, and rollback criteria.</p></div>
           <div class="status-item"><span>Optional later</span><p>Circle Gateway/x402 verifier handoff or paid API primitives can be added as separate review-first extensions outside the current public-ready scope.</p></div>

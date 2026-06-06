@@ -61,6 +61,7 @@ REQUIRED_FILES = [
     "docs/arc-production-deployment.md",
     "docs/prompt-library.md",
     "docs/arc-builder-readiness-checklist.md",
+    "docs/completion-contract.md",
     "docs/current-readiness-report.md",
     "docs/arc-testnet-integration-runbook.md",
     "docs/arc-wallet-integration-notes.md",
@@ -105,9 +106,12 @@ REQUIRED_FILES = [
     "examples/x402-local-challenge-server/.env.example",
     "examples/x402-local-challenge-server/server.py",
     "scripts/check_arc_testnet_status.py",
+    "scripts/check_completion.py",
     "scripts/live_arc_gateway_smoke.py",
     "scripts/test_all.py",
     "scripts/test_arc_production_deployment.py",
+    "scripts/test_arc_testnet_status_helper.py",
+    "scripts/test_completion_contract.py",
     "scripts/test_payment_intent_playground.py",
     "scripts/test_x402_boundary.py",
     "scripts/test_transaction_status_playground.py",
@@ -200,6 +204,14 @@ TEXT_SUFFIXES_TO_SECRET_SCAN = {
     ".yaml",
     ".yml",
 }
+
+MOJIBAKE_MARKERS = (
+    "\u00c3",
+    "\u00c2",
+    "\u00e2\u20ac",
+    "\u0432\u0402",
+    "\u0420\u00b0",
+)
 
 # Files we never want to scan for secrets — they only describe patterns,
 # not real credentials.
@@ -296,6 +308,23 @@ def validate_no_secrets() -> None:
                 fail(f"potential secret pattern in {relative}")
 
 
+def validate_public_text_integrity() -> None:
+    """Reject common UTF-8/Windows-1252 decoding damage in public text files."""
+    for path in ROOT.rglob("*"):
+        if ".git" in path.parts or ".hermes" in path.parts or not path.is_file():
+            continue
+        if path.suffix.lower() not in TEXT_SUFFIXES_TO_SECRET_SCAN:
+            continue
+        relative = path.relative_to(ROOT)
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        for marker in MOJIBAKE_MARKERS:
+            if marker in text:
+                fail(f"possible mojibake marker in {relative}: {marker!r}")
+
+
 def validate_html_file(relative: str) -> None:
     html_path = ROOT / relative
     html = html_path.read_text(encoding="utf-8")
@@ -369,6 +398,41 @@ def validate_reduced_motion_css() -> None:
         fail("index.html: reduced-motion rule must disable smooth scrolling")
 
 
+def validate_responsive_layout_guards() -> None:
+    """Keep narrow layouts from expanding beyond the mobile viewport."""
+    required = {
+        "index.html": (
+            ".hero-grid > *, .split > *, .playground-grid > * { min-width: 0; }",
+            "grid-template-columns: minmax(0, 1fr)",
+            "overflow-wrap: anywhere",
+        ),
+        "docs/view.html": (
+            "grid-template-columns: minmax(0, 1fr) minmax(0, 300px)",
+            ".panel, aside { min-width: 0; }",
+            "overflow-wrap: anywhere",
+        ),
+    }
+    for relative, markers in required.items():
+        text = (ROOT / relative).read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                fail(f"{relative}: missing responsive layout guard: {marker}")
+
+
+def validate_public_inventory_counts() -> None:
+    """Keep the landing-page repository counts tied to committed surfaces."""
+    index = (ROOT / "index.html").read_text(encoding="utf-8")
+    counts = {
+        "Docs": len(list((ROOT / "docs").glob("*.md"))),
+        "Examples": len([path for path in (ROOT / "examples").iterdir() if path.is_dir()]),
+        "Prompt packs": len([path for path in (ROOT / "prompts").iterdir() if path.is_file()]),
+    }
+    for label, count in counts.items():
+        marker = f'<div class="metric"><span>{label}</span><strong>{count}</strong></div>'
+        if marker not in index:
+            fail(f"index.html: stale public inventory count for {label}: expected {count}")
+
+
 def _resolved_local_link_target(source_relative: str, href: str) -> Path | None:
     href = href.strip()
     if (
@@ -412,6 +476,28 @@ def validate_local_links() -> None:
                 fail(f"{relative}: broken local link: {href}")
 
 
+def validate_markdown_local_links() -> None:
+    """Ensure committed relative links in public Markdown resolve locally."""
+    root_resolved = ROOT.resolve()
+    link_re = re.compile(r"!?\[[^\]]*\]\(([^)\s]+)(?:\s+['\"][^'\"]*['\"])?\)")
+    for path in ROOT.rglob("*.md"):
+        if ".git" in path.parts or ".hermes" in path.parts:
+            continue
+        relative = path.relative_to(ROOT).as_posix()
+        text = path.read_text(encoding="utf-8")
+        for href in link_re.findall(text):
+            href = href.strip("<>")
+            target = _resolved_local_link_target(relative, href)
+            if target is None:
+                continue
+            if href.split("#", 1)[0].endswith("/") and target.name == "index.html":
+                target = target.parent
+            if root_resolved not in (target, *target.parents):
+                fail(f"{relative}: Markdown link escapes repository root: {href}")
+            if not target.exists():
+                fail(f"{relative}: broken Markdown link: {href}")
+
+
 def validate_no_raw_markdown_links() -> None:
     """Keep user-facing HTML Markdown links on the styled viewer, not raw files."""
     raw_markdown_link_re = re.compile(r"href=[\"']([^\"']+\.md(?:#[^\"']*)?)[\"']", re.IGNORECASE)
@@ -436,6 +522,44 @@ def validate_docs_viewer_registry() -> None:
     for source_path in ("../SECURITY.md", "../CONTRIBUTING.md", "../CODE_OF_CONDUCT.md"):
         if f"path: '{source_path}'" not in viewer:
             fail(f"docs/viewer.js: missing community source path: {source_path}")
+
+
+def validate_completion_contract() -> None:
+    """Keep the public completion claim measurable and discoverable."""
+    contract_relative = "docs/completion-contract.md"
+    checker_relative = "scripts/check_completion.py"
+    contract = (ROOT / contract_relative).read_text(encoding="utf-8")
+    checker = (ROOT / checker_relative).read_text(encoding="utf-8")
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    index = (ROOT / "index.html").read_text(encoding="utf-8")
+    viewer = (ROOT / "docs/viewer.js").read_text(encoding="utf-8")
+
+    for marker in (
+        "# Safe-scope completion contract",
+        "## Definition of complete",
+        "## Acceptance criteria",
+        "## Explicit non-goals",
+        "## Canonical verification",
+        "no private keys",
+        "no transaction broadcast",
+    ):
+        if marker.lower() not in contract.lower():
+            fail(f"{contract_relative}: missing completion marker: {marker}")
+    for marker in (
+        "def check_required_surfaces",
+        "def check_canonical_suite",
+        "def check_safety_boundary",
+        "def main",
+    ):
+        if marker not in checker:
+            fail(f"{checker_relative}: missing completion check marker: {marker}")
+    for surface, text in (
+        ("README.md", readme),
+        ("index.html", index),
+        ("docs/viewer.js", viewer),
+    ):
+        if "completion-contract.md" not in text:
+            fail(f"{surface}: missing completion contract link")
 
 
 def validate_demo_safety_copy() -> None:
@@ -501,6 +625,8 @@ def validate_x402_boundary_demo() -> None:
         'DEFAULT_ASSET = "USDC"',
         "def from_env",
         "validate_payment_config",
+        "validate_bind_target",
+        "LOCAL_BIND_HOSTS",
         "X402_DEMO_MAINNET_ENABLED",
         "PaymentConfig.from_env()",
     )
@@ -563,6 +689,8 @@ def validate_arc_production_deployment_assets() -> None:
     for marker in (
         "test_live_smoke_fails_safely_without_target_url",
         "test_live_smoke_accepts_local_402_only_mode",
+        "test_live_smoke_rejects_unsupported_url_scheme_without_proof",
+        "test_live_smoke_rejects_url_credentials_and_invalid_timeout",
         "test_production_runbook_documents_safe_gateway_handoff",
     ):
         if marker not in tests:
@@ -587,6 +715,10 @@ def validate_arc_testnet_status_helper() -> None:
         '"erc20UsdcDecimals": 6',
         '"rpcChainIdMatchesArcTestnet": expected',
         '"signingRequiresWalletChainGateAndHumanApproval": True',
+        "validate_endpoint",
+        "validate_timeout",
+        "MAX_RESPONSE_BYTES",
+        "decode_json_object",
     )
     for marker in required_markers:
         if marker not in helper:
@@ -1042,11 +1174,16 @@ def validate_sitemap_xml() -> None:
 def main() -> None:
     validate_required_files()
     validate_no_secrets()
+    validate_public_text_integrity()
     validate_html()
     validate_reduced_motion_css()
+    validate_responsive_layout_guards()
+    validate_public_inventory_counts()
     validate_local_links()
+    validate_markdown_local_links()
     validate_no_raw_markdown_links()
     validate_docs_viewer_registry()
+    validate_completion_contract()
     validate_demo_safety_copy()
     validate_public_launch_packet()
     validate_x402_boundary_demo()

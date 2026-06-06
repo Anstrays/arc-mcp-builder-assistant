@@ -13,12 +13,14 @@ That scope includes docs-grounded Arc/MCP workflows, local-only playgrounds, rev
 Run these commands from the repository root before publishing a new checkpoint:
 
 ```bash
+python3 scripts/check_completion.py
 python3 scripts/test_all.py
 python3 scripts/check_arc_testnet_status.py
 ```
 
 Expected safe result:
 
+- `scripts/check_completion.py` confirms required surfaces, canonical-suite coverage, and the current safety boundary.
 - `scripts/test_all.py` finishes with `all checks passed` for the full local regression suite.
 - `scripts/check_arc_testnet_status.py` returns `ok: true`, confirms Arc Testnet chain ID `5042002 / 0x4cef52`, and reports the latest block through the read-only RPC.
 - Neither command requests wallet permissions, collects secrets, signs, estimates gas, simulates a transaction, or broadcasts.
@@ -31,8 +33,11 @@ Expected safe result:
 - Read-only transaction-status playground for Arc Testnet transaction hashes.
 - Local receipt verifier playground.
 - Local x402 challenge boundary with machine-readable manifest and MCP-style JSON-RPC helpers.
+- Fail-closed live-smoke URL/timeout validation and loopback-only local x402 HTTP binding.
 - Agent-commerce components, flow library, review packet, agent identity profile preview, and job escrow simulator.
 - Static validation for required files, safe HTML, SEO/meta basics, local links, viewer coverage, and obvious credential patterns.
+- A measurable [safe-scope completion contract](./completion-contract.md) and dependency-free completion check.
+- Fail-closed operator evidence validation, create-only ignored draft generation, and read-only readiness reporting.
 
 ## Remaining work is optional extension work
 
@@ -51,9 +56,12 @@ These are not blockers for the current public kit. They are separate future PRs 
 3. **Public distribution**
    - Sharing the build log, content pack, or Arc House submission copy is a distribution step, not a missing product feature.
 
-## Safe next increment
+## Completion basis
 
-The next safe code/documentation increment is to keep this report wired into the README, landing page, docs viewer, and validator so reviewers can quickly see the current status without reading every roadmap page.
+The [safe-scope completion contract](./completion-contract.md) defines the
+acceptance criteria behind this verdict. A future extension does not make the
+current kit incomplete; it changes the scope and must add its own tests,
+safety evidence, and review gates.
 
 ## Do not claim yet
 
