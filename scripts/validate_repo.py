@@ -120,6 +120,8 @@ REQUIRED_FILES = [
     "scripts/test_operator_evidence.py",
     "scripts/generate_operator_evidence_draft.py",
     "scripts/test_operator_evidence_draft.py",
+    "scripts/report_operator_evidence.py",
+    "scripts/test_operator_evidence_report.py",
     "assets/screenshots/landing.png",
     "assets/screenshots/security-viewer.png",
     "assets/screenshots/payment-intent-playground.png",
@@ -864,6 +866,8 @@ def validate_arc_testnet_operator_evidence() -> None:
     test_relative = "scripts/test_operator_evidence.py"
     generator_relative = "scripts/generate_operator_evidence_draft.py"
     draft_test_relative = "scripts/test_operator_evidence_draft.py"
+    reporter_relative = "scripts/report_operator_evidence.py"
+    report_test_relative = "scripts/test_operator_evidence_report.py"
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     index = (ROOT / "index.html").read_text(encoding="utf-8")
     viewer = (ROOT / "docs/viewer.js").read_text(encoding="utf-8")
@@ -873,6 +877,8 @@ def validate_arc_testnet_operator_evidence() -> None:
     tests = (ROOT / test_relative).read_text(encoding="utf-8")
     generator = (ROOT / generator_relative).read_text(encoding="utf-8")
     draft_tests = (ROOT / draft_test_relative).read_text(encoding="utf-8")
+    reporter = (ROOT / reporter_relative).read_text(encoding="utf-8")
+    report_tests = (ROOT / report_test_relative).read_text(encoding="utf-8")
     gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
     test_all = (ROOT / "scripts/test_all.py").read_text(encoding="utf-8")
 
@@ -888,6 +894,7 @@ def validate_arc_testnet_operator_evidence() -> None:
         "python scripts/validate_operator_evidence.py",
         "--expect-commit",
         "generate_operator_evidence_draft.py",
+        "report_operator_evidence.py",
     ):
         if marker not in doc:
             fail(f"{doc_relative}: missing operator evidence marker: {marker}")
@@ -955,12 +962,49 @@ def validate_arc_testnet_operator_evidence() -> None:
     ):
         if marker not in draft_tests:
             fail(f"{draft_test_relative}: missing draft generator regression marker: {marker}")
+    for marker in (
+        "strict_validation_ready",
+        "incomplete_or_unsafe",
+        "credentialLikeValueDetected",
+        '"liveSendApproved": False',
+        "validate_packet",
+        "validate_commit_sha",
+    ):
+        if marker not in reporter:
+            fail(f"{reporter_relative}: missing read-only readiness report marker: {marker}")
+    for marker in (
+        "test_complete_example_is_strictly_ready",
+        "test_draft_lists_all_incomplete_gates",
+        "test_expected_commit_mismatch_is_reported",
+        "test_malformed_expected_commit_exits_two",
+        "test_malformed_json_exits_two",
+        "test_credential_like_value_is_reported_without_echoing_it",
+        "test_credential_like_key_is_reported_without_echoing_it",
+        "test_report_does_not_expose_absolute_workspace_path",
+        "test_report_redacts_credential_like_filename",
+    ):
+        if marker not in report_tests:
+            fail(f"{report_test_relative}: missing readiness report regression marker: {marker}")
     if "*.operator-evidence.local.json" not in gitignore:
         fail(".gitignore: missing local operator evidence draft rule")
     if "scripts/test_operator_evidence.py" not in test_all:
         fail("scripts/test_all.py: missing operator evidence regression command")
     if "scripts/test_operator_evidence_draft.py" not in test_all:
         fail("scripts/test_all.py: missing operator evidence draft regression command")
+    if "scripts/test_operator_evidence_report.py" not in test_all:
+        fail("scripts/test_all.py: missing operator evidence report regression command")
+    for forbidden in (
+        "write_text(",
+        "write_bytes(",
+        '.open("w',
+        ".open('w",
+        "subprocess",
+        "urllib",
+        "socket",
+        "requests",
+    ):
+        if forbidden in reporter:
+            fail(f"{reporter_relative}: forbidden non-read-only marker: {forbidden}")
     for surface, text in (
         ("README.md", readme),
         ("index.html", index),

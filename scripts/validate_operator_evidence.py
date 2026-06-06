@@ -88,7 +88,7 @@ def require_exact_keys(value: dict[str, Any], expected: set[str], location: str)
     if missing:
         raise EvidenceValidationError(f"{location} missing required fields: {', '.join(missing)}")
     if unknown:
-        raise EvidenceValidationError(f"{location} contains unknown fields: {', '.join(unknown)}")
+        raise EvidenceValidationError(f"{location} contains unknown fields (count: {len(unknown)})")
 
 
 def require_nonempty_text(value: Any, location: str, minimum: int = 1) -> str:
@@ -111,7 +111,7 @@ def walk_strings(value: Any) -> list[str]:
     if isinstance(value, str):
         return [value]
     if isinstance(value, dict):
-        strings: list[str] = []
+        strings: list[str] = [str(key) for key in value]
         for nested in value.values():
             strings.extend(walk_strings(nested))
         return strings
@@ -139,7 +139,7 @@ def validate_references(references: Any, root: Path) -> None:
         resolved = (root / path).resolve()
         if root_resolved not in (resolved, *resolved.parents) or not resolved.is_file():
             raise EvidenceValidationError(
-                f"evidence.references[{index}] does not resolve to a repository file: {text}"
+                f"evidence.references[{index}] does not resolve to a repository file"
             )
 
 
@@ -214,9 +214,12 @@ def validate_expected_commit(packet: dict[str, Any], expected_commit: Any) -> No
 
 def display_path(path: Path) -> str:
     try:
-        return path.resolve().relative_to(ROOT.resolve()).as_posix()
-    except ValueError:
-        return path.name
+        displayed = path.resolve().relative_to(ROOT.resolve()).as_posix()
+    except (OSError, ValueError):
+        displayed = path.name
+    if any(pattern.search(displayed) for pattern in SECRET_VALUE_PATTERNS):
+        return "[REDACTED_PATH]"
+    return displayed
 
 
 def load_packet(path: Path) -> dict[str, Any]:

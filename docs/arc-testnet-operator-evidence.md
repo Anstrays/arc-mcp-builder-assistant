@@ -22,6 +22,14 @@ python scripts/generate_operator_evidence_draft.py --reviewed-commit (git rev-pa
 
 The default output is `arc.operator-evidence.local.json`. Generated `*.operator-evidence.local.json` files are gitignored, never overwrite an existing file, keep all live surfaces disabled, use `packetStatus: draft_operator_evidence`, keep `noSecretsObserved: false`, and intentionally fail strict validation until real evidence is reviewed.
 
+List every known readiness gap without changing the draft:
+
+```bash
+python scripts/report_operator_evidence.py arc.operator-evidence.local.json --expect-commit FULL_LOWERCASE_COMMIT_SHA
+```
+
+The read-only report exits `0` only for a strictly valid packet, `1` for readable but incomplete or unsafe evidence, and `2` for malformed input. It redacts credential-like values and always reports `liveSendApproved: false`.
+
 Validate a copied packet:
 
 ```bash
@@ -113,7 +121,8 @@ The abbreviated shape above is explanatory only. Start from the committed exampl
 4. Complete the manual secret review before changing `noSecretsObserved` to `true`.
 5. Change `packetStatus` from `draft_operator_evidence` to `local_operator_evidence` only after every required evidence gate is complete.
 6. Keep all live-surface controls false and all required safety controls true.
-7. Run the validator with `--expect-commit` set to the full SHA under review.
-8. Attach the validated baseline packet and command output to the separate guarded PR as starting evidence, not final approval.
+7. Run the read-only readiness report until it lists no gaps.
+8. Run the strict validator with `--expect-commit` set to the full SHA under review.
+9. Attach the validated baseline packet and command output to the separate guarded PR as starting evidence, not final approval.
 
 Do not add secrets, private proofs, wallet data, authorization headers, or production user data to an evidence packet.
