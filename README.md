@@ -65,6 +65,7 @@ python3 examples/x402-local-challenge-server/server.py --print-challenge
 python3 examples/x402-local-challenge-server/server.py --print-manifest
 X402_DEMO_AMOUNT=0.05 python3 examples/x402-local-challenge-server/server.py --print-challenge
 python3 scripts/validate_operator_evidence.py
+python3 scripts/generate_operator_evidence_draft.py --reviewed-commit FULL_LOWERCASE_COMMIT_SHA
 ```
 
 On Windows, use `python` instead of `python3` if that is how Python is installed.
@@ -127,7 +128,7 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 - [`docs/wallet-preflight-contract.md`](./docs/wallet-preflight-contract.md) — secret-free wallet preflight contract for the next Arc Testnet wallet preview/send PRs.
 - [`docs/arc-testnet-send-readiness-gate.md`](./docs/arc-testnet-send-readiness-gate.md) — guard-only evidence contract for any future Arc Testnet send PR after the unsigned transaction draft and final local confirmation.
 - [`docs/arc-testnet-operator-runbook.md`](./docs/arc-testnet-operator-runbook.md) — manual review checklist, stop conditions, and evidence record for any future guarded Arc Testnet live-send PR.
-- [`docs/arc-testnet-operator-evidence.md`](./docs/arc-testnet-operator-evidence.md) — strict machine-readable operator evidence packet and dependency-free fail-closed validator.
+- [`docs/arc-testnet-operator-evidence.md`](./docs/arc-testnet-operator-evidence.md) — strict machine-readable operator evidence packet, create-only local draft generator, and dependency-free fail-closed validator.
 - [`docs/agent-commerce-use-cases.md`](./docs/agent-commerce-use-cases.md) — practical use cases for API-call payments, creator payouts, job escrow, AI-service marketplace flows, and report agents.
 - [`docs/agent-commerce-components.md`](./docs/agent-commerce-components.md) — reusable local-first agent cards, payment request cards, receipt cards, and event logs for future Arc commerce flows.
 - [`docs/agent-commerce-flow-library.md`](./docs/agent-commerce-flow-library.md) — local-only paid API call, creator payout, and AI-agent commerce flow templates.

@@ -34,6 +34,7 @@ REQUIRED_FILES = [
     "CONTRIBUTING.md",
     "CODE_OF_CONDUCT.md",
     ".editorconfig",
+    ".gitignore",
     ".env.example",
     ".github/workflows/validate.yml",
     ".github/PULL_REQUEST_TEMPLATE.md",
@@ -117,6 +118,8 @@ REQUIRED_FILES = [
     "scripts/test_job_escrow_simulator.py",
     "scripts/validate_operator_evidence.py",
     "scripts/test_operator_evidence.py",
+    "scripts/generate_operator_evidence_draft.py",
+    "scripts/test_operator_evidence_draft.py",
     "assets/screenshots/landing.png",
     "assets/screenshots/security-viewer.png",
     "assets/screenshots/payment-intent-playground.png",
@@ -859,6 +862,8 @@ def validate_arc_testnet_operator_evidence() -> None:
     example_relative = "examples/arc-testnet-operator-evidence/evidence.example.json"
     validator_relative = "scripts/validate_operator_evidence.py"
     test_relative = "scripts/test_operator_evidence.py"
+    generator_relative = "scripts/generate_operator_evidence_draft.py"
+    draft_test_relative = "scripts/test_operator_evidence_draft.py"
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     index = (ROOT / "index.html").read_text(encoding="utf-8")
     viewer = (ROOT / "docs/viewer.js").read_text(encoding="utf-8")
@@ -866,6 +871,9 @@ def validate_arc_testnet_operator_evidence() -> None:
     example = (ROOT / example_relative).read_text(encoding="utf-8")
     validator = (ROOT / validator_relative).read_text(encoding="utf-8")
     tests = (ROOT / test_relative).read_text(encoding="utf-8")
+    generator = (ROOT / generator_relative).read_text(encoding="utf-8")
+    draft_tests = (ROOT / draft_test_relative).read_text(encoding="utf-8")
+    gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
     test_all = (ROOT / "scripts/test_all.py").read_text(encoding="utf-8")
 
     for marker in (
@@ -879,6 +887,7 @@ def validate_arc_testnet_operator_evidence() -> None:
         "separate guarded PR",
         "python scripts/validate_operator_evidence.py",
         "--expect-commit",
+        "generate_operator_evidence_draft.py",
     ):
         if marker not in doc:
             fail(f"{doc_relative}: missing operator evidence marker: {marker}")
@@ -922,8 +931,36 @@ def validate_arc_testnet_operator_evidence() -> None:
     ):
         if marker not in tests:
             fail(f"{test_relative}: missing evidence regression marker: {marker}")
+    for marker in (
+        'resolved.open("x"',
+        "resolved_relative",
+        "strictValidationReady",
+        "existingFileOverwritten",
+        "transactionBroadcast",
+        "draft_operator_evidence",
+        "manualSecretReviewComplete",
+        "blocked_pending_separate_guarded_pr",
+        "LOCAL_DRAFT_SUFFIX",
+    ):
+        if marker not in generator:
+            fail(f"{generator_relative}: missing safe draft generator marker: {marker}")
+    for marker in (
+        "test_draft_intentionally_fails_strict_validation",
+        "test_cli_creates_ignored_local_draft",
+        "test_cli_refuses_to_overwrite_existing_file",
+        "test_cli_rejects_output_outside_repository",
+        "test_cli_requires_local_draft_suffix",
+        "test_cli_rejects_git_metadata_output",
+        "test_cli_rejects_malformed_reviewed_commit",
+    ):
+        if marker not in draft_tests:
+            fail(f"{draft_test_relative}: missing draft generator regression marker: {marker}")
+    if "*.operator-evidence.local.json" not in gitignore:
+        fail(".gitignore: missing local operator evidence draft rule")
     if "scripts/test_operator_evidence.py" not in test_all:
         fail("scripts/test_all.py: missing operator evidence regression command")
+    if "scripts/test_operator_evidence_draft.py" not in test_all:
+        fail("scripts/test_all.py: missing operator evidence draft regression command")
     for surface, text in (
         ("README.md", readme),
         ("index.html", index),
