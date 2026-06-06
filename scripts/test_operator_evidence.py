@@ -37,7 +37,62 @@ class OperatorEvidenceTests(unittest.TestCase):
         self.assertIn('"ok": true', completed.stdout)
         self.assertIn('"transactionBroadcast": false', completed.stdout)
         self.assertIn('"packet": "examples/arc-testnet-operator-evidence/evidence.example.json"', completed.stdout)
+        self.assertIn('"expectedCommitChecked": false', completed.stdout)
+        self.assertIn('"commitMatchesExpected": null', completed.stdout)
         self.assertNotIn(str(ROOT), completed.stdout)
+
+    def test_cli_accepts_matching_expected_commit(self) -> None:
+        reviewed_commit = example_packet()["review"]["reviewedCommit"]
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "validate_operator_evidence.py"),
+                str(DEFAULT_PACKET),
+                "--expect-commit",
+                reviewed_commit,
+            ],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            timeout=10,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+        self.assertIn('"commitMatchesExpected": true', completed.stdout)
+        self.assertIn(f'"reviewedCommit": "{reviewed_commit}"', completed.stdout)
+
+    def test_cli_rejects_mismatched_expected_commit(self) -> None:
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "validate_operator_evidence.py"),
+                str(DEFAULT_PACKET),
+                "--expect-commit",
+                "1" * 40,
+            ],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            timeout=10,
+        )
+        self.assertEqual(completed.returncode, 2)
+        self.assertIn("does not match expected commit", completed.stdout)
+
+    def test_cli_rejects_malformed_expected_commit(self) -> None:
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "validate_operator_evidence.py"),
+                str(DEFAULT_PACKET),
+                "--expect-commit",
+                "HEAD",
+            ],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            timeout=10,
+        )
+        self.assertEqual(completed.returncode, 2)
+        self.assertIn("expected commit must be a full lowercase commit SHA", completed.stdout)
 
     def test_wrong_chain_fails_closed(self) -> None:
         packet = example_packet()
