@@ -125,6 +125,7 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 - [`docs/arc-wallet-integration-notes.md`](./docs/arc-wallet-integration-notes.md) — Circle Wallets vs browser-wallet decision notes for the next Phase 2 integration slice.
 - [`docs/wallet-preflight-contract.md`](./docs/wallet-preflight-contract.md) — secret-free wallet preflight contract for the next Arc Testnet wallet preview/send PRs.
 - [`docs/arc-testnet-send-readiness-gate.md`](./docs/arc-testnet-send-readiness-gate.md) — guard-only evidence contract for any future Arc Testnet send PR after the unsigned transaction draft and final local confirmation.
+- [`docs/arc-testnet-operator-runbook.md`](./docs/arc-testnet-operator-runbook.md) — manual review checklist, stop conditions, and evidence record for any future guarded Arc Testnet live-send PR.
 - [`docs/agent-commerce-use-cases.md`](./docs/agent-commerce-use-cases.md) — practical use cases for API-call payments, creator payouts, job escrow, AI-service marketplace flows, and report agents.
 - [`docs/agent-commerce-components.md`](./docs/agent-commerce-components.md) — reusable local-first agent cards, payment request cards, receipt cards, and event logs for future Arc commerce flows.
 - [`docs/agent-commerce-flow-library.md`](./docs/agent-commerce-flow-library.md) — local-only paid API call, creator payout, and AI-agent commerce flow templates.
