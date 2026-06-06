@@ -21,4 +21,25 @@ This repository is an early independent builder resource.
 
 ## Reporting
 
-If you notice a secret or unsafe pattern in this repo, open an issue or contact the maintainer privately.
+Do not open a public issue containing a secret, payment proof, wallet material,
+private endpoint, or exploitable vulnerability detail.
+
+Use GitHub's private vulnerability reporting for this repository when it is
+available. Otherwise, contact the maintainer privately through the repository
+owner's GitHub profile and share only the minimum reproduction needed.
+
+If a credential was exposed, revoke or rotate it before reporting. A git
+history edit does not make an already exposed credential safe again.
+
+Public issues are appropriate for non-sensitive hardening ideas after all
+secret values and exploit details have been removed.
+
+## Verification
+
+Run the dependency-free local safety and regression checks before opening a
+pull request:
+
+```bash
+python scripts/check_completion.py
+python scripts/test_all.py
+```

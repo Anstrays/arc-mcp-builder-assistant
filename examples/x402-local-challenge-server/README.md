@@ -6,12 +6,17 @@ This example is a production-shaped boundary for a future Arc/Circle/x402 paymen
 - accepts only an explicit local demo proof shape;
 - never opens a wallet, broadcasts transactions, or claims settlement;
 - keeps human approval and mainnet disabled by default.
+- refuses non-loopback HTTP bind hosts and invalid ports.
 
 ## Run locally
 
 ```bash
 python3 examples/x402-local-challenge-server/server.py --port 8087
 ```
+
+HTTP mode accepts only `127.0.0.1` or `localhost`. Use a separately reviewed
+deployment implementation for remote or staging access; do not expose the
+deterministic local proof verifier on a network interface.
 
 The server reads safe local overrides from environment variables documented in
 [`../../.env.example`](../../.env.example). Defaults stay Arc Testnet only:

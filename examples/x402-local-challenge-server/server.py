@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Mapping, Protocol
+from urllib.parse import urlsplit
 
 DEFAULT_NETWORK = "arc-testnet"
 DEFAULT_ASSET = "USDC"
@@ -30,6 +31,7 @@ DEFAULT_RESOURCE = "arc-mcp-builder-assistant.local-report.v1"
 EVM_ADDRESS_RE = re.compile(r"^0x[a-fA-F0-9]{40}$")
 TRUTHY = {"1", "true", "yes", "on"}
 FALSY = {"", "0", "false", "no", "off"}
+LOCAL_BIND_HOSTS = {"127.0.0.1", "localhost"}
 
 
 @dataclass(frozen=True)
@@ -166,6 +168,14 @@ def validate_payment_config(config: PaymentConfig) -> None:
         raise ValueError("X402_DEMO_PAY_TO must be a 42-character EVM address")
     if config.mainnet_enabled:
         raise ValueError("X402_DEMO_MAINNET_ENABLED must remain false in this local demo")
+
+
+def validate_bind_target(host: str, port: int) -> None:
+    """Keep the local proof demo unavailable on external interfaces."""
+    if host.strip().lower() not in LOCAL_BIND_HOSTS:
+        raise ValueError("--host must stay 127.0.0.1 or localhost for this local-only demo")
+    if not 1 <= port <= 65535:
+        raise ValueError("--port must be between 1 and 65535")
 
 
 def build_unit_economics(config: PaymentConfig) -> dict[str, object]:
@@ -443,10 +453,11 @@ class DemoHandler(BaseHTTPRequestHandler):
     config = PaymentConfig.demo()
 
     def do_GET(self) -> None:  # noqa: N802 - stdlib handler API
-        if self.path in ("/", "/health"):
+        path = urlsplit(self.path).path
+        if path in ("/", "/health"):
             self._send(Response(status=HTTPStatus.OK, body={"ok": True, "service": "x402-local-challenge-server"}))
             return
-        if self.path.startswith("/protected"):
+        if path == "/protected":
             self._send(handle_protected_request(self.headers, self.config))
             return
         self._send(Response(status=HTTPStatus.NOT_FOUND, body={"error": "not_found"}))
@@ -456,6 +467,7 @@ class DemoHandler(BaseHTTPRequestHandler):
         self.send_response(int(response.status))
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -534,6 +546,10 @@ def main() -> None:
         run_mcp_stdio(config)
         return
 
+    try:
+        validate_bind_target(args.host, args.port)
+    except ValueError as error:
+        raise SystemExit(f"Invalid local server bind target: {error}") from error
     DemoHandler.config = config
     server = ThreadingHTTPServer((args.host, args.port), DemoHandler)
     print(f"local x402 challenge server listening on http://{args.host}:{args.port}")

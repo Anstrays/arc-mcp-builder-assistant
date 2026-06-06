@@ -349,6 +349,27 @@ class X402BoundaryTests(unittest.TestCase):
         self.assertIn("Invalid x402 demo configuration", completed.stderr)
         self.assertIn("MAINNET", completed.stderr)
 
+    def test_http_server_rejects_external_bind_and_invalid_port(self) -> None:
+        external = subprocess.run(
+            [sys.executable, str(SERVER_PATH), "--host", "0.0.0.0"],
+            text=True,
+            capture_output=True,
+            env=clean_demo_env(),
+            timeout=5,
+        )
+        invalid_port = subprocess.run(
+            [sys.executable, str(SERVER_PATH), "--port", "70000"],
+            text=True,
+            capture_output=True,
+            env=clean_demo_env(),
+            timeout=5,
+        )
+
+        self.assertNotEqual(external.returncode, 0)
+        self.assertIn("local-only demo", external.stderr)
+        self.assertNotEqual(invalid_port.returncode, 0)
+        self.assertIn("between 1 and 65535", invalid_port.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

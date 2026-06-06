@@ -17,6 +17,8 @@ from urllib.parse import urlparse
 from dataclasses import dataclass
 from typing import Any
 
+MAX_RESPONSE_BYTES = 1_000_000
+
 
 @dataclass(frozen=True)
 class SmokeConfig:
@@ -71,16 +73,30 @@ def load_config(args: argparse.Namespace) -> SmokeConfig:
     )
 
 
-def validate_live_payment_target(config: SmokeConfig) -> None:
-    """Do not transmit live X-Payment proofs to insecure or malformed URLs."""
-    if not config.x_payment:
-        return
+def validate_smoke_config(config: SmokeConfig) -> None:
+    """Reject malformed targets and unsafe proof transmission settings."""
     parsed = urlparse(config.target_url)
-    if parsed.scheme != "https" or not parsed.netloc:
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise SystemExit("ARC_PAID_AGENT_URL must be a valid HTTP or HTTPS URL.")
+    if parsed.username or parsed.password:
+        raise SystemExit("ARC_PAID_AGENT_URL must not contain embedded credentials.")
+    if not 0 < config.timeout_seconds <= 60:
+        raise SystemExit("--timeout-seconds must be greater than 0 and at most 60.")
+    if config.x_payment and parsed.scheme != "https":
         raise SystemExit(
             "Refusing to send ARC_LIVE_X_PAYMENT to a non-HTTPS or malformed ARC_PAID_AGENT_URL. "
             "Run without ARC_LIVE_X_PAYMENT and --expect-402-only for local challenge checks."
         )
+
+
+def decode_json_object(response: Any) -> dict[str, Any]:
+    body = response.read(MAX_RESPONSE_BYTES + 1)
+    if len(body) > MAX_RESPONSE_BYTES:
+        raise ValueError("HTTP response exceeds the 1 MB safety limit")
+    value = json.loads(body.decode("utf-8"))
+    if not isinstance(value, dict):
+        raise ValueError("HTTP response must be a JSON object")
+    return value
 
 
 def http_json(url: str, timeout: float, x_payment: str | None = None) -> tuple[int, dict[str, Any]]:
@@ -90,14 +106,12 @@ def http_json(url: str, timeout: float, x_payment: str | None = None) -> tuple[i
     request = urllib.request.Request(url, headers=headers)
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
-            body = response.read().decode("utf-8")
-            return response.status, json.loads(body)
+            return response.status, decode_json_object(response)
     except urllib.error.HTTPError as error:
-        body = error.read().decode("utf-8")
         try:
-            payload = json.loads(body)
-        except json.JSONDecodeError:
-            payload = {"rawBody": body[:500]}
+            payload = decode_json_object(error)
+        except (UnicodeDecodeError, json.JSONDecodeError, ValueError):
+            payload = {"error": "non_json_or_oversized_http_error_body"}
         return error.code, payload
 
 
@@ -138,7 +152,7 @@ def main() -> int:
     args = parse_args()
     try:
         config = load_config(args)
-        validate_live_payment_target(config)
+        validate_smoke_config(config)
         status, payload = http_json(config.target_url, config.timeout_seconds)
         validate_402(status, payload)
         print(

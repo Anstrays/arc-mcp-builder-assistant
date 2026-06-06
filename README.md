@@ -21,6 +21,7 @@ Use this repo when you want to prototype Arc-focused payment infrastructure befo
 - [Current kit](#current-kit)
 - [Screenshots](#screenshots)
 - [Completion status](#completion-status)
+- [Safe-scope completion contract](#safe-scope-completion-contract)
 - [Local development](#local-development)
 - [Repository structure](#repository-structure)
 - [Safety and honesty](#safety-and-honesty)
@@ -63,6 +64,7 @@ Useful one-shot checks:
 ```bash
 python3 examples/x402-local-challenge-server/server.py --print-challenge
 python3 examples/x402-local-challenge-server/server.py --print-manifest
+python3 scripts/check_completion.py
 X402_DEMO_AMOUNT=0.05 python3 examples/x402-local-challenge-server/server.py --print-challenge
 python3 scripts/validate_operator_evidence.py
 python3 scripts/generate_operator_evidence_draft.py --reviewed-commit FULL_LOWERCASE_COMMIT_SHA
@@ -102,6 +104,8 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 - **Port 8080 or 8087 is already in use:** choose another port, for example `python3 -m http.server 8090` or `python3 examples/x402-local-challenge-server/server.py --port 8097`.
 - **`ARC_PAID_AGENT_URL` is missing:** either skip live smoke or set it to a deployed `/protected` endpoint. The local x402 demo does not need it.
 - **Local x402 proof is rejected:** run `python3 examples/x402-local-challenge-server/server.py --print-challenge` and copy the exact `localDemoProof` value into the `X-Payment` header.
+- **Local x402 server rejects `--host`:** HTTP mode intentionally accepts only `127.0.0.1` or `localhost`; use a separate reviewed deployment for remote access.
+- **Live smoke rejects a URL:** use a valid HTTP/HTTPS URL without embedded credentials. A live `ARC_LIVE_X_PAYMENT` proof requires HTTPS.
 - **Config exits with `Invalid x402 demo configuration`:** keep `X402_DEMO_NETWORK=arc-testnet`, `X402_DEMO_MAINNET_ENABLED=false`, a positive 6-decimal-or-less amount, and a 42-character EVM `X402_DEMO_PAY_TO`.
 - **A secret was pasted by mistake:** remove it from `.env` or shell history as needed, rotate the secret, and do not commit it. The repo scans common credential shapes during validation.
 
@@ -123,6 +127,7 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 - [`docs/public-launch-packet.md`](./docs/public-launch-packet.md) — human-review launch packet with safe Russian Telegram, X, Discord/Arc House copy, submission checklist, links, and forbidden claims.
 - [`docs/prompt-library.md`](./docs/prompt-library.md) and [`prompts/`](./prompts/) — copy-paste prompts for AI coding tools, including the standalone Arc Testnet status prompt.
 - [`docs/arc-builder-readiness-checklist.md`](./docs/arc-builder-readiness-checklist.md) — pre-submit checklist for docs grounding, payment safety, UX states, repo quality, and public proof-of-work.
+- [`docs/completion-contract.md`](./docs/completion-contract.md) — measurable definition of complete for the current safe public builder-kit scope.
 - [`docs/current-readiness-report.md`](./docs/current-readiness-report.md) — concise current-scope verdict, local evidence commands, optional future extensions, and exact wording for public claims.
 - [`docs/arc-testnet-integration-runbook.md`](./docs/arc-testnet-integration-runbook.md) — stepwise path from local-only demos to a reviewed Arc Testnet transfer, including no-secret and no-mainnet gates.
 - [`docs/arc-wallet-integration-notes.md`](./docs/arc-wallet-integration-notes.md) — Circle Wallets vs browser-wallet decision notes for the next Phase 2 integration slice.
@@ -195,6 +200,20 @@ For the shortest reviewer-facing checkpoint, see [`docs/current-readiness-report
 - Optional Circle Wallets or Circle Contracts notes for teams that want a live integration path.
 - Public community sharing of the build log as a distribution step, not a missing product feature.
 
+## Safe-scope completion contract
+
+“Complete” means complete for the current local-first Arc builder-kit scope,
+not complete as a production wallet, custodian, payment processor, or live
+settlement service. The measurable acceptance criteria, canonical commands,
+and explicit non-goals live in
+[`docs/completion-contract.md`](./docs/completion-contract.md).
+
+Run the contract check directly:
+
+```bash
+python3 scripts/check_completion.py
+```
+
 ## Suggested use
 
 Use this repo with an AI coding assistant that supports MCP or can read local docs.
@@ -212,6 +231,7 @@ validator) and a web browser are required.
 
 ```bash
 # Validate the repo the same way CI does.
+python3 scripts/check_completion.py
 python3 scripts/test_all.py
 
 # Optional read-only Arc Testnet status check.
@@ -238,16 +258,29 @@ ARC_PAID_AGENT_URL="http://127.0.0.1:8087/protected" \
 
 For targeted debugging, run any individual `scripts/test_*.py` file directly.
 
-The validator checks for required files, obvious credential patterns,
-basic HTML safety / accessibility / SEO invariants on every public HTML page,
-local links, reduced-motion CSS coverage, payment-demo safety copy, styled-viewer
-coverage for public Markdown pages, the local-only x402 verifier boundary,
-production deployment placeholders / live-smoke assets,
-no raw Markdown links in user-facing HTML, and the integrity of `robots.txt`
-and `sitemap.xml`. It runs on every push and pull request
-via [`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
+The validator checks required files, obvious credential patterns, public-text
+encoding, Markdown and HTML local links, HTML safety/accessibility/SEO
+invariants, reduced-motion CSS, styled-viewer coverage, the measurable
+completion contract, local-only x402 boundaries, deployment placeholders,
+operator-evidence tooling, and `robots.txt`/`sitemap.xml` integrity. It runs on
+every push and pull request via
+[`.github/workflows/validate.yml`](./.github/workflows/validate.yml).
 
 ## Repository structure
+
+The architecture is intentionally small and explicit:
+
+| Area | Purpose |
+| --- | --- |
+| `index.html`, `404.html`, `docs/view.html`, `docs/viewer.js` | Dependency-free GitHub Pages site and styled Markdown reader. |
+| `docs/` | Arc setup, payment/agent workflows, safety contracts, runbooks, readiness, and completion evidence. |
+| `examples/` | Static local playgrounds plus the loopback-only x402 challenge/MCP demo. |
+| `prompts/` | Copy-ready Arc docs/MCP prompts for AI coding tools. |
+| `scripts/test_*.py` | Focused dependency-free regression tests. |
+| `scripts/test_all.py`, `scripts/validate_repo.py`, `scripts/check_completion.py` | Canonical suite, repository invariants, and measurable completion check. |
+| `.github/` | Least-privilege validation and Pages deployment workflows plus contribution templates. |
+
+Representative file map:
 
 ```text
 .
