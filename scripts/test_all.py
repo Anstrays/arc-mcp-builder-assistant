@@ -26,6 +26,7 @@ CHECKS = [
     "scripts/test_job_escrow_simulator.py",
     "scripts/test_operator_evidence.py",
     "scripts/test_operator_evidence_draft.py",
+    "scripts/test_operator_evidence_report.py",
     "scripts/validate_repo.py",
 ]
 

@@ -66,6 +66,7 @@ python3 examples/x402-local-challenge-server/server.py --print-manifest
 X402_DEMO_AMOUNT=0.05 python3 examples/x402-local-challenge-server/server.py --print-challenge
 python3 scripts/validate_operator_evidence.py
 python3 scripts/generate_operator_evidence_draft.py --reviewed-commit FULL_LOWERCASE_COMMIT_SHA
+python3 scripts/report_operator_evidence.py arc.operator-evidence.local.json --expect-commit FULL_LOWERCASE_COMMIT_SHA
 ```
 
 On Windows, use `python` instead of `python3` if that is how Python is installed.
