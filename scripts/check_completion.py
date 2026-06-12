@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_SURFACES = (
     "README.md",
     ".env.example",
+    ".gitattributes",
     "SECURITY.md",
     "CONTRIBUTING.md",
     "index.html",
@@ -19,6 +20,21 @@ REQUIRED_SURFACES = (
     "docs/current-readiness-report.md",
     "docs/arc-builder-readiness-checklist.md",
     "docs/arc-testnet-operator-evidence.md",
+    "docs/guarded-wallet-send-runbook.md",
+    "docs/custody-and-mainnet-gates.md",
+    "docs/arc-agent-treasury-lab.md",
+    "examples/arc-agent-treasury-lab/index.html",
+    "examples/arc-agent-treasury-lab/treasury.js",
+    "scripts/test_arc_agent_treasury_lab.py",
+    "scripts/arc_agent_treasury_behavior_harness.mjs",
+    "examples/arc-testnet-wallet-send-gate/index.html",
+    "examples/arc-testnet-wallet-send-gate/wallet-send-gate.js",
+    "examples/arc-testnet-wallet-send-gate/live-infrastructure-policy.example.json",
+    "scripts/validate_live_infrastructure_policy.py",
+    "scripts/test_arc_testnet_wallet_send_behavior.py",
+    "scripts/wallet_send_behavior_harness.mjs",
+    "scripts/test_transaction_status_behavior.py",
+    "scripts/transaction_status_behavior_harness.mjs",
     "scripts/test_all.py",
     "scripts/validate_repo.py",
     "scripts/generate_operator_evidence_draft.py",
@@ -57,6 +73,18 @@ def check_canonical_suite() -> int:
     missing = sorted(relative for relative in expected if relative not in runner)
     if missing:
         fail(f"scripts/test_all.py is missing checks: {', '.join(missing)}")
+    for marker in (
+        "CHECK_TIMEOUT_SECONDS",
+        "subprocess.TimeoutExpired",
+        "timed out after",
+        "TemporaryDirectory",
+        '".arc-test-"',
+        '"TMPDIR"',
+        '"TEMP"',
+        '"TMP"',
+    ):
+        if marker not in runner:
+            fail(f"scripts/test_all.py is missing runner isolation marker: {marker}")
     return len(expected)
 
 
@@ -69,10 +97,11 @@ def check_safety_boundary() -> int:
 
     required_contract_markers = (
         "no private keys",
-        "no wallet connection",
+        "no wallet connection on page load",
         "no custody",
         "no mainnet support",
-        "no transaction broadcast",
+        "no transaction broadcast on page load",
+        "one attempt per page load",
     )
     for marker in required_contract_markers:
         if marker not in contract:
@@ -83,12 +112,16 @@ def check_safety_boundary() -> int:
     for marker in ('"transactionBroadcast": False', "X402_DEMO_MAINNET_ENABLED"):
         if marker not in server:
             fail(f"x402 server is missing fail-closed marker: {marker}")
-    for marker in (".env", "*.operator-evidence.local.json"):
+    for marker in (".env", ".hermes/", "*.operator-evidence.local.json"):
         if marker not in gitignore:
             fail(f".gitignore is missing local-secret/evidence rule: {marker}")
     if "X402_DEMO_MAINNET_ENABLED=false" not in env_example:
         fail(".env.example must keep x402 mainnet disabled")
-    return len(required_contract_markers) + 8
+    guarded_send = read("examples/arc-testnet-wallet-send-gate/wallet-send-gate.js")
+    for marker in ("reviewed-testnet-only", "sendAttempted = true", "method: 'eth_sendTransaction'"):
+        if marker not in guarded_send:
+            fail(f"guarded send lab is missing safety marker: {marker}")
+    return len(required_contract_markers) + 11
 
 
 def main() -> int:
