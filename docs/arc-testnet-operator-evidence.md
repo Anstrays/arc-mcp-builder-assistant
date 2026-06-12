@@ -46,7 +46,10 @@ python scripts/validate_operator_evidence.py path/to/operator-evidence.json --ex
 python scripts/validate_operator_evidence.py path/to/operator-evidence.json --expect-commit (git rev-parse HEAD)
 ```
 
-A valid packet exits `0` and prints a concise JSON summary. Invalid JSON, missing evidence, unsafe controls, unknown fields, non-Arc chain values, credential-like values, or unsafe references exit `2` with a clear error.
+A valid packet exits `0` and prints a concise JSON summary. Invalid JSON,
+duplicate JSON keys, packets above the 1 MB safety limit, missing evidence,
+unsafe controls, unknown fields, non-Arc chain values, credential-like values,
+or unsafe references exit `2` with a clear error.
 
 ## Why this exists
 
@@ -78,7 +81,7 @@ The validator fails closed unless all of these remain true:
 - `eth_sendTransaction` remains forbidden;
 - the decision is `blocked_pending_separate_guarded_pr`.
 
-The evidence packet cannot approve or fully validate a live-send implementation. Any future wallet or send path still requires a separate guarded PR, new wallet-request evidence, and a new security review.
+This pre-send baseline evidence packet cannot approve or fully validate the guarded send lab or any other live-send implementation. Every wallet/send extension requires its own wallet-request evidence and security review.
 
 ## Packet shape
 

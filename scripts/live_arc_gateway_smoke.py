@@ -20,6 +20,30 @@ from typing import Any
 MAX_RESPONSE_BYTES = 1_000_000
 
 
+class NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Return redirect responses to the caller instead of forwarding proofs."""
+
+    def redirect_request(
+        self,
+        req: urllib.request.Request,
+        fp: Any,
+        code: int,
+        msg: str,
+        headers: Any,
+        newurl: str,
+    ) -> None:
+        raise urllib.error.HTTPError(
+            req.full_url,
+            code,
+            "redirects are disabled for live smoke requests",
+            headers,
+            fp,
+        )
+
+
+NO_REDIRECT_OPENER = urllib.request.build_opener(NoRedirectHandler())
+
+
 @dataclass(frozen=True)
 class SmokeConfig:
     target_url: str
@@ -105,14 +129,17 @@ def http_json(url: str, timeout: float, x_payment: str | None = None) -> tuple[i
         headers["X-Payment"] = x_payment
     request = urllib.request.Request(url, headers=headers)
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        with NO_REDIRECT_OPENER.open(request, timeout=timeout) as response:
             return response.status, decode_json_object(response)
     except urllib.error.HTTPError as error:
         try:
-            payload = decode_json_object(error)
-        except (UnicodeDecodeError, json.JSONDecodeError, ValueError):
-            payload = {"error": "non_json_or_oversized_http_error_body"}
-        return error.code, payload
+            try:
+                payload = decode_json_object(error)
+            except (UnicodeDecodeError, json.JSONDecodeError, ValueError):
+                payload = {"error": "non_json_or_oversized_http_error_body"}
+            return error.code, payload
+        finally:
+            error.close()
 
 
 def validate_402(status: int, payload: dict[str, Any]) -> None:
@@ -134,6 +161,10 @@ def validate_402(status: int, payload: dict[str, Any]) -> None:
     first = accepts[0]
     if not isinstance(first, dict) or first.get("network") != "arc-testnet":
         raise SystemExit("402 challenge must declare Arc Testnet payment terms.")
+    if first.get("asset") != "USDC":
+        raise SystemExit("402 challenge must declare the pinned USDC asset.")
+    if payload.get("mainnetEnabled") is not False:
+        raise SystemExit("402 challenge mainnetEnabled must be false for this smoke gate.")
 
 
 def validate_200(status: int, payload: dict[str, Any]) -> None:

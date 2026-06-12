@@ -7,10 +7,11 @@ import copy
 import json
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
-from validate_operator_evidence import DEFAULT_PACKET, EvidenceValidationError, validate_packet
+from validate_operator_evidence import DEFAULT_PACKET, MAX_PACKET_BYTES, EvidenceValidationError, load_json_object, validate_packet
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -169,6 +170,20 @@ class OperatorEvidenceTests(unittest.TestCase):
         self.assertEqual(completed.returncode, 2)
         self.assertIn('"ok": false', completed.stdout)
         self.assertIn("packet file not found", completed.stdout)
+
+    def test_loader_rejects_duplicate_json_keys(self) -> None:
+        with tempfile.TemporaryDirectory(prefix=".arc-test-", dir=ROOT) as directory:
+            path = Path(directory) / "duplicate.json"
+            path.write_text('{"schema":"first","schema":"second"}', encoding="utf-8")
+            with self.assertRaisesRegex(EvidenceValidationError, "duplicate JSON key"):
+                load_json_object(path)
+
+    def test_loader_rejects_oversized_packet(self) -> None:
+        with tempfile.TemporaryDirectory(prefix=".arc-test-", dir=ROOT) as directory:
+            path = Path(directory) / "oversized.json"
+            path.write_bytes(b"{" + b" " * MAX_PACKET_BYTES + b"}")
+            with self.assertRaisesRegex(EvidenceValidationError, "1 MB safety limit"):
+                load_json_object(path)
 
 
 if __name__ == "__main__":

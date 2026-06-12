@@ -13,6 +13,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PACKET = ROOT / "examples" / "arc-testnet-operator-evidence" / "evidence.example.json"
 SCHEMA = "arc-mcp-builder-assistant.arcTestnet.operatorEvidence.v1"
+MAX_PACKET_BYTES = 1_000_000
 
 TOP_LEVEL_KEYS = {"schema", "packetStatus", "network", "review", "evidence", "controls", "decision"}
 NETWORK_KEYS = {"name", "chainId", "chainIdHex"}
@@ -74,6 +75,15 @@ SECRET_VALUE_PATTERNS = (
 
 class EvidenceValidationError(ValueError):
     """Raised when an operator evidence packet violates the safety contract."""
+
+
+def reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise EvidenceValidationError("duplicate JSON key is not allowed")
+        result[key] = value
+    return result
 
 
 def require_object(value: Any, location: str) -> dict[str, Any]:
@@ -222,13 +232,29 @@ def display_path(path: Path) -> str:
     return displayed
 
 
-def load_packet(path: Path) -> dict[str, Any]:
+def load_json_object(path: Path) -> dict[str, Any]:
     try:
-        value = json.loads(path.read_text(encoding="utf-8"))
+        payload = path.read_bytes()
     except FileNotFoundError as exc:
         raise EvidenceValidationError(f"packet file not found: {display_path(path)}") from exc
+    except OSError as exc:
+        error = exc.strerror or exc.__class__.__name__
+        raise EvidenceValidationError(f"could not read packet: {error}") from exc
+    if len(payload) > MAX_PACKET_BYTES:
+        raise EvidenceValidationError("packet exceeds the 1 MB safety limit")
+    try:
+        value = json.loads(payload.decode("utf-8"), object_pairs_hook=reject_duplicate_keys)
+    except UnicodeDecodeError as exc:
+        raise EvidenceValidationError("packet must be valid UTF-8 JSON") from exc
     except json.JSONDecodeError as exc:
         raise EvidenceValidationError(f"packet is not valid JSON: {exc}") from exc
+    if not isinstance(value, dict):
+        raise EvidenceValidationError("packet must be a JSON object")
+    return value
+
+
+def load_packet(path: Path) -> dict[str, Any]:
+    value = load_json_object(path)
     return validate_packet(value)
 
 

@@ -18,6 +18,12 @@ This repository is an early independent builder resource.
 - Keep human approval in all payment flows.
 - Do not build or publish autonomous spending flows without clear safety constraints.
 - Do not handle custody or user private keys.
+- Keep the guarded wallet lab Arc Testnet only, disabled by default, and limited
+  to one manually confirmed transaction attempt per page load.
+- Require a top-level browsing context and reject zero-address or pinned-token
+  recipients before freezing a guarded transaction.
+- Never add a mainnet fallback, raw-key input, automatic retry, or unattended
+  signing path to the static site.
 
 ## Reporting
 

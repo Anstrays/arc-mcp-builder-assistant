@@ -9,5 +9,7 @@ __pycache__/
 .DS_Store
 .vscode/
 .idea/
+.hermes/
 *.log
 *.operator-evidence.local.json
+.arc-test-*/
