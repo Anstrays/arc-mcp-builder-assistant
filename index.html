@@ -284,9 +284,10 @@
           </div>
           <div class="eyebrow">Arc agent builder kit</div>
           <h1>Build Arc-ready MCP agents from prompt to verified runtime.</h1>
-          <p class="lead">A practical workspace for turning Arc docs context into reviewable agent plans, USDC payment flows, x402 boundaries, and local-first playgrounds before any wallet or testnet action.</p>
+          <p class="lead">A practical workspace for turning Arc docs context into reviewable agent plans, USDC payment flows, x402 boundaries, local-first playgrounds, and a separate guarded Arc Testnet wallet handoff.</p>
           <div class="actions">
             <a class="button blue" href="./examples/payment-intent-playground/">Open payment playground</a>
+            <a class="button" href="./examples/arc-testnet-wallet-send-gate/">Guarded wallet lab</a>
             <a class="button primary" href="./docs/view.html#current-readiness-report.md">Readiness report</a>
             <a class="button" href="./docs/view.html#completion-contract.md">Completion contract</a>
             <a class="button" href="./docs/view.html#arc-builder-readiness-checklist.md">Readiness checklist</a>
@@ -294,10 +295,10 @@
             <a class="button" href="./docs/view.html#arc-production-deployment.md">Production runbook</a>
           </div>
           <div class="metrics" aria-label="Honest project metrics">
-            <div class="metric"><span>Examples</span><strong>11</strong></div>
-            <div class="metric"><span>Docs</span><strong>36</strong></div>
+            <div class="metric"><span>Examples</span><strong>13</strong></div>
+            <div class="metric"><span>Docs</span><strong>39</strong></div>
             <div class="metric"><span>Prompt packs</span><strong>5</strong></div>
-            <div class="metric"><span>Wallet/RPC</span><strong>Off</strong></div>
+            <div class="metric"><span>Wallet/RPC</span><strong>Guarded</strong></div>
           </div>
         </div>
         <aside class="preview" aria-label="Arc builder preview">
@@ -309,7 +310,7 @@
             <pre class="command"><code><span class="accent">prompt</span>: Draft an Arc USDC payment-intent agent
 runtime: Node 20 / Edge Worker
 surface: local playground + docs viewer
-safety: human approval, no custody, no broadcast</code></pre>
+safety: human approval, no custody, no broadcast by default</code></pre>
             <div class="plan-card">
               <h3>Scaffold: USDC payment-intent agent</h3>
               <div class="plan-meta">
@@ -321,7 +322,7 @@ safety: human approval, no custody, no broadcast</code></pre>
               <ol class="plan-steps">
                 <li>Ground the plan with cited Arc MCP context.</li>
                 <li>Freeze intent fields before any wallet handoff.</li>
-                <li>Keep signing manual and transaction requests disabled in v0.</li>
+                <li>Keep signing inside the external wallet and all write calls disabled by default.</li>
                 <li>Verify status through read-only helpers and publish the result.</li>
               </ol>
             </div>
@@ -441,13 +442,13 @@ safety: human approval, no custody, no broadcast</code></pre>
           <article class="panel analytics-card">
             <span class="badge">Safety boundaries</span>
             <div class="big-number">5</div>
-            <p>No custody, no private keys, no wallet connect, no app backend/custody calls, no broadcast by default.</p>
+            <p>No custody, no private keys, no app backend/custody calls, no mainnet, no broadcast by default.</p>
           </article>
           <article class="panel analytics-card">
             <h3>By builder surface</h3>
             <div class="bar-list">
-              <div class="bar-row"><span>Docs</span><span class="bar-track"><span class="bar-fill" style="width: 93%"></span></span><strong>36</strong></div>
-              <div class="bar-row"><span>Examples</span><span class="bar-track"><span class="bar-fill" style="width: 76%"></span></span><strong>11</strong></div>
+              <div class="bar-row"><span>Docs</span><span class="bar-track"><span class="bar-fill" style="width: 95%"></span></span><strong>39</strong></div>
+              <div class="bar-row"><span>Examples</span><span class="bar-track"><span class="bar-fill" style="width: 88%"></span></span><strong>13</strong></div>
               <div class="bar-row"><span>Prompts</span><span class="bar-track"><span class="bar-fill" style="width: 64%"></span></span><strong>5</strong></div>
             </div>
           </article>
@@ -490,11 +491,23 @@ safety: human approval, no custody, no broadcast</code></pre>
             <span class="meta"><span class="mini">Agent jobs</span><span class="mini">Escrow</span><span class="mini">Simulator</span></span>
             <span class="recipe-link">Open simulator →</span>
           </a>
+          <a class="recipe" href="./examples/arc-agent-treasury-lab/">
+            <h3>Arc Agent Treasury Lab</h3>
+            <p>Connect local x402 revenue to bounded compute budgets, replay protection, verification loops, and an auditable treasury ledger.</p>
+            <span class="meta"><span class="mini">Agentic loops</span><span class="mini">USDC policy</span><span class="mini">Local-only</span></span>
+            <span class="recipe-link">Open treasury lab</span>
+          </a>
           <a class="recipe" href="./examples/transaction-status-playground/index.html" data-doc="docs/transaction-status-playground.md">
-            <h3>Read-only status checker</h3>
-            <p>Check Arc Testnet transaction hash states without wallet connection, signing, or transaction broadcast.</p>
+            <h3>Read-only transaction evidence</h3>
+            <p>Check hash state and compare expected Arc Testnet USDC recipient/amount fields without wallet connection, signing, broadcast, or settlement claims.</p>
             <span class="meta"><span class="mini">Infrastructure</span><span class="mini">RPC</span><span class="mini">Read-only</span></span>
             <span class="recipe-link">Check status →</span>
+          </a>
+          <a class="recipe" href="./examples/arc-testnet-wallet-send-gate/">
+            <h3>Guarded Arc Testnet wallet send</h3>
+            <p>Review a pinned USDC payload and keep the injected-wallet request disabled until every explicit human gate passes.</p>
+            <span class="meta"><span class="mini">Arc Testnet</span><span class="mini">Injected wallet</span><span class="mini">Disabled by default</span></span>
+            <span class="recipe-link">Inspect guarded lab</span>
           </a>
           <a class="recipe" href="./examples/receipt-verifier-playground/index.html" data-doc="docs/receipt-verifier-playground.md">
             <h3>Receipt verifier</h3>
@@ -527,8 +540,10 @@ safety: human approval, no custody, no broadcast</code></pre>
           <a class="doc-card" href="./docs/view.html#prompt-library.md"><h3>Prompt library</h3><p>Copy-ready prompts for docs-aware coding, payment intents, agent identity, escrow, and reviews.</p><span class="recipe-link">Use prompts →</span></a>
           <a class="doc-card" href="./docs/view.html#current-readiness-report.md"><h3>Current readiness report</h3><p>Scope verdict, local evidence commands, future-extension boundaries, and safe public wording.</p><span class="recipe-link">Read report →</span></a>
           <a class="doc-card" href="./docs/view.html#completion-contract.md"><h3>Safe-scope completion contract</h3><p>Measurable acceptance criteria, canonical verification, explicit non-goals, and reviewer wording.</p><span class="recipe-link">Review contract →</span></a>
-          <a class="doc-card" href="./docs/view.html#arc-testnet-send-readiness-gate.md"><h3>Send readiness gate</h3><p>Evidence contract for any future Arc Testnet send PR after the unsigned draft and final local confirmation.</p><span class="recipe-link">Review gate →</span></a>
-          <a class="doc-card" href="./docs/view.html#arc-testnet-operator-runbook.md"><h3>Arc Testnet operator runbook</h3><p>Manual review steps, stop conditions, and evidence records before any future guarded live-send PR.</p><span class="recipe-link">Open runbook →</span></a>
+          <a class="doc-card" href="./docs/view.html#arc-testnet-send-readiness-gate.md"><h3>Send readiness gate</h3><p>Evidence contract for the separate disabled-by-default Arc Testnet browser-wallet send lab.</p><span class="recipe-link">Review gate →</span></a>
+          <a class="doc-card" href="./docs/view.html#guarded-wallet-send-runbook.md"><h3>Guarded wallet send runbook</h3><p>Operator sequence, stop conditions, rollback, and verification boundary for the isolated Arc Testnet send lab.</p><span class="recipe-link">Open guarded runbook</span></a>
+          <a class="doc-card" href="./docs/view.html#custody-and-mainnet-gates.md"><h3>Custody and mainnet gates</h3><p>Why custody needs a separate backend and why Arc mainnet stays blocked until official configuration and review exist.</p><span class="recipe-link">Review gates</span></a>
+          <a class="doc-card" href="./docs/view.html#arc-testnet-operator-runbook.md"><h3>Arc Testnet operator runbook</h3><p>Manual review steps, stop conditions, and evidence records for the guarded send lab.</p><span class="recipe-link">Open runbook →</span></a>
           <a class="doc-card" href="./docs/view.html#arc-testnet-operator-evidence.md"><h3>Operator evidence packet</h3><p>Strict Arc Testnet review record with fail-closed validation and disabled live-send controls.</p><span class="recipe-link">Review schema →</span></a>
           <a class="doc-card" href="./docs/view.html#public-launch-packet.md"><h3>Public launch packet</h3><p>Human-review Telegram, X, Discord/Arc House drafts, submission checklist, links, and claims to avoid.</p><span class="recipe-link">Prepare launch →</span></a>
           <a class="doc-card" href="./docs/view.html#arc-builder-readiness-checklist.md"><h3>Readiness checklist</h3><p>Pre-submit gates for docs grounding, payment safety, UX states, repo quality, and public proof.</p><span class="recipe-link">Check gates →</span></a>
@@ -545,14 +560,14 @@ safety: human approval, no custody, no broadcast</code></pre>
             <div class="section-kicker">06 · Status</div>
             <h2 class="section-title">Public-ready kit, optional extensions clearly separated.</h2>
           </div>
-          <p class="section-copy">The static builder kit is complete for sharing: docs, playgrounds, screenshots, validation, CI, and GitHub Pages are live. Future wallet/payment work stays behind explicit review gates.</p>
+          <p class="section-copy">The static builder kit is complete for sharing. Local-only surfaces stay wallet-free, while the isolated Arc Testnet send lab remains disabled until every explicit review gate passes.</p>
         </div>
         <div class="status-grid">
           <div class="status-item"><span>Complete</span><p>Landing page, docs viewer, recipe links, local playgrounds, refreshed screenshots, and validation pipeline are shipped and green.</p></div>
           <div class="status-item"><span>Measured</span><p>The safe-scope completion contract and dependency-free completion check keep the readiness claim reproducible.</p></div>
-          <div class="status-item"><span>Safe default</span><p>Current demos remain local-first: no private keys, no wallet connection, no signing, no custody, and no transaction broadcast.</p></div>
-          <div class="status-item"><span>Optional next</span><p>A reviewed Arc Testnet send PR can be scoped later only after the send-readiness gate proves chain gates, decimals, approval copy, unsigned draft parity, and rollback criteria.</p></div>
-          <div class="status-item"><span>Optional later</span><p>Circle Gateway/x402 verifier handoff or paid API primitives can be added as separate review-first extensions outside the current public-ready scope.</p></div>
+          <div class="status-item"><span>Safe default</span><p>Local-only demos remain wallet-free. The isolated Arc Testnet send lab is disabled on page load and never handles private keys or custody.</p></div>
+          <div class="status-item"><span>Guarded write</span><p>One capped Arc Testnet USDC wallet request is possible only after explicit enablement, chain proof, frozen payload parity, and final human confirmation.</p></div>
+          <div class="status-item"><span>Blocked next</span><p>Custody, autonomous signing, and mainnet remain separate security programs, not flags inside the static site.</p></div>
         </div>
       </div>
     </section>

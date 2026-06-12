@@ -17,6 +17,7 @@ Use this page as a ready-to-edit submission note for Arc community posts, Arc Ho
 - Local-only interactive payment-intent playground with editable fields, reviewable JSON, and approval/submission status transitions.
 - Local-only ERC-8183-style job escrow simulator for posting jobs, accepting work, simulated escrow funding, deliverable submission, human review, and payout approval state.
 - Local-only x402 HTTP 402 challenge server with a swappable verifier boundary for future Circle/x402 settlement work.
+- Separate disabled-by-default Arc Testnet browser-wallet lab for one manually reviewed USDC transaction request.
 - Builder readiness checklist, MCP query examples, agent-commerce use cases, build log, and public submission draft.
 - Lightweight repo validator and GitHub Actions workflow for safe static-site changes.
 
@@ -35,7 +36,7 @@ Arc docs/MCP → grounded AI prompts → reviewable payment/job object → human
 - No custody.
 - No autonomous mainnet spending.
 - Local demos do not broadcast transactions.
-- Human approval remains required for every future wallet action.
+- Human approval remains required for every wallet action.
 - Testnet integration comes only after current docs, wallet details, contract addresses, and provider assumptions are verified.
 
 ## Current links
@@ -49,7 +50,7 @@ Arc docs/MCP → grounded AI prompts → reviewable payment/job object → human
 
 ## Current milestone
 
-The current milestone is a **local-first builder kit**: docs, prompts, reviewable payment/job objects, simulators, and safety checks that another builder can open and understand quickly.
+The current milestone is a **guarded Arc builder kit**: docs, prompts, local-only payment/job objects, simulators, read-only checks, and a separate disabled-by-default Arc Testnet wallet-send lab that another builder can inspect quickly.
 
 ## Next build task
 
