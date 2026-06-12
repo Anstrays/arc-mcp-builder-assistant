@@ -29,6 +29,7 @@ const RECEIPT_CHECK_IDS = Object.freeze([
   { id: 'transactionHash' },
 ]);
 
+const DEFAULT_RECEIPT_EXPIRY_MS = 24 * 60 * 60 * 1000;
 const SAMPLE_RECEIPT = Object.freeze({
   network: 'arc-testnet',
   chainId: 5042002,
@@ -36,7 +37,7 @@ const SAMPLE_RECEIPT = Object.freeze({
   amount: '5.00',
   asset: 'USDC',
   intentHash: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-  expiry: '2026-05-30T00:00:00.000Z',
+  expiry: new Date(Date.now() + DEFAULT_RECEIPT_EXPIRY_MS).toISOString(),
   transactionHash: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
   status: 'submitted_simulated',
   safety: {
@@ -101,7 +102,10 @@ function normalizeReceipt(rawReceipt) {
 }
 
 function isValidAddress(value) {
-  return /^0x[a-fA-F0-9]{40}$/.test(value);
+  const normalized = String(value || '').trim().toLowerCase();
+  return /^0x[a-f0-9]{40}$/.test(normalized)
+    && !/^0x0{40}$/.test(normalized)
+    && normalized !== '0x3600000000000000000000000000000000000000';
 }
 
 function isValidHash(value) {
@@ -134,7 +138,7 @@ function verifyReceipt(receipt) {
       'recipient',
       'Recipient address',
       isValidAddress(normalized.recipient),
-      'Expected a 0x-prefixed 20-byte recipient address.'
+      'Expected a non-zero 0x-prefixed recipient address that is not the USDC token contract.'
     ),
     check(
       'amount',

@@ -3,9 +3,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from pathlib import Path
-import re
 
 ROOT = Path(__file__).resolve().parents[1]
 HTML = ROOT / "examples/payment-intent-playground/index.html"
@@ -293,6 +291,7 @@ def test_signing_preflight_report_can_be_copied_without_network_or_wallet() -> N
 
 def test_default_demo_values_are_reviewable_without_real_wallet_details() -> None:
     html = read(HTML)
+    js = read(JS)
 
     for marker in (
         'value="0x1111111111111111111111111111111111111111"',
@@ -300,12 +299,25 @@ def test_default_demo_values_are_reviewable_without_real_wallet_details() -> Non
     ):
         assert_contains(html, marker, HTML)
 
-    match = re.search(r'id="expiry"[^>]*value="([^"]+)"', html)
-    assert match, "missing default expiry value"
-    default_expiry = datetime.fromisoformat(match.group(1))
-    assert default_expiry > datetime.now(), (
-        "default demo expiry must stay in the future so Prepare intent reaches ready_for_review"
-    )
+    for marker in (
+        "function setDefaultExpiry()",
+        "Date.now() + (24 * 60 * 60 * 1000)",
+        "expiryInput.value = local.toISOString().slice(0, 16)",
+        "form.reset();\n  setDefaultExpiry();",
+        "renderArcStatusPanel();\nsetDefaultExpiry();",
+    ):
+        assert_contains(js, marker, JS)
+
+
+def test_recipient_guard_rejects_zero_and_token_contract_addresses() -> None:
+    js = read(JS)
+    for marker in (
+        "function hasValidRecipient(recipient)",
+        "!/^0x0{40}$/.test(normalized)",
+        "normalized !== ARC_TESTNET_STATUS.erc20UsdcAddress.toLowerCase()",
+        "Recipient must be a non-zero 0x-prefixed address and cannot be the USDC token contract.",
+    ):
+        assert_contains(js, marker, JS)
 
 
 def test_status_state_machine_uses_review_safe_vocabulary() -> None:
@@ -404,6 +416,7 @@ if __name__ == "__main__":
     test_validation_summary_panel_shows_local_readiness_without_wallet_actions()
     test_signing_preflight_report_can_be_copied_without_network_or_wallet()
     test_default_demo_values_are_reviewable_without_real_wallet_details()
+    test_recipient_guard_rejects_zero_and_token_contract_addresses()
     test_status_state_machine_uses_review_safe_vocabulary()
     test_final_confirmation_gate_is_local_only_and_keeps_transactions_disabled()
     test_playground_javascript_stays_local_only()

@@ -20,7 +20,7 @@ import sys
 from dataclasses import dataclass
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from typing import Mapping, Protocol
+from typing import Iterator, Mapping, Protocol
 from urllib.parse import urlsplit
 
 DEFAULT_NETWORK = "arc-testnet"
@@ -28,10 +28,13 @@ DEFAULT_ASSET = "USDC"
 DEFAULT_AMOUNT = "0.01"
 DEFAULT_PAY_TO = "0xA11CE00000000000000000000000000000000000"
 DEFAULT_RESOURCE = "arc-mcp-builder-assistant.local-report.v1"
+ZERO_EVM_ADDRESS = "0x0000000000000000000000000000000000000000"
 EVM_ADDRESS_RE = re.compile(r"^0x[a-fA-F0-9]{40}$")
 TRUTHY = {"1", "true", "yes", "on"}
 FALSY = {"", "0", "false", "no", "off"}
 LOCAL_BIND_HOSTS = {"127.0.0.1", "localhost"}
+MAX_MCP_LINE_BYTES = 1_000_000
+MAX_PAYMENT_PROOF_BYTES = 4_096
 
 
 @dataclass(frozen=True)
@@ -131,6 +134,43 @@ class LocalDemoVerifier:
         )
 
 
+def require_exact_keys(value: Mapping[str, object], expected: set[str], label: str) -> None:
+    observed = set(value)
+    if observed != expected:
+        missing = sorted(expected - observed)
+        unknown = sorted(observed - expected)
+        raise ValueError(f"{label} keys must match exactly; missing={missing}, unknown={unknown}")
+
+
+def validate_payment_proof(proof: str) -> str:
+    if not isinstance(proof, str):
+        raise ValueError("X-Payment proof must be a string")
+    if not proof:
+        raise ValueError("X-Payment proof must not be empty")
+    if len(proof.encode("utf-8")) > MAX_PAYMENT_PROOF_BYTES:
+        raise ValueError("X-Payment proof exceeds the 4 KB safety limit")
+    if any(character in proof for character in "\r\n\0"):
+        raise ValueError("X-Payment proof contains forbidden control characters")
+    return proof
+
+
+def extract_payment_proof(headers: Mapping[str, str]) -> str | None:
+    get_all = getattr(headers, "get_all", None)
+    if callable(get_all):
+        values = get_all("X-Payment") or []
+    else:
+        values = [
+            value
+            for key, value in headers.items()
+            if isinstance(key, str) and key.lower() == "x-payment"
+        ]
+    if not values:
+        return None
+    if len(values) != 1:
+        raise ValueError("exactly one X-Payment header is required")
+    return validate_payment_proof(values[0])
+
+
 def parse_env_bool(value: str | None, name: str) -> bool:
     normalized = (value or "").strip().lower()
     if normalized in TRUTHY:
@@ -156,8 +196,8 @@ def validate_payment_config(config: PaymentConfig) -> None:
 
     if config.network != DEFAULT_NETWORK:
         raise ValueError("X402_DEMO_NETWORK must stay arc-testnet for this Arc-focused demo")
-    if not config.asset:
-        raise ValueError("X402_DEMO_ASSET must not be empty")
+    if config.asset != DEFAULT_ASSET:
+        raise ValueError("X402_DEMO_ASSET must stay USDC because this demo uses USDC 6-decimal economics")
     try:
         amount_micro_usd = amount_to_micro_usd(config.amount)
     except ValueError as error:
@@ -166,7 +206,15 @@ def validate_payment_config(config: PaymentConfig) -> None:
         raise ValueError("X402_DEMO_AMOUNT must be greater than 0")
     if not EVM_ADDRESS_RE.match(config.pay_to):
         raise ValueError("X402_DEMO_PAY_TO must be a 42-character EVM address")
-    if config.mainnet_enabled:
+    if config.pay_to.lower() == ZERO_EVM_ADDRESS:
+        raise ValueError("X402_DEMO_PAY_TO must be a non-zero EVM address")
+    if config.resource != DEFAULT_RESOURCE:
+        raise ValueError("payment resource must stay pinned to the reviewed local demo resource")
+    if config.verifier_mode != "local-simulation":
+        raise ValueError("verifier mode must stay local-simulation in this demo")
+    if config.human_approval_required is not True:
+        raise ValueError("human approval must remain required in this demo")
+    if config.mainnet_enabled is not False:
         raise ValueError("X402_DEMO_MAINNET_ENABLED must remain false in this local demo")
 
 
@@ -181,6 +229,7 @@ def validate_bind_target(host: str, port: int) -> None:
 def build_unit_economics(config: PaymentConfig) -> dict[str, object]:
     """Return integer-priced demo economics without float ambiguity."""
 
+    validate_payment_config(config)
     return {
         "asset": config.asset,
         "assetDecimals": 6,
@@ -193,7 +242,7 @@ def build_unit_economics(config: PaymentConfig) -> dict[str, object]:
 def build_payment_challenge(config: PaymentConfig) -> dict[str, object]:
     """Return an x402-shaped payment challenge with safe local metadata."""
 
-    challenge_id = f"{config.resource}:{config.network}:{config.asset}:{config.amount}"
+    challenge_id = f"{config.resource}:{config.network}:{config.asset}:{config.amount}:{config.pay_to.lower()}"
     return {
         "id": challenge_id,
         "x402Version": "demo-boundary-v1",
@@ -312,18 +361,63 @@ def handle_protected_request(
 
     config = config or PaymentConfig.demo()
     verifier = verifier or LocalDemoVerifier()
-    proof = headers.get("X-Payment") or headers.get("x-payment")
+    try:
+        proof = extract_payment_proof(headers)
+    except ValueError as error:
+        return Response(
+            status=HTTPStatus.PAYMENT_REQUIRED,
+            body={
+                "error": "invalid_x_payment",
+                "reason": str(error),
+                "settled": False,
+                "transactionBroadcast": False,
+            },
+        )
     if not proof:
         return payment_required_response(config)
 
     challenge = build_payment_challenge(config)
-    verification = verifier.verify(proof, challenge, config)
+    try:
+        verification = verifier.verify(proof, challenge, config)
+    except Exception:
+        return Response(
+            status=HTTPStatus.PAYMENT_REQUIRED,
+            body={
+                "error": "payment_verifier_unavailable",
+                "settled": False,
+                "transactionBroadcast": False,
+                "challenge": challenge,
+            },
+        )
+    if not isinstance(verification, VerificationResult):
+        return Response(
+            status=HTTPStatus.PAYMENT_REQUIRED,
+            body={
+                "error": "invalid_verifier_result",
+                "settled": False,
+                "transactionBroadcast": False,
+                "challenge": challenge,
+            },
+        )
     if not verification.ok:
         return Response(
             status=HTTPStatus.PAYMENT_REQUIRED,
             body={
                 "error": "payment_verification_failed",
-                "reason": verification.reason,
+                "reason": "proof_not_accepted",
+                "settled": False,
+                "transactionBroadcast": False,
+                "challenge": challenge,
+            },
+        )
+    if (
+        verification.receipt.get("settled") is not False
+        or verification.receipt.get("transactionBroadcast") is not False
+    ):
+        return Response(
+            status=HTTPStatus.PAYMENT_REQUIRED,
+            body={
+                "error": "unsafe_verifier_result",
                 "settled": False,
                 "transactionBroadcast": False,
                 "challenge": challenge,
@@ -353,12 +447,38 @@ def make_jsonrpc_error(request_id: object, code: int, message: str) -> dict[str,
     return {"jsonrpc": "2.0", "id": request_id, "error": {"code": code, "message": message}}
 
 
+def reject_duplicate_json_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON key is not allowed: {key}")
+        result[key] = value
+    return result
+
+
+def bounded_mcp_lines() -> Iterator[bytes | None]:
+    """Yield bounded stdin lines and use None for rejected oversized input."""
+
+    stream = sys.stdin.buffer
+    while True:
+        payload = stream.readline(MAX_MCP_LINE_BYTES + 1)
+        if not payload:
+            return
+        if len(payload) > MAX_MCP_LINE_BYTES:
+            while payload and not payload.endswith(b"\n"):
+                payload = stream.readline(MAX_MCP_LINE_BYTES + 1)
+            yield None
+            continue
+        yield payload
+
+
 def call_manifest_tool(name: str, arguments: Mapping[str, object] | None = None, config: PaymentConfig | None = None) -> dict[str, object]:
     """Dispatch the local manifest tools without wallet/RPC side effects."""
 
     config = config or PaymentConfig.demo()
     arguments = arguments or {}
     if name == "inspect_payment_challenge":
+        require_exact_keys(arguments, set(), "inspect_payment_challenge arguments")
         challenge = build_payment_challenge(config)
         structured = {
             "status": HTTPStatus.PAYMENT_REQUIRED,
@@ -370,11 +490,11 @@ def call_manifest_tool(name: str, arguments: Mapping[str, object] | None = None,
             "structuredContent": structured,
         }
     if name == "get_paid_resource":
+        require_exact_keys(arguments, {"xPayment"}, "get_paid_resource arguments")
         x_payment = arguments.get("xPayment")
         if not isinstance(x_payment, str):
-            response = payment_required_response(config, error="missing_x_payment")
-        else:
-            response = handle_protected_request({"X-Payment": x_payment}, config)
+            raise ValueError("get_paid_resource xPayment must be a string")
+        response = handle_protected_request({"X-Payment": x_payment}, config)
         return {
             "content": [
                 {
@@ -391,10 +511,27 @@ def process_jsonrpc_request(message: Mapping[str, object], config: PaymentConfig
     """Process one newline-delimited JSON-RPC/MCP-style request."""
 
     config = config or PaymentConfig.demo()
-    if "id" not in message:
-        return None
-    request_id = message.get("id")
+    has_id = "id" in message
+    request_id = message.get("id") if has_id else None
+    if message.get("jsonrpc") != "2.0":
+        return make_jsonrpc_error(request_id, -32600, "request jsonrpc must be exactly 2.0")
+    if has_id and (
+        isinstance(request_id, bool)
+        or not isinstance(request_id, (str, int, type(None)))
+    ):
+        return make_jsonrpc_error(None, -32600, "request id must be a string, integer, or null")
     method = message.get("method")
+    if not isinstance(method, str):
+        return make_jsonrpc_error(request_id, -32600, "request method must be a string")
+    allowed_request_keys = {"jsonrpc", "method"} | ({"id"} if has_id else set())
+    if "params" in message:
+        allowed_request_keys.add("params")
+    try:
+        require_exact_keys(message, allowed_request_keys, "JSON-RPC request")
+    except ValueError as error:
+        return make_jsonrpc_error(request_id, -32600, str(error))
+    if not has_id:
+        return None
     manifest = build_mcp_manifest(config)
 
     if method == "initialize":
@@ -415,8 +552,12 @@ def process_jsonrpc_request(message: Mapping[str, object], config: PaymentConfig
         params = message.get("params")
         if not isinstance(params, Mapping):
             return make_jsonrpc_error(request_id, -32602, "tools/call params must be an object")
+        try:
+            require_exact_keys(params, {"name", "arguments"}, "tools/call params")
+        except ValueError as error:
+            return make_jsonrpc_error(request_id, -32602, str(error))
         name = params.get("name")
-        arguments = params.get("arguments", {})
+        arguments = params.get("arguments")
         if not isinstance(name, str):
             return make_jsonrpc_error(request_id, -32602, "tools/call requires a string tool name")
         if not isinstance(arguments, Mapping):
@@ -433,17 +574,26 @@ def run_mcp_stdio(config: PaymentConfig | None = None) -> None:
     """Run a tiny newline-delimited JSON-RPC loop over stdin/stdout."""
 
     config = config or PaymentConfig.demo()
-    for line in sys.stdin:
-        if not line.strip():
+    for payload in bounded_mcp_lines():
+        if payload is None:
+            response = make_jsonrpc_error(None, -32600, "request exceeds the 1 MB safety limit")
+            print(json.dumps(response, sort_keys=True), flush=True)
+            continue
+        if not payload.strip():
             continue
         try:
-            message = json.loads(line)
+            line = payload.decode("utf-8")
+            message = json.loads(line, object_pairs_hook=reject_duplicate_json_keys)
             if not isinstance(message, Mapping):
                 response = make_jsonrpc_error(None, -32600, "request must be a JSON object")
             else:
                 response = process_jsonrpc_request(message, config)
+        except UnicodeDecodeError:
+            response = make_jsonrpc_error(None, -32700, "parse error: request must be UTF-8")
         except json.JSONDecodeError as error:
             response = make_jsonrpc_error(None, -32700, f"parse error: {error.msg}")
+        except ValueError as error:
+            response = make_jsonrpc_error(None, -32700, f"parse error: {error}")
         if response is None:
             continue
         print(json.dumps(response, sort_keys=True), flush=True)

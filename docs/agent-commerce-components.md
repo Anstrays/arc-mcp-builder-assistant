@@ -93,7 +93,7 @@ A useful log separates agent suggestions from human approvals and verifier obser
   "paymentRequest": {
     "intentId": "intent-local-001",
     "purpose": "Pay for a cited Arc docs summary",
-    "recipient": "0x0000000000000000000000000000000000000000",
+    "recipient": "0x1111111111111111111111111111111111111111",
     "amount": "3.50",
     "asset": "USDC",
     "assetDecimals": 6,

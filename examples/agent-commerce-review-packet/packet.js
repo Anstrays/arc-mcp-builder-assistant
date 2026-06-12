@@ -30,9 +30,13 @@ function isNoPayoutOutcome(outcome) {
   return ['rejected_no_payout', 'disputed_manual_review', 'expired_no_payout', 'cancelled_no_payout'].includes(outcome);
 }
 
+function amountIsValid(value) {
+  return /^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(String(value || '').trim())
+    && Number(value) > 0;
+}
+
 function moneyAmount() {
-  const amount = Number(fields.amount.value || 0);
-  return Number.isFinite(amount) && amount >= 0 ? amount.toFixed(2) : '0.00';
+  return amountIsValid(fields.amount.value) ? Number(fields.amount.value).toFixed(2) : '0.00';
 }
 
 function controls() {
@@ -90,9 +94,13 @@ function packetObject() {
 }
 
 function render() {
+  const packetFrozen = packetState === 'packet_frozen_for_review';
   nodes.status.textContent = packetState;
   nodes.packet.textContent = JSON.stringify(packetObject(), null, 2);
-  buttons.freeze.disabled = packetState === 'packet_frozen_for_review';
+  for (const field of Object.values(fields)) {
+    field.disabled = packetFrozen;
+  }
+  buttons.freeze.disabled = packetFrozen || !amountIsValid(fields.amount.value);
 }
 
 buttons.freeze.addEventListener('click', () => {

@@ -45,14 +45,18 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+function budgetIsValid(value) {
+  return /^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(String(value || '').trim())
+    && Number(value) > 0;
+}
+
 function escrowObject() {
-  const budgetValue = Number(fields.budget.value || 0);
   return {
     schema: 'arc-mcp-builder-assistant.jobEscrow.simulation.v1',
     status,
     job: {
       title: fields.title.value.trim(),
-      budget: Number.isFinite(budgetValue) ? budgetValue.toFixed(2) : '0.00',
+      budget: budgetIsValid(fields.budget.value) ? Number(fields.budget.value).toFixed(2) : '0.00',
       asset: 'USDC',
       chain: 'Arc Testnet later; local simulation now',
       expectedDeliverable: fields.deliverable.value.trim(),
@@ -115,7 +119,11 @@ function render() {
     li.textContent = `${event.label} · ${event.at}`;
     return li;
   }));
-  buttons.post.disabled = status !== 'draft';
+  const termsFrozen = status !== 'draft';
+  for (const field of [fields.title, fields.budget, fields.agent, fields.deliverable]) {
+    field.disabled = termsFrozen;
+  }
+  buttons.post.disabled = status !== 'draft' || !budgetIsValid(fields.budget.value);
   buttons.accept.disabled = status !== 'posted';
   buttons.fund.disabled = status !== 'accepted_by_agent';
   buttons.submit.disabled = status !== 'escrow_funded_simulation';

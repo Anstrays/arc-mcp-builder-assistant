@@ -35,7 +35,7 @@ Design a safe Arc Testnet demo for agentic commerce where an AI agent can earn a
   "recipient": "0xAgentRecipient",
   "asset": "USDC",
   "budget": "10.00",
-  "expiry": "2026-05-30T00:00:00Z",
+  "expiry": "2030-05-30T00:00:00Z",
   "acceptanceCriteria": [
     "Cite docs used",
     "List chain and wallet assumptions",

@@ -21,6 +21,7 @@
     header { padding: 26px 0 10px; }
     .topbar, .hero, .grid, .actions, .cards { display: flex; gap: 16px; }
     .topbar { align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .actions { flex-wrap: wrap; }
     .brand { color: var(--text); font-weight: 950; letter-spacing: -.02em; }
     nav { display: flex; gap: 10px; flex-wrap: wrap; }
     nav a, button, .button { border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.055); color: var(--text); padding: 10px 14px; font-weight: 850; cursor: pointer; }
@@ -36,6 +37,7 @@
     .panel, .component-card { border: 1px solid var(--line); border-radius: 28px; background: linear-gradient(180deg, rgba(255,255,255,.09), var(--panel)); box-shadow: 0 24px 80px rgba(0,0,0,.34); padding: clamp(20px, 4vw, 32px); }
     .grid { display: grid; grid-template-columns: .95fr 1.05fr; align-items: start; padding-bottom: 72px; }
     .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .wrap > *, .grid > *, .cards > * { min-width: 0; }
     .field { display: grid; gap: 8px; margin-bottom: 14px; }
     input, textarea, select { width: 100%; border: 1px solid var(--line); border-radius: 16px; background: rgba(0,0,0,.24); color: var(--text); padding: 12px 14px; font: inherit; }
     textarea { min-height: 88px; resize: vertical; }
@@ -69,13 +71,13 @@
       <div>
         <p class="eyebrow">Local-only starter kit · no wallet connection</p>
         <h1>Reusable agent commerce cards.</h1>
-        <p>Compose an agent card, payment request, receipt preview, and event log before any Arc Testnet wallet path exists. The output is a reviewable JSON contract for future PRs.</p>
+        <p>Compose an agent card, payment request, receipt preview, and event log without invoking the separate guarded Arc Testnet wallet-send lab. The output is a reviewable local JSON contract.</p>
         <p class="status" id="status-pill">Draft review object</p>
       </div>
       <div class="panel warning">
         <h2>Safety boundary</h2>
         <ul>
-          <li>Human approval is required before any future wallet action.</li>
+          <li>Human approval is required before every wallet action.</li>
           <li>No private keys, no custody, no wallet permissions, no backend calls.</li>
           <li>No transaction broadcast and no mainnet path.</li>
           <li>Arc Testnet facts stay explicit: chain ID 5042002, USDC, ERC-20 USDC 6 decimals.</li>
@@ -88,8 +90,8 @@
         <div class="field"><label for="agent-name">Agent name</label><input id="agent-name" value="Research Agent" /></div>
         <div class="field"><label for="agent-role">Agent role</label><select id="agent-role"><option value="docs-grounded-research">Docs-grounded research</option><option value="paid-api-gateway">Paid API gateway</option><option value="creator-payout-agent">Creator payout agent</option><option value="escrow-worker">Escrow worker</option></select></div>
         <div class="field"><label for="purpose">Payment purpose</label><input id="purpose" value="Pay for a cited Arc docs summary" /></div>
-        <div class="field"><label for="amount">Amount, USDC</label><input id="amount" type="number" min="0" step="0.01" value="3.50" /></div>
-        <div class="field"><label for="recipient">Recipient placeholder</label><input id="recipient" value="0x0000000000000000000000000000000000000000" /></div>
+        <div class="field"><label for="amount">Amount, USDC</label><input id="amount" type="number" min="0.01" step="0.01" value="3.50" /></div>
+        <div class="field"><label for="recipient">Recipient placeholder</label><input id="recipient" value="0x1111111111111111111111111111111111111111" /></div>
         <div class="field"><label for="review-note">Review note</label><textarea id="review-note">Human reviewer checks recipient, amount, asset, chain, expiry, and source notes before any wallet handoff.</textarea></div>
         <div class="actions">
           <button class="primary" id="freeze-request">Freeze request</button>
@@ -108,7 +110,7 @@
         <div class="panel" style="margin-top:16px">
           <h2>Combined review object</h2>
           <pre id="components-json"></pre>
-          <p class="meta">This JSON is the handoff: future wallet integration should consume the frozen fields instead of asking an AI model to regenerate money-critical values.</p>
+          <p class="meta">This JSON is the handoff: any separately reviewed wallet integration should consume the frozen fields instead of asking an AI model to regenerate money-critical values.</p>
         </div>
       </div>
     </section>

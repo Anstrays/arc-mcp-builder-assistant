@@ -73,7 +73,7 @@ All five use cases can start with the same minimal object:
   "asset": "USDC",
   "amount": "5.00",
   "memo": "Paid API call for market report",
-  "expiry": "2026-05-30T00:00:00Z",
+  "expiry": "2030-05-30T00:00:00Z",
   "status": "pending_human_approval"
 }
 ```

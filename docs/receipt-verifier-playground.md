@@ -20,7 +20,8 @@ https://anstrays.github.io/arc-mcp-builder-assistant/examples/receipt-verifier-p
 The page parses a JSON object and checks these local receipt fields:
 
 - `chainId`: must match Arc Testnet `5042002` / `0x4cef52`.
-- `recipient`: must be a `0x`-prefixed 20-byte address.
+- `recipient`: must be a non-zero `0x`-prefixed 20-byte address and cannot be
+  the pinned USDC token contract.
 - `amount`: must be a positive USDC amount with at most 6 decimal places.
 - `asset`: must be `USDC`.
 - `intentHash`: must be a 32-byte `0x` hash.
@@ -71,7 +72,7 @@ Only extend this page toward real testnet verification after the separate wallet
   "amount": "5.00",
   "asset": "USDC",
   "intentHash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  "expiry": "2026-05-30T00:00:00.000Z",
+  "expiry": "2030-05-30T00:00:00.000Z",
   "transactionHash": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "status": "submitted_simulated"
 }

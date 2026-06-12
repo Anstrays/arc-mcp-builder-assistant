@@ -14,7 +14,7 @@ const FLOW_TEMPLATES = Object.freeze({
     description: 'A research agent asks to buy one paid data response under a human-reviewed cost cap.',
     agentName: 'Research Buyer Agent',
     agentRole: 'paid-api-gateway',
-    recipient: '0x0000000000000000000000000000000000000000',
+    recipient: '0x3333333333333333333333333333333333333333',
     amount: '1.25',
     purpose: 'Buy one market-data response for a cited report',
     evidence: 'Reviewer checks endpoint purpose, quote, recipient, amount, and freshness before any future x402/Gateway proof path.',
@@ -84,10 +84,18 @@ function activeTemplate() {
   return FLOW_TEMPLATES[selectedFlowId];
 }
 
+function amountIsValid(value) {
+  return /^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(String(value || '').trim())
+    && Number(value) > 0;
+}
+
+function recipientIsValid(value) {
+  return /^0x[a-fA-F0-9]{40}$/.test(String(value || '').trim())
+    && !/^0x0{40}$/i.test(String(value || '').trim());
+}
+
 function normalizedAmount() {
-  const parsed = Number(fields.amount.value || 0);
-  if (!Number.isFinite(parsed) || parsed < 0) return '0.00';
-  return parsed.toFixed(2);
+  return amountIsValid(fields.amount.value) ? Number(fields.amount.value).toFixed(2) : '0.00';
 }
 
 function addEvent(event, actor = 'system') {
@@ -213,6 +221,7 @@ function renderFlowNav() {
 
 function render() {
   const flow = activeTemplate();
+  const moneyFieldsFrozen = state !== 'draft_review';
   nodes.title.textContent = flow.title;
   nodes.description.textContent = flow.description;
   nodes.status.textContent = state;
@@ -225,7 +234,12 @@ function render() {
     li.textContent = `${entry.actor}: ${entry.event} · ${entry.at}`;
     return li;
   }));
-  buttons.freeze.disabled = state !== 'draft_review';
+  for (const field of [fields.recipient, fields.amount, fields.purpose]) {
+    field.disabled = moneyFieldsFrozen;
+  }
+  buttons.freeze.disabled = state !== 'draft_review'
+    || !amountIsValid(fields.amount.value)
+    || !recipientIsValid(fields.recipient.value);
   buttons.approve.disabled = state !== 'fields_frozen';
   buttons.receipt.disabled = state !== 'approved_local_no_broadcast';
   renderFlowNav();

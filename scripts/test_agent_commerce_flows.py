@@ -64,11 +64,29 @@ def test_agent_commerce_flow_state_transitions_are_auditable() -> None:
         "state = 'approved_local_no_broadcast'",
         "state = 'receipt_simulated'",
         'frozenBeforeWallet: Boolean(frozenAt)',
+        "const moneyFieldsFrozen = state !== 'draft_review'",
+        'field.disabled = moneyFieldsFrozen',
+        "buttons.freeze.disabled = state !== 'draft_review'",
+        "|| !amountIsValid(fields.amount.value)",
+        "|| !recipientIsValid(fields.recipient.value)",
         'Human froze flow money fields before wallet handoff',
         'Human recorded local approval; no transaction was broadcast',
         'System generated simulated receipt for the selected flow',
     ):
         assert marker in js
+
+
+def test_agent_commerce_flows_reject_invalid_money_and_zero_recipient_template() -> None:
+    js = read(JS)
+    for marker in (
+        'function amountIsValid(value)',
+        'function recipientIsValid(value)',
+        '&& Number(value) > 0',
+        "? Number(fields.amount.value).toFixed(2) : '0.00'",
+        '!recipientIsValid(fields.recipient.value)',
+    ):
+        assert marker in js
+    assert "recipient: '0x0000000000000000000000000000000000000000'" not in js
 
 
 def test_agent_commerce_flows_forbid_wallet_network_and_secret_surface() -> None:

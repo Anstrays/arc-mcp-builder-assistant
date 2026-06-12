@@ -16,7 +16,8 @@ curl -s http://127.0.0.1:8087/protected
 
 The unpaid `402 Payment Required` response includes:
 
-- `id`: deterministic local challenge id;
+- `id`: deterministic local challenge id bound to the resource, Arc Testnet,
+  pinned USDC asset, amount, and reviewed pay-to address;
 - `accepts`: x402-shaped payment terms for Arc Testnet USDC;
 - `unitEconomics`: integer `priceMicroUsd` plus display price;
 - `mcpManifest`: agent-readable metadata, tool schemas, safety flags, and production replacement boundary.
@@ -55,7 +56,22 @@ Supported methods:
 - `tools/list` — returns the manifest tool list.
 - `tools/call` — dispatches `inspect_payment_challenge` or `get_paid_resource` and returns both `content` and `structuredContent`.
 
-Unknown methods or tools return JSON-RPC errors instead of crashing. Notification messages without an `id` are consumed silently, matching the JSON-RPC no-response contract that MCP clients expect after initialization. The stdio mode still uses only local demo proof strings and does not call Circle Gateway.
+Unknown methods or tools return JSON-RPC errors instead of crashing.
+Notification messages without an `id` are consumed silently, matching the
+JSON-RPC no-response contract that MCP clients expect after initialization.
+Requests over 1 MB, invalid UTF-8, duplicate JSON keys, non-`2.0` JSON-RPC
+envelopes, invalid request IDs, and non-string methods fail closed before tool
+dispatch. The stdio mode still uses only local demo proof strings and does not
+call Circle Gateway. Direct Python helper calls enforce the same reviewed
+local-simulation, human-approval, Arc Testnet, USDC, and mainnet-disabled
+configuration contract as the CLI. Request, `tools/call` params, and tool
+arguments reject unknown fields to match the published
+`additionalProperties: false` schemas. Proof handling accepts exactly one
+`X-Payment` value and rejects control characters or values over 4 KB. Verifier
+exceptions, malformed results, and unsafe successful receipts fail closed as
+`402` without reflecting internal failure details; the local demo will not
+forward a receipt unless `settled` and `transactionBroadcast` are both
+explicitly `false`.
 
 ## CLI helpers
 
@@ -73,7 +89,10 @@ python3 examples/x402-local-challenge-server/server.py \
   --verify-payment 'local-demo:<challenge-id>:0.01'
 ```
 
-All helper outputs are JSON. The `localDemoProof` value is a deterministic demo switch, not a wallet credential or settlement proof.
+All helper outputs are JSON. The `localDemoProof` value is a deterministic
+demo switch bound to the reviewed pay-to address, not a wallet credential or
+settlement proof. The local config rejects non-USDC assets and the zero
+address because its unit economics are explicitly USDC-only.
 
 ## Safe paid-agent flow
 

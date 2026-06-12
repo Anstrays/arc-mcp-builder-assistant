@@ -63,7 +63,7 @@ Each flow emits this minimum shape:
   },
   "request": {
     "purpose": "Buy one market-data response",
-    "recipient": "0x0000000000000000000000000000000000000000",
+    "recipient": "0x3333333333333333333333333333333333333333",
     "amount": "1.25",
     "asset": "USDC",
     "humanApprovalRequired": true,

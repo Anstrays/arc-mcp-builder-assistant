@@ -26,9 +26,16 @@ X402_DEMO_AMOUNT=0.05 \
   python3 examples/x402-local-challenge-server/server.py --print-challenge
 ```
 
-Unsafe overrides are rejected with clear errors: non-Arc network,
-`X402_DEMO_MAINNET_ENABLED=true`, non-positive or over-precision amounts, and
-malformed `X402_DEMO_PAY_TO` addresses.
+Unsafe overrides are rejected with clear errors: non-Arc network, any asset
+other than the pinned `USDC` economics, `X402_DEMO_MAINNET_ENABLED=true`,
+non-positive or over-precision amounts, and malformed or zero
+`X402_DEMO_PAY_TO` addresses. The deterministic local proof is bound to the
+reviewed pay-to address through the challenge id.
+
+The same safety contract is enforced when Python helpers are called directly:
+the reviewed resource, `local-simulation` verifier mode, mandatory human
+approval, Arc Testnet, USDC, and disabled mainnet settings cannot be bypassed
+with a manually constructed `PaymentConfig`.
 
 In another terminal:
 
@@ -54,6 +61,19 @@ The same local tool surface is available through a dependency-free JSON-RPC/MCP-
 printf '{"jsonrpc":"2.0","id":"tools","method":"tools/list"}\n' \
   | python3 examples/x402-local-challenge-server/server.py --mcp-stdio
 ```
+
+The stdio parser rejects requests over 1 MB, invalid UTF-8, duplicate JSON
+keys, non-`2.0` JSON-RPC envelopes, invalid request IDs, and non-string
+methods before dispatching a tool. Runtime dispatch also enforces each
+manifest `additionalProperties: false` contract for request, params, and tool
+arguments.
+
+HTTP and helper proof inputs accept exactly one `X-Payment` value, reject
+control characters, and enforce a 4 KB maximum before verifier dispatch.
+Verifier exceptions, malformed verifier results, and any successful verifier
+receipt that does not keep both `settled` and `transactionBroadcast`
+explicitly `false` are converted into a safe `402` response without reflecting
+internal verifier failure details.
 
 Quick JSON helpers:
 

@@ -9,7 +9,7 @@ Use this 5-minute path when you want to show the project to an Arc builder, revi
 - Arc Testnet details are visible as preflight context before wallet work.
 - ERC-20 USDC base units are previewed separately from native gas decimals.
 - The demo has guardrails for recipient, amount, expiry, and human approval.
-- The current build is local-first: no wallet connection, no backend call, no RPC write, no signing, and no broadcast.
+- This payment-intent playground is local-first: no wallet connection, no backend call, no RPC write, no signing, and no broadcast. The separate guarded Arc Testnet send lab is outside this quickstart.
 
 ## Before you start
 
@@ -58,9 +58,9 @@ http://localhost:8080/examples/payment-intent-playground/
 - local validation summary;
 - signing preflight report;
 - final local confirmation gate that records review intent without enabling any transaction request;
-- unsigned ERC-20 transaction draft preview for the future wallet PR, with wallet requests still disabled;
+- unsigned ERC-20 transaction draft preview for comparison with the separate guarded send lab, with wallet requests still disabled here;
 - local transaction draft consistency check that decodes calldata back to recipient and USDC base units;
-- wallet handoff readiness manifest that keeps the future send PR blocked until every guard is satisfied.
+- wallet handoff readiness manifest that keeps this local playground blocked and lists every guard required by the separate send lab.
 
 ### 5. Confirm local approval state
 
@@ -72,11 +72,11 @@ After preparing and manually approving the frozen intent, check the final review
 
 ### 7. Inspect the unsigned transaction draft
 
-Review the generated ERC-20 transfer payload preview. It shows the future wallet request shape (`chainId`, token `to`, `value`, encoded `data`, recipient, and USDC base units) while keeping `walletRequestEnabled: false` and `unsignedOnly: true`.
+Review the generated ERC-20 transfer payload preview. It shows the wallet request shape used for guarded review (`chainId`, token `to`, `value`, encoded `data`, recipient, and USDC base units) while keeping `walletRequestEnabled: false` and `unsignedOnly: true` in this playground.
 
 ### 8. Check draft consistency
 
-Review the local consistency checklist. The playground decodes the unsigned ERC-20 calldata and verifies that token target, native value, chain ID, recipient, and 6-decimal USDC base units match the current intent before any future wallet handoff.
+Review the local consistency checklist. The playground decodes the unsigned ERC-20 calldata and verifies that token target, native value, chain ID, recipient, and 6-decimal USDC base units match the current intent before any separate wallet handoff.
 
 ### 9. Review the wallet handoff manifest
 
@@ -107,7 +107,7 @@ The current project is a safe builder kit, not a live payment app. A reviewer sh
 - a USDC unit preview that keeps 6-decimal ERC-20 transfer math separate from 18-decimal native gas accounting;
 - test commands that prove the local-only boundary stays intact.
 
-## What is intentionally not included yet
+## What is intentionally not included in this playground
 
 - No browser wallet connection.
 - No Circle wallet session.
@@ -119,12 +119,12 @@ The current project is a safe builder kit, not a live payment app. A reviewer sh
 
 ## Next safe implementation slice
 
-The next code slice should stay guard-first:
+Any extension of this playground should stay guard-first:
 
 1. verify current Arc docs and Circle wallet details through MCP or official docs;
 2. keep transaction request controls disabled until chain ID, recipient, amount, expiry, frozen intent, unsigned transaction draft, draft consistency check, wallet handoff manifest, human approval, and final confirmation all pass;
 3. add regression tests that prove the UI cannot call signing, chain-switching, account-request, or broadcast code while guards are failing;
-4. only then consider a separate testnet signing PR.
+4. keep any wallet request isolated in the separate guarded Arc Testnet send lab.
 
 ## Useful links
 

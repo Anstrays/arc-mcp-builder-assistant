@@ -25,8 +25,8 @@ As a user, I want an AI agent to prepare a clear USDC payment request so I can r
    - no wallet connection
    - no transaction broadcast
 5. User clicks approve.
-6. Future wallet/testnet transaction path is submitted only after chain gating and manual wallet confirmation.
-7. App displays status and receipt.
+6. The separate guarded Arc Testnet lab may request one transaction only after chain gating and manual wallet confirmation.
+7. The local app displays local status; read-only tools can inspect an existing transaction hash.
 
 ## Data model draft
 
