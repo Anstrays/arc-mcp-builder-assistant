@@ -137,14 +137,15 @@ Before implementing a Circle Dev-Controlled Wallet backend, confirm all of these
 - [ ] Logs redact API keys, Entity Secrets, OTPs, and raw request authorization headers.
 - [ ] Transaction state is stored as public receipt metadata, not as secret wallet material.
 
-## Suggested decision for the current builder kit
+## Implemented decision for the current builder kit
 
-For the next PR after this note, prefer a browser-wallet/read-only status UI slice:
+The current guarded slice uses a browser wallet plus separate read-only status UI:
 
 - show Arc Testnet readiness in the local playground;
-- keep transaction controls disabled until all guards pass;
+- keep the local playground transaction controls disabled;
+- isolate one manually reviewed transaction request in the separate guarded Arc Testnet lab;
 - do not add Circle backend credentials;
-- do not add transaction broadcasting;
+- do not add automatic retry, background broadcast, custody, or mainnet;
 - add tests around chain/decimals/amount/recipient/expiry validation.
 
 Circle Dev-Controlled Wallet notes should remain a documented backend option until the project intentionally moves beyond static GitHub Pages and local demos.
