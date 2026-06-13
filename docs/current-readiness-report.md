@@ -13,6 +13,7 @@ That scope includes docs-grounded Arc/MCP workflows, local-only playgrounds, rev
 Run these commands from the repository root before publishing a new checkpoint:
 
 ```bash
+python3 scripts/arc_builder_doctor.py
 python3 scripts/check_completion.py
 python3 scripts/test_all.py
 python3 scripts/check_arc_testnet_status.py
@@ -52,6 +53,7 @@ Expected safe result:
 - x402 proof, schema, verifier-result, and error-detail boundaries fail closed
   before a local protected response is returned.
 - Fail-closed operator evidence validation, create-only ignored draft generation, and read-only readiness reporting.
+- [Arc Builder Doctor](./arc-builder-doctor.md): one dependency-free command that orchestrates the existing local checks into a single structured `pass/warn/fail` report, with zero network calls by default and opt-in read-only Arc Testnet RPC / public-site checks that never connect a wallet, sign, or broadcast.
 
 ## Remaining work is optional extension work
 

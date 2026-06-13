@@ -82,6 +82,36 @@ python3 examples/x402-local-challenge-server/server.py --port 8087
 # in another terminal: curl -i http://127.0.0.1:8087/protected
 ```
 
+### Arc Builder Doctor
+
+One command tells you whether your clone, Arc Testnet facts, and public
+builder-kit boundaries are healthy. It is an orchestrator over the existing
+checks and makes **zero network calls by default**.
+
+```bash
+# Local-only summary (exit 0 for pass/warn, non-zero for fail).
+python3 scripts/arc_builder_doctor.py
+
+# Machine-readable report (only JSON on stdout).
+python3 scripts/arc_builder_doctor.py --json
+
+# Full local verification (also runs the canonical suite once).
+python3 scripts/arc_builder_doctor.py --full
+
+# Opt-in, read-only Arc Testnet RPC chain-id check.
+python3 scripts/arc_builder_doctor.py --include-arc-rpc
+
+# Opt-in, read-only public GitHub Pages health check.
+python3 scripts/arc_builder_doctor.py --include-public-site
+```
+
+The optional `--include-arc-rpc` and `--include-public-site` checks are the only
+ones that touch the network. The Arc RPC check uses read-only JSON-RPC `POST`;
+the public-site check uses `GET`. Neither connects a wallet, signs, or
+broadcasts a transaction. See
+[`docs/arc-builder-doctor.md`](./docs/arc-builder-doctor.md) for the report
+contract and check list.
+
 Useful one-shot checks:
 
 ```bash

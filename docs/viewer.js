@@ -19,6 +19,8 @@ const PAGES = [
   { id: 'agent-identity-erc8004.md', path: './agent-identity-erc8004.md', githubPath: 'docs/agent-identity-erc8004.md', label: 'Agent identity notes', group: 'Builder kit' },
   { id: 'agent-identity-profile-preview.md', path: './agent-identity-profile-preview.md', githubPath: 'docs/agent-identity-profile-preview.md', label: 'Agent identity profile preview', group: 'Builder kit' },
   { id: 'arc-builder-readiness-checklist.md', path: './arc-builder-readiness-checklist.md', githubPath: 'docs/arc-builder-readiness-checklist.md', label: 'Builder readiness checklist', group: 'Playbooks' },
+  { id: 'arc-builder-doctor.md', path: './arc-builder-doctor.md', githubPath: 'docs/arc-builder-doctor.md', label: 'Arc Builder Doctor', group: 'Playbooks' },
+  { id: 'release-checklist.md', path: './release-checklist.md', githubPath: 'docs/release-checklist.md', label: 'Release readiness checklist', group: 'Playbooks' },
   { id: 'completion-contract.md', path: './completion-contract.md', githubPath: 'docs/completion-contract.md', label: 'Safe-scope completion contract', group: 'Playbooks' },
   { id: 'current-readiness-report.md', path: './current-readiness-report.md', githubPath: 'docs/current-readiness-report.md', label: 'Current readiness report', group: 'Playbooks' },
   { id: 'arc-testnet-integration-runbook.md', path: './arc-testnet-integration-runbook.md', githubPath: 'docs/arc-testnet-integration-runbook.md', label: 'Arc Testnet integration runbook', group: 'Playbooks' },
