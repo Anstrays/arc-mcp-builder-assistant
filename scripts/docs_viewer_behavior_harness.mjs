@@ -21,6 +21,10 @@ const MALICIOUS_MARKDOWN = `# Security test
 
 [local doc](./completion-contract.md)
 
+[local doc fragment](./completion-contract.md#Security test)
+
+[same doc fragment](#Security test)
+
 \`\`\`html
 <script>globalThis.viewerPwned = true</script>
 \`\`\`
@@ -57,11 +61,18 @@ const elements = new Map([
   ['docs-home-link', new FakeElement('a')],
   ['github-link', new FakeElement('a')],
 ]);
+let scrolledSection = '';
 
 const document = {
   title: '',
   querySelector(selector) {
     return elements.get(selector.replace(/^#/, '')) || null;
+  },
+  getElementById(id) {
+    if (id === 'security-test') {
+      return { scrollIntoView: () => { scrolledSection = id; } };
+    }
+    return elements.get(id) || null;
   },
   createElement(tag) {
     return new FakeElement(tag);
@@ -71,7 +82,7 @@ const document = {
   },
 };
 const window = {
-  location: { hash: '#completion-contract.md' },
+  location: { hash: '#completion-contract.md::Security%20test' },
   addEventListener() {},
   setTimeout,
   clearTimeout,
@@ -114,7 +125,9 @@ assert.doesNotMatch(rendered, /<script|<img|<[^>]+\sonerror\s*=|href="javascript
 assert.match(rendered, /<code>javascript link<\/code>/);
 assert.match(rendered, /target="_blank" rel="noopener noreferrer"/);
 assert.match(rendered, /href="#completion-contract\.md"/);
+assert.match(rendered, /href="#completion-contract\.md::Security%20test"/);
 assert.equal(context.viewerPwned, undefined);
+assert.equal(scrolledSection, 'security-test');
 assert.equal(elements.get('github-link').href, 'https://github.com/Anstrays/arc-mcp-builder-assistant/blob/main/docs/completion-contract.md');
 
 console.log('docs viewer behavior harness passed: malicious HTML/URLs escaped, safe external/local links preserved');

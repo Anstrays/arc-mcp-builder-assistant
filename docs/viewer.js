@@ -53,6 +53,7 @@ const docsHomeLink = document.querySelector('#docs-home-link');
 const githubLink = document.querySelector('#github-link');
 const DOC_TIMEOUT_MS = 8_000;
 const MAX_DOC_BYTES = 1_000_000;
+const DOC_SECTION_SEPARATOR = '::';
 
 function escapeHtml(value) {
   return String(value)
@@ -79,14 +80,22 @@ async function fetchDocText(path) {
   }
 }
 
-function currentPage() {
+function currentRoute() {
   let fromHash = '';
   try {
     fromHash = decodeURIComponent(window.location.hash.replace(/^#/, '')).trim().toLowerCase();
   } catch (_error) {
     fromHash = '';
   }
-  return pagesById.get(fromHash) || PAGES[0];
+  const [pageId, section = ''] = fromHash.split(DOC_SECTION_SEPARATOR, 2);
+  return {
+    page: pagesById.get(pageId) || PAGES[0],
+    section: section ? slugify(section) : '',
+  };
+}
+
+function currentPage() {
+  return currentRoute().page;
 }
 
 function slugify(value) {
@@ -102,7 +111,7 @@ function normalizeLocalDocHref(href) {
   const cleanPath = path.replace(/^\.\//, '').replace(/^docs\//, '');
   const page = docsByFilename.get(cleanPath) || pagesById.get(cleanPath.toLowerCase());
   if (!page) return null;
-  return `#${encodeURIComponent(page.id)}${fragment ? `-${encodeURIComponent(fragment)}` : ''}`;
+  return `#${encodeURIComponent(page.id)}${fragment ? `${DOC_SECTION_SEPARATOR}${encodeURIComponent(fragment)}` : ''}`;
 }
 
 function inlineMarkdown(line) {
@@ -121,7 +130,8 @@ function inlineMarkdown(line) {
       return `<a href="${localDoc}">${safeText}</a>`;
     }
     if (cleanHref.startsWith('#')) {
-      return `<a href="${escapeHtml(cleanHref)}">${safeText}</a>`;
+      const page = currentPage();
+      return `<a href="#${encodeURIComponent(page.id)}${DOC_SECTION_SEPARATOR}${encodeURIComponent(cleanHref.slice(1))}">${safeText}</a>`;
     }
     return `<code>${safeText}</code>`;
   });
@@ -294,7 +304,8 @@ function renderList(activePage) {
 }
 
 async function loadDoc() {
-  const page = currentPage();
+  const route = currentRoute();
+  const page = route.page;
   renderList(page);
   docTitle.textContent = page.label;
   docMeta.textContent = `Rendering ${page.githubPath} as a styled GitHub Pages document.`;
@@ -304,6 +315,12 @@ async function loadDoc() {
     const markdown = await fetchDocText(page.path);
     docBody.innerHTML = renderMarkdown(markdown);
     document.title = `${page.label} · Arc MCP Builder Assistant`;
+    if (route.section) {
+      const section = document.getElementById(route.section);
+      if (section && typeof section.scrollIntoView === 'function') {
+        section.scrollIntoView();
+      }
+    }
   } catch (error) {
     docBody.innerHTML = `<p class="error">Could not load ${escapeHtml(page.githubPath)}. ${escapeHtml(error.message)}</p>`;
   }
