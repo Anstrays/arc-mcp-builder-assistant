@@ -14,6 +14,7 @@ Use this repo when you want to prototype Arc-focused payment infrastructure with
 ## Table of contents
 
 - [Why this matters](#why-this-matters)
+- [What this is and is not](#what-this-is-and-is-not)
 - [Builder quickstart](#builder-quickstart)
 - [Arc-focused use cases](#arc-focused-use-cases)
 - [Configuration](#configuration)
@@ -41,6 +42,24 @@ Many builders want to explore that direction, but the first step is often messy:
 - documenting what works and what fails.
 
 This kit turns those steps into reusable guides, prompts, and examples.
+
+## What this is and is not
+
+**What this is**
+
+- An independent, source-grounded builder kit for prototyping Arc Testnet agent-commerce flows with reviewable JSON and explicit human approval.
+- A static site plus dependency-free local playgrounds, prompts, docs, and a one-command Python/Node regression suite.
+- A local x402-style paid-agent boundary you can run and inspect without a wallet or live settlement.
+- A separate, disabled-by-default Arc Testnet browser-wallet lab that can request exactly one manually reviewed, capped USDC transfer after every guard passes.
+
+**What this is not**
+
+- Not custodial — it never holds, requests, or stores private keys, seed phrases, or secrets.
+- Not a production or mainnet payment processor, and it makes no claim of being ready for either.
+- Not an autonomous spender — there is no signing path outside the external wallet confirmation dialog, and nothing signs or broadcasts on page load.
+- Not an official Arc product or endorsement.
+
+Custody, mainnet, autonomous spending, and live settlement remain blocked behind separate security reviews.
 
 ## Builder quickstart
 
@@ -118,6 +137,15 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 - **Live smoke rejects a URL:** use a valid HTTP/HTTPS URL without embedded credentials. A live `ARC_LIVE_X_PAYMENT` proof requires HTTPS.
 - **Config exits with `Invalid x402 demo configuration`:** keep `X402_DEMO_NETWORK=arc-testnet`, `X402_DEMO_ASSET=USDC`, `X402_DEMO_MAINNET_ENABLED=false`, a positive 6-decimal-or-less amount, and a non-zero 42-character EVM `X402_DEMO_PAY_TO`.
 - **A secret was pasted by mistake:** remove it from `.env` or shell history as needed, rotate the secret, and do not commit it. The repo scans common credential shapes during validation.
+
+Guarded Arc Testnet wallet-send lab (`examples/arc-testnet-wallet-send-gate/`):
+
+- **The lab stays `disabled`:** it only arms with the exact query gate `?enableArcTestnetSend=reviewed-testnet-only`, and only in a top-level browser tab. Inside an embedded frame it reports `blocked in embedded frame` and never connects a wallet.
+- **`No injected provider`:** install or unlock an injected EVM browser wallet on a top-level tab. The lab never bundles a wallet and makes no network calls itself (`connect-src 'none'`).
+- **Wrong chain / wallet shows `not ready`:** the wallet must report Arc Testnet `0x4cef52` (chain id `5042002`). Use the in-page switch action; if the wallet returns `Arc Testnet is not configured in this wallet.` (code 4902), add the network and re-prove the chain.
+- **`Wallet request was rejected by the user.` (code 4001):** you declined the wallet prompt — expected and safe. The lab allows only one attempt per page load with no automatic retry, so reload the page to start over.
+- **The frozen intent keeps clearing:** changing the connected account or chain after freezing intentionally clears the review. Re-freeze only after the account and chain are correct.
+- **Mainnet is unavailable:** Arc mainnet is intentionally blocked (`enabled: false`) in `live-infrastructure-policy.example.json`. Custody and mainnet require a separate security review and never run from the static site.
 
 ## Current kit
 
