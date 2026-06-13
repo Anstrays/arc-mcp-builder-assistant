@@ -48,6 +48,7 @@
     h2 { margin: 8px 0 12px; font-size: clamp(24px, 3vw, 36px); letter-spacing: -.035em; }
     p { color: var(--muted); line-height: 1.65; }
     .grid { display: grid; grid-template-columns: minmax(280px, .95fr) minmax(320px, 1.05fr); gap: 18px; align-items: start; }
+    main > *, .grid > * { min-width: 0; }
     .form-grid { display: grid; gap: 14px; }
     label { display: grid; gap: 7px; color: var(--muted); font-size: 14px; }
     input, textarea, select { width: 100%; border: 1px solid var(--line); border-radius: 14px; background: rgba(0,0,0,.24); color: var(--text); padding: 12px 13px; font: inherit; }
@@ -128,7 +129,7 @@
             <textarea id="memo" name="memo">Paid data/API task for Arc market research report.</textarea>
           </label>
           <label>Expiry
-            <input id="expiry" name="expiry" type="datetime-local" value="2027-12-30T00:00" />
+            <input id="expiry" name="expiry" type="datetime-local" />
           </label>
           <div class="actions" aria-label="Intent state controls">
             <button type="button" id="prepare">Prepare intent</button>

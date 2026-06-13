@@ -1,6 +1,6 @@
 # Transaction status playground
 
-The transaction status playground is the next safe step after the local receipt verifier. It lets a reviewer paste an Arc Testnet transaction hash and run a **read-only** public RPC lookup from the browser.
+The transaction status playground is the next safe step after the local receipt verifier. It lets a reviewer paste an Arc Testnet transaction hash, an expected recipient and amount, and run a **read-only** public RPC lookup from the browser.
 
 Open it here:
 
@@ -15,6 +15,40 @@ The playground uses the Arc Testnet public RPC endpoint and only these JSON-RPC 
 - `eth_getTransactionReceipt`
 
 It can show whether the RPC reports the expected Arc Testnet chain ID (`5042002 / 0x4cef52`) and whether the transaction is currently found, pending, confirmed, failed, or unknown.
+
+The lookup verifies the JSON-RPC `2.0` response envelope and request ID. It
+stops after `eth_chainId` when the endpoint does not report Arc Testnet, then
+requires any returned transaction and receipt hashes to match the exact hash
+entered by the reviewer.
+
+It also compares the observed transaction with an expected Arc Testnet USDC
+transfer:
+
+- transaction target is the pinned USDC interface;
+- native value is zero;
+- calldata decodes as `transfer(address,uint256)`;
+- decoded recipient matches the expected recipient;
+- decoded 6-decimal base units match the expected amount.
+
+The resulting `evidenceVerdict` describes transaction shape only. Even
+`confirmed_expected_transfer_shape` does not prove settlement, finality, token
+balance changes, or business acceptance.
+
+Each read-only RPC request has a 10-second timeout and a 1 MB safety limit.
+Timeouts, oversized replies, invalid JSON, non-object JSON, mismatched
+JSON-RPC envelopes, and transaction/receipt hash mismatches fail closed; they
+never become a confirmed expected-transfer result.
+
+The canonical suite executes the real page JavaScript against a dependency-free
+Node fake RPC harness:
+
+```bash
+python scripts/test_transaction_status_behavior.py
+```
+
+It proves that exact expected-transfer matches, mismatches, wrong-chain
+responses, mismatched hashes, invalid JSON-RPC envelopes, and invalid local
+expectations are classified without a wallet or live RPC request.
 
 ## Read-only status states
 
@@ -40,19 +74,20 @@ Safety boundaries:
 - no transaction broadcast;
 - no private-key handling;
 - no autonomous spending;
-- human approval remains mandatory for any future write path.
+- human approval remains mandatory for any write path.
 
 ## Reviewer flow
 
 1. Create or inspect a local payment intent.
 2. Verify simulated receipt shape in the receipt verifier playground.
 3. If a real Arc Testnet transaction already exists, paste its transaction hash into the transaction status playground.
-4. Save the JSON output as evidence in a PR, issue, or build log.
-5. Do not treat `confirmed` as product settlement unless a later PR also verifies the expected recipient, amount, asset, and user approval path.
+4. Enter the expected recipient and amount from the frozen reviewed intent.
+5. Save the JSON output as evidence in a PR, issue, or build log.
+6. Do not treat `confirmed` or `confirmed_expected_transfer_shape` as product settlement.
 
-## Future wallet PR gate
+## Guarded wallet extension gate
 
-A future signing PR should not replace this page. It should use this read-only status page as a guardrail and add a separate, reviewed, testnet-only wallet adapter with:
+Any extension of the guarded send lab should not replace this page. It should use this read-only status page as a guardrail and keep the reviewed, testnet-only wallet adapter separate with:
 
 - chain ID gate: `5042002 / 0x4cef52`;
 - exact recipient and amount review;

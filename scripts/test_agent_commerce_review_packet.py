@@ -43,9 +43,22 @@ def test_review_packet_outcomes_and_freeze_state_are_explicit() -> None:
         "packetState = 'draft_packet'",
         "packetState = 'packet_frozen_for_review'",
         "moneyFieldsFrozen: packetState === 'packet_frozen_for_review'",
+        "const packetFrozen = packetState === 'packet_frozen_for_review'",
+        'field.disabled = packetFrozen',
+        'buttons.freeze.disabled = packetFrozen || !amountIsValid(fields.amount.value)',
         "payoutReleased: false",
     ):
         assert marker in combined
+
+
+def test_review_packet_rejects_invalid_money_before_freeze() -> None:
+    js = read(JS)
+    for marker in (
+        'function amountIsValid(value)',
+        '&& Number(value) > 0',
+        "? Number(fields.amount.value).toFixed(2) : '0.00'",
+    ):
+        assert marker in js
 
 
 def test_review_packet_controls_keep_live_surfaces_disabled() -> None:

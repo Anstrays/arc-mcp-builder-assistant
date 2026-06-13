@@ -46,6 +46,12 @@ def test_job_escrow_review_loop_controls_are_present() -> None:
         "No private keys, no custody, no mainnet, no autonomous spending.",
     ):
         assert_contains(html, marker, HTML)
+    for marker in (
+        "grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)",
+        ".grid > * { min-width: 0; }",
+        ".actions { flex-wrap: wrap; }",
+    ):
+        assert_contains(html, marker, HTML)
 
 
 def test_job_escrow_json_exposes_review_and_arc_safety_flags() -> None:
@@ -84,6 +90,20 @@ def test_job_escrow_state_machine_allows_revisions_before_payout() -> None:
         "setStatus('changes_requested', 'Reviewer requested changes before payout approval')",
         "setStatus('work_submitted', 'Agent resubmitted revised work for review')",
         "buttons.approve.disabled = status !== 'work_submitted'",
+        "const termsFrozen = status !== 'draft'",
+        "for (const field of [fields.title, fields.budget, fields.agent, fields.deliverable])",
+        "field.disabled = termsFrozen",
+        "buttons.post.disabled = status !== 'draft' || !budgetIsValid(fields.budget.value)",
+    ):
+        assert_contains(js, marker, JS)
+
+
+def test_job_escrow_rejects_invalid_budget_before_posting() -> None:
+    js = read(JS)
+    for marker in (
+        "function budgetIsValid(value)",
+        "&& Number(value) > 0",
+        "? Number(fields.budget.value).toFixed(2) : '0.00'",
     ):
         assert_contains(js, marker, JS)
 
@@ -127,6 +147,7 @@ if __name__ == "__main__":
     test_job_escrow_review_loop_controls_are_present()
     test_job_escrow_json_exposes_review_and_arc_safety_flags()
     test_job_escrow_state_machine_allows_revisions_before_payout()
+    test_job_escrow_rejects_invalid_budget_before_posting()
     test_job_escrow_state_machine_allows_terminal_no_payout_paths()
     test_job_escrow_simulator_forbids_wallet_network_and_secret_surface()
     print("job escrow simulator tests passed")

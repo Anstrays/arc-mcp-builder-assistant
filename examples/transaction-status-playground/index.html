@@ -33,6 +33,7 @@
     h2 { margin:8px 0 12px; font-size:clamp(24px, 3vw, 36px); letter-spacing:-.035em; }
     p { color:var(--muted); line-height:1.65; }
     .grid { display:grid; grid-template-columns:minmax(300px, .9fr) minmax(320px, 1.1fr); gap:18px; align-items:start; }
+    main > *, .grid > * { min-width:0; }
     label { display:block; color:var(--muted); font-weight:800; margin:0 0 8px; }
     input { width:100%; border:1px solid var(--line); border-radius:16px; background:rgba(0,0,0,.28); color:#d9fffb; padding:14px; font:14px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
     .actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:14px; }
@@ -65,7 +66,7 @@
     <section class="card" aria-labelledby="status-title">
       <div class="eyebrow">Read-only Arc Testnet RPC</div>
       <h1 id="status-title">Transaction Status Playground</h1>
-      <p>Paste an Arc Testnet transaction hash and run a narrow public RPC lookup. The page only calls read-only JSON-RPC methods and never connects to a wallet, never handles private keys, and never broadcasts transactions.</p>
+      <p>Paste an Arc Testnet transaction hash and compare its read-only RPC shape with an expected USDC recipient and amount. The page never connects to a wallet, handles private keys, or broadcasts transactions.</p>
       <div class="pill-row" aria-label="Safety properties">
         <span class="pill">No wallet connection</span>
         <span class="pill">No backend calls</span>
@@ -82,6 +83,12 @@
         <p>Use a real Arc Testnet transaction hash only if you already have one. The sample is intentionally a placeholder and should return unknown/not found.</p>
         <label for="transaction-hash">Arc Testnet transaction hash</label>
         <input id="transaction-hash" autocomplete="off" spellcheck="false" value="0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" />
+        <div style="height:12px"></div>
+        <label for="expected-recipient">Expected USDC recipient</label>
+        <input id="expected-recipient" autocomplete="off" spellcheck="false" value="0x1111111111111111111111111111111111111111" />
+        <div style="height:12px"></div>
+        <label for="expected-amount">Expected USDC amount</label>
+        <input id="expected-amount" inputmode="decimal" autocomplete="off" value="0.01" />
         <div class="actions" aria-label="Transaction status controls">
           <button type="button" id="check-transaction">Check transaction status</button>
           <button type="button" id="reset-transaction" class="secondary">Reset sample</button>
@@ -107,6 +114,7 @@
         <div class="metric"><span>confirmed</span><strong>Receipt status is 0x1.</strong></div>
         <div class="metric"><span>failed</span><strong>Receipt status is 0x0.</strong></div>
         <div class="metric"><span>unknown</span><strong>Hash not found, RPC unavailable, or result ambiguous.</strong></div>
+        <div class="metric"><span>transfer match</span><strong>Token target, zero native value, recipient, and 6-decimal amount match.</strong></div>
         <div class="metric"><span>Chain</span><strong>5042002 / 0x4cef52</strong></div>
       </div>
     </section>
@@ -117,6 +125,7 @@
       <ul class="mini-list">
         <li>It cannot prove the human reviewed the recipient, amount, memo, or expiry.</li>
         <li>It cannot prove token balance changes beyond the raw transaction receipt status.</li>
+        <li>Even <code>confirmed_expected_transfer_shape</code> does not prove settlement, finality, or business acceptance.</li>
         <li>It does not sign, submit, sponsor, or broadcast any transaction.</li>
         <li>Use the <a href="../../docs/view.html#transaction-status-playground.md">transaction status notes</a> before extending this into wallet integration.</li>
       </ul>

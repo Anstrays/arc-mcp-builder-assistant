@@ -1,6 +1,6 @@
 # Contest Demo Script
 
-Use this page to record a 60-90 second demo video or write a short community update about the Arc MCP Builder Assistant. The goal is to show public proof-of-work without implying the project already broadcasts real transactions.
+Use this page to record a 60-90 second demo video or write a short community update about the Arc MCP Builder Assistant. The goal is to show public proof-of-work without implying that local demos broadcast transactions or that the guarded Arc Testnet lab is a production payment system.
 
 ## Positioning
 
@@ -15,13 +15,15 @@ What is real today:
 - Local payment-intent playground with explicit states: `draft`, `ready_for_review`, `approved_local`, `blocked_wallet_unavailable`.
 - Local job escrow simulator for post, accept, fund, submit, and approve-style states.
 - Local x402 HTTP 402 challenge boundary for future paid API settlement work.
+- Separate disabled-by-default Arc Testnet browser-wallet lab for one manually reviewed USDC transaction.
 
 What is intentionally not real yet:
 
-- No wallet connection.
+- No wallet request on page load or from local-only demos.
 - No private-key handling.
 - No backend custody.
-- No transaction broadcast.
+- No mainnet, autonomous spending, or live settlement.
+- No transaction broadcast from local-only demos or automated checks.
 - No claim of official Arc endorsement.
 
 ## 90-second video script
@@ -76,11 +78,11 @@ On screen:
 - Open `examples/job-escrow-simulator/`.
 - Show the stage list and JSON panel.
 
-### 70-90 seconds — close with next step
+### 70-90 seconds — close with the safety boundary
 
 Voiceover:
 
-> The current artifact is a public, local-first builder kit. The next step is a guarded Arc Testnet integration: read-only status first, explicit chain checks, and only then wallet signing with human confirmation.
+> The current artifact is a public builder kit. Local demos stay wallet-free, and a separate disabled-by-default Arc Testnet lab can request one manually reviewed transaction after explicit chain and payload checks. Custody, mainnet, autonomous spending, and live settlement remain blocked.
 
 On screen:
 
@@ -95,7 +97,7 @@ Use this when a contest form wants a compact demo:
 2. Docs viewer: Arc context and payment-safety notes are readable and source-controlled.
 3. Payment playground: `draft` -> `ready_for_review` -> `approved_local` -> `blocked_wallet_unavailable`.
 4. Job escrow simulator: local escrow-style workflow with human payout approval.
-5. Close: no wallet, no private keys, no broadcast today; next slice is guarded Arc Testnet status and signing.
+5. Close: local demos request no wallet or broadcast; the separate guarded lab is Arc Testnet-only and human-operated.
 
 ## Recording checklist
 
@@ -122,7 +124,7 @@ Do not show:
 
 Short builder update:
 
-> Shipped a local-first Arc MCP Builder Assistant update: styled docs viewer, Arc docs map, payment-intent playground, job escrow simulator, and x402 boundary. The payment flow now has explicit review-safe states: `draft`, `ready_for_review`, `approved_local`, `blocked_wallet_unavailable`. No wallet, no keys, no broadcast yet — the next step is guarded Arc Testnet status/signing.
+> Shipped an Arc MCP Builder Assistant update: local-only playgrounds, read-only status checks, and a separate disabled-by-default Arc Testnet browser-wallet lab for one manually reviewed transaction. No private keys, custody, mainnet, autonomous spending, or live settlement.
 
 ## Contest submission bullets
 
@@ -130,15 +132,15 @@ Use these bullets in forms or judging notes:
 
 - **Problem:** Agent-commerce demos often skip the human-review boundary and jump too quickly to wallet actions.
 - **Solution:** A local-first builder kit that turns Arc docs/MCP context into safe reviewable prototypes.
-- **Current proof:** Docs viewer, source-grounded Arc docs map, payment-intent playground, job escrow simulator, and x402 local challenge boundary.
-- **Safety:** No wallet connection, no private keys, no backend custody, no transaction broadcast.
-- **Next step:** Read-only Arc Testnet status, chain checks, and guarded wallet signing in a separate PR.
+- **Current proof:** Docs viewer, source-grounded Arc docs map, local playgrounds, x402 local challenge boundary, read-only Arc status checks, and a separate guarded Arc Testnet wallet-send lab.
+- **Safety:** No wallet request on page load, private keys, backend custody, mainnet, autonomous spending, or local-demo broadcast.
+- **Next step:** Independently review a disposable-wallet testnet smoke or a live x402 verifier handoff without widening custody/mainnet scope.
 
 ## X / short social copy
 
 Under 280 characters:
 
-> Built a local-first Arc MCP Builder Assistant for safer agent-commerce demos: docs viewer, Arc docs map, payment-intent playground, job escrow simulator, and x402 boundary. No wallet/keys/broadcast yet — just reviewable JSON + human approval states before testnet wiring.
+> Built an Arc agent-commerce kit with local-only demos, read-only checks, and a separate guarded Arc Testnet wallet-send lab. No keys, custody, mainnet, autonomous spending, or live settlement.
 
 ## Honest Q&A
 
@@ -146,14 +148,14 @@ Under 280 characters:
 
 No. It is an independent builder resource.
 
-**Does it send a real payment?**
+**Does it send a production payment?**
 
-No. The current playground is browser-local and blocks wallet submission.
+No. The payment playground is browser-local and blocks wallet submission. The separate guarded lab can request one manually reviewed Arc Testnet transaction, which is not production settlement.
 
 **Why is that useful?**
 
 It makes the human approval boundary visible before adding real settlement. Reviewers can inspect the states, JSON, docs, and safety claims without risking funds.
 
-**What should be built next?**
+**What should be reviewed next?**
 
-A guarded testnet slice: read-only Arc status, chain ID checks, wallet availability checks, preflight report, and only then a manually confirmed testnet transaction.
+Use the guarded wallet-send runbook for a separately approved disposable-wallet smoke, or extend the live x402 verifier boundary without adding custody or mainnet.

@@ -2,21 +2,21 @@
 
 This tutorial turns the local payment-intent playground into a repeatable status-tracking exercise. It is still browser-local: no wallet connection, no backend call, no private key handling, and no transaction broadcast.
 
-Use it after the [payment-intent quickstart](./payment-intent-quickstart.md) and before any future wallet PR.
+Use it after the [payment-intent quickstart](./payment-intent-quickstart.md) to review the local status model separately from the guarded Arc Testnet send lab.
 
 ## Goal
 
-Show reviewers how a payment request should move through explicit states before real Arc Testnet signing exists:
+Show reviewers how a local payment request should move through explicit states without implying that the playground signs or submits:
 
 1. Draft intent created from agent context.
 2. Human reviews JSON and validation summary.
 3. Human marks the request as approved or rejected.
-4. A future wallet/testnet PR replaces the local-only submission marker with verified ArcScan or app-log status.
+4. A separately reviewed write path records a returned transaction hash without changing the local-only playground.
 5. The build log records what was verified and what remains unknown.
 
 ## Safety boundary
 
-The current repository does **not** submit an Arc transaction. Treat every status shown by the playground as local UI state unless a later PR adds a reviewed testnet integration.
+This playground does **not** submit an Arc transaction. Treat every status it shows as local UI state; use the separate guarded lab and read-only status playground for the narrow reviewed testnet path.
 
 Keep these rules intact:
 
@@ -65,7 +65,7 @@ Click **Prepare intent** and inspect the JSON. The important fields for status r
 
 ## Step 3 — Review the validation summary
 
-Before any future wallet work, the local readiness summary should answer four questions:
+Before any wallet handoff, the local readiness summary should answer four questions:
 
 - Is the recipient shaped like an address?
 - Is the amount positive and USDC-decimal safe?
@@ -88,7 +88,7 @@ Payment status exercise:
 - Chain expectation: Arc Testnet 5042002 / 0x4cef52
 - Unit preview: ERC-20 USDC amount uses 6 decimals; native gas accounting uses 18 decimals
 - Asset: USDC constant from repo docs
-- Next required review: separate testnet-only wallet PR
+- Next required review: separate guarded Arc Testnet send lab
 ```
 
 ## Step 5 — Future testnet status checklist

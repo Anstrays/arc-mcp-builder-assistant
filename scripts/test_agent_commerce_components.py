@@ -29,6 +29,8 @@ def test_agent_commerce_component_cards_are_present() -> None:
         'id="mark-approved"',
         'id="mark-receipt"',
         'Local-only starter kit',
+        '.actions { flex-wrap: wrap; }',
+        'min="0.01"',
     ):
         assert marker in html
 
@@ -60,11 +62,30 @@ def test_agent_commerce_flow_freezes_before_approval_and_receipt() -> None:
         "status = 'approved'",
         "status = 'receipt_simulated'",
         'moneyFieldsFrozenBeforeWallet: Boolean(frozenAt)',
+        "const moneyFieldsFrozen = status !== 'draft'",
+        'field.disabled = moneyFieldsFrozen',
+        "buttons.freeze.disabled = status !== 'draft'",
+        "|| !amountIsValid(fields.amount.value)",
+        "|| !recipientIsValid(fields.recipient.value)",
         "Human froze payment request fields before wallet handoff",
         "Human recorded local approval; no wallet action was enabled",
         "System added simulated receipt card without transaction broadcast",
     ):
         assert marker in js
+
+
+def test_agent_commerce_component_rejects_invalid_money_before_freeze() -> None:
+    js = read(JS)
+    for marker in (
+        'function amountIsValid(value)',
+        "/^(?:0|[1-9]\\d*)(?:\\.\\d{1,2})?$/",
+        '&& Number(value) > 0',
+        "? Number(fields.amount.value).toFixed(2) : '0.00'",
+    ):
+        assert marker in js
+    assert 'function recipientIsValid(value)' in js
+    assert '!recipientIsValid(fields.recipient.value)' in js
+    assert '0x0000000000000000000000000000000000000000' not in read(HTML)
 
 
 def test_agent_commerce_forbids_wallet_network_and_secret_surface() -> None:

@@ -27,14 +27,16 @@
     button.primary, .button.primary { background: var(--accent); color: #07110f; border-color: transparent; }
     button:disabled { cursor: not-allowed; opacity: .46; }
     .hero { padding: 34px 0 22px; align-items: stretch; }
-    .hero > * { flex: 1; }
+    .hero > * { flex: 1; min-width: 0; }
     .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 950; text-transform: uppercase; letter-spacing: .16em; }
     h1, h2, h3 { letter-spacing: -.035em; line-height: 1.08; }
     h1 { margin: 12px 0 14px; font-size: clamp(2.1rem, 7vw, 4.9rem); }
     h2 { margin-top: 0; font-size: clamp(1.4rem, 3vw, 2.2rem); }
     p, li, label { color: var(--muted); }
     .panel { border: 1px solid var(--line); border-radius: 28px; background: linear-gradient(180deg, rgba(255,255,255,.09), var(--panel)); box-shadow: 0 24px 80px rgba(0,0,0,.34); padding: clamp(20px, 4vw, 34px); }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; align-items: start; padding-bottom: 72px; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; padding-bottom: 72px; }
+    .grid > * { min-width: 0; }
+    .actions { flex-wrap: wrap; }
     .field { display: grid; gap: 8px; margin-bottom: 14px; }
     input, textarea { width: 100%; border: 1px solid var(--line); border-radius: 16px; background: rgba(0,0,0,.24); color: var(--text); padding: 12px 14px; font: inherit; }
     textarea { min-height: 92px; resize: vertical; }

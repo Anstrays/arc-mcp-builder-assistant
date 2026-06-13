@@ -23,6 +23,10 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+WORKFLOW_FILES = (
+    ".github/workflows/validate.yml",
+    ".github/workflows/pages.yml",
+)
 REQUIRED_FILES = [
     "README.md",
     "index.html",
@@ -34,9 +38,11 @@ REQUIRED_FILES = [
     "CONTRIBUTING.md",
     "CODE_OF_CONDUCT.md",
     ".editorconfig",
+    ".gitattributes",
     ".gitignore",
     ".env.example",
     ".github/workflows/validate.yml",
+    ".github/workflows/pages.yml",
     ".github/PULL_REQUEST_TEMPLATE.md",
     ".github/ISSUE_TEMPLATE/config.yml",
     ".github/ISSUE_TEMPLATE/bug_report.yml",
@@ -67,6 +73,8 @@ REQUIRED_FILES = [
     "docs/arc-wallet-integration-notes.md",
     "docs/wallet-preflight-contract.md",
     "docs/arc-testnet-send-readiness-gate.md",
+    "docs/guarded-wallet-send-runbook.md",
+    "docs/custody-and-mainnet-gates.md",
     "docs/arc-testnet-operator-runbook.md",
     "docs/arc-testnet-operator-evidence.md",
     "docs/agent-commerce-use-cases.md",
@@ -74,6 +82,7 @@ REQUIRED_FILES = [
     "docs/agent-commerce-flow-library.md",
     "docs/agent-commerce-review-packet.md",
     "docs/job-escrow-demo.md",
+    "docs/arc-agent-treasury-lab.md",
     "docs/mcp-query-examples.md",
     "docs/arc-house-submission.md",
     "docs/build-log.md",
@@ -91,6 +100,9 @@ REQUIRED_FILES = [
     "examples/receipt-verifier-playground/verifier.js",
     "examples/transaction-status-playground/index.html",
     "examples/transaction-status-playground/status.js",
+    "examples/arc-testnet-wallet-send-gate/index.html",
+    "examples/arc-testnet-wallet-send-gate/wallet-send-gate.js",
+    "examples/arc-testnet-wallet-send-gate/live-infrastructure-policy.example.json",
     "examples/agent-commerce-components/index.html",
     "examples/agent-commerce-components/components.js",
     "examples/agent-commerce-flows/index.html",
@@ -101,6 +113,8 @@ REQUIRED_FILES = [
     "examples/agent-identity-profile-preview/identity.js",
     "examples/job-escrow-simulator/index.html",
     "examples/job-escrow-simulator/simulator.js",
+    "examples/arc-agent-treasury-lab/index.html",
+    "examples/arc-agent-treasury-lab/treasury.js",
     "examples/arc-testnet-operator-evidence/evidence.example.json",
     "examples/x402-local-challenge-server/README.md",
     "examples/x402-local-challenge-server/.env.example",
@@ -112,14 +126,28 @@ REQUIRED_FILES = [
     "scripts/test_arc_production_deployment.py",
     "scripts/test_arc_testnet_status_helper.py",
     "scripts/test_completion_contract.py",
+    "scripts/test_public_claims.py",
+    "scripts/test_docs_viewer_security.py",
+    "scripts/test_docs_viewer_behavior.py",
+    "scripts/docs_viewer_behavior_harness.mjs",
+    "scripts/test_workflow_security.py",
     "scripts/test_payment_intent_playground.py",
     "scripts/test_x402_boundary.py",
     "scripts/test_transaction_status_playground.py",
+    "scripts/test_transaction_status_behavior.py",
+    "scripts/transaction_status_behavior_harness.mjs",
+    "scripts/test_arc_testnet_wallet_send_gate.py",
+    "scripts/test_arc_testnet_wallet_send_behavior.py",
+    "scripts/wallet_send_behavior_harness.mjs",
+    "scripts/validate_live_infrastructure_policy.py",
+    "scripts/test_live_infrastructure_policy.py",
     "scripts/test_agent_commerce_components.py",
     "scripts/test_agent_commerce_flows.py",
     "scripts/test_agent_commerce_review_packet.py",
     "scripts/test_agent_identity_profile_preview.py",
     "scripts/test_job_escrow_simulator.py",
+    "scripts/test_arc_agent_treasury_lab.py",
+    "scripts/arc_agent_treasury_behavior_harness.mjs",
     "scripts/validate_operator_evidence.py",
     "scripts/test_operator_evidence.py",
     "scripts/generate_operator_evidence_draft.py",
@@ -141,11 +169,13 @@ HTML_FILES_TO_VALIDATE = [
     "examples/payment-intent-playground/index.html",
     "examples/receipt-verifier-playground/index.html",
     "examples/transaction-status-playground/index.html",
+    "examples/arc-testnet-wallet-send-gate/index.html",
     "examples/agent-commerce-components/index.html",
     "examples/agent-commerce-flows/index.html",
     "examples/agent-commerce-review-packet/index.html",
     "examples/agent-identity-profile-preview/index.html",
     "examples/job-escrow-simulator/index.html",
+    "examples/arc-agent-treasury-lab/index.html",
 ]
 
 CANONICAL_BASE_URL = "https://anstrays.github.io/arc-mcp-builder-assistant/"
@@ -157,11 +187,13 @@ SITEMAP_REQUIRED_LOCATIONS = (
     CANONICAL_BASE_URL + "examples/payment-intent-playground/",
     CANONICAL_BASE_URL + "examples/receipt-verifier-playground/",
     CANONICAL_BASE_URL + "examples/transaction-status-playground/",
+    CANONICAL_BASE_URL + "examples/arc-testnet-wallet-send-gate/",
     CANONICAL_BASE_URL + "examples/agent-commerce-components/",
     CANONICAL_BASE_URL + "examples/agent-commerce-flows/",
     CANONICAL_BASE_URL + "examples/agent-commerce-review-packet/",
     CANONICAL_BASE_URL + "examples/agent-identity-profile-preview/",
     CANONICAL_BASE_URL + "examples/job-escrow-simulator/",
+    CANONICAL_BASE_URL + "examples/arc-agent-treasury-lab/",
 )
 REDUCED_MOTION_MEDIA_RE = re.compile(
     r"@media\s*\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)",
@@ -289,6 +321,92 @@ def validate_required_files() -> None:
             fail(f"missing required file: {relative}")
 
 
+def validate_workflow_security() -> None:
+    """Keep CI reproducible, least-privilege, and aligned with local tests."""
+    action_pin = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}$")
+    permission_grant = re.compile(
+        r"^\s*([a-z][a-z0-9-]*):\s*(read|write)\s*(?:#.*)?$",
+        re.IGNORECASE,
+    )
+
+    def parsed_permissions(relative: str, text: str) -> set[tuple[str, str]]:
+        lines = text.splitlines()
+        permission_lines = [
+            index
+            for index, line in enumerate(lines)
+            if line.lstrip().startswith("permissions:")
+            and not line.lstrip().startswith("#")
+        ]
+        if len(permission_lines) != 1:
+            fail(f"{relative}: workflow must contain exactly one permissions block")
+        start = permission_lines[0]
+        if lines[start] != "permissions:":
+            fail(f"{relative}: permissions must be one explicit top-level map")
+
+        observed: set[tuple[str, str]] = set()
+        for line in lines[start + 1:]:
+            if line and not line[0].isspace():
+                break
+            if not line.strip() or line.lstrip().startswith("#"):
+                continue
+            match = permission_grant.fullmatch(line)
+            if not match:
+                fail(f"{relative}: invalid permissions entry: {line.strip()}")
+            observed.add((match.group(1).lower(), match.group(2).lower()))
+        return observed
+
+    for relative in WORKFLOW_FILES:
+        text = (ROOT / relative).read_text(encoding="utf-8")
+        active_lines = [
+            line.strip().removeprefix("- ").lstrip()
+            for line in text.splitlines()
+            if line.strip() and not line.strip().startswith("#")
+        ]
+        for forbidden in ("pull_request_target:", "workflow_run:"):
+            if forbidden in text:
+                fail(f"{relative}: forbidden privileged workflow trigger: {forbidden}")
+        active_actions: set[str] = set()
+        for line in text.splitlines():
+            stripped = line.strip()
+            if stripped.startswith("- "):
+                stripped = stripped[2:].lstrip()
+            if not stripped.startswith("uses:"):
+                continue
+            action = stripped.removeprefix("uses:").split("#", 1)[0].strip()
+            if action.startswith("./"):
+                continue
+            if not action_pin.fullmatch(action):
+                fail(f"{relative}: action must use a full commit SHA: {action}")
+            active_actions.add(action.split("@", 1)[0])
+        for action in ("actions/setup-python", "actions/setup-node"):
+            if action not in active_actions:
+                fail(f"{relative}: missing active runtime setup action: {action}")
+        for marker in (
+            'python-version: "3.12"',
+            'node-version: "22"',
+            "run: python scripts/test_all.py",
+        ):
+            if marker not in active_lines:
+                fail(f"{relative}: missing active runtime/test contract marker: {marker}")
+
+    expected_permissions = {
+        WORKFLOW_FILES[0]: {("contents", "read")},
+        WORKFLOW_FILES[1]: {
+            ("contents", "read"),
+            ("pages", "write"),
+            ("id-token", "write"),
+        },
+    }
+    for relative, expected in expected_permissions.items():
+        text = (ROOT / relative).read_text(encoding="utf-8")
+        observed = parsed_permissions(relative, text)
+        if observed != expected:
+            fail(
+                f"{relative}: workflow permissions must be exactly "
+                f"{sorted(expected)}; observed {sorted(observed)}"
+            )
+
+
 def validate_no_secrets() -> None:
     for path in ROOT.rglob("*"):
         if ".git" in path.parts or not path.is_file():
@@ -323,6 +441,46 @@ def validate_public_text_integrity() -> None:
         for marker in MOJIBAKE_MARKERS:
             if marker in text:
                 fail(f"possible mojibake marker in {relative}: {marker!r}")
+
+
+def validate_repository_line_ending_policy() -> None:
+    """Keep Windows, WSL, and CI diffs deterministic without bulk churn."""
+    relative = ".gitattributes"
+    attributes = (ROOT / relative).read_text(encoding="utf-8")
+    for marker in (
+        "* text=auto eol=lf",
+        "*.png binary",
+        "*.jpg binary",
+        "*.jpeg binary",
+        "*.gif binary",
+        "*.webp binary",
+    ):
+        if marker not in attributes:
+            fail(f"{relative}: missing line-ending/binary marker: {marker}")
+
+
+def validate_documented_secret_handling() -> None:
+    """Keep builder tutorials from normalizing raw-key or frontend-secret use."""
+    docs_map = (ROOT / "docs/arc-docs-map.md").read_text(encoding="utf-8")
+    for forbidden in ("--private-key", "$PRIVATE_KEY"):
+        if forbidden in docs_map:
+            fail(f"docs/arc-docs-map.md: forbidden raw private-key deploy marker: {forbidden}")
+    for marker in (
+        "cast wallet import arc-testnet-review",
+        "--account arc-testnet-review",
+        "Never put a raw private key in",
+    ):
+        if marker not in docs_map:
+            fail(f"docs/arc-docs-map.md: missing encrypted-keystore guidance: {marker}")
+
+    deploy_notes = (ROOT / "docs/deploy-contracts-arc.md").read_text(encoding="utf-8")
+    for marker in (
+        "separate backend/custody integration path",
+        "keep credentials out of frontend code and chat",
+        "use a deployment secret manager",
+    ):
+        if marker not in deploy_notes:
+            fail(f"docs/deploy-contracts-arc.md: missing custody/secret boundary: {marker}")
 
 
 def validate_html_file(relative: str) -> None:
@@ -409,6 +567,24 @@ def validate_responsive_layout_guards() -> None:
         "docs/view.html": (
             "grid-template-columns: minmax(0, 1fr) minmax(0, 300px)",
             ".panel, aside { min-width: 0; }",
+            "overflow-wrap: anywhere",
+        ),
+        "examples/payment-intent-playground/index.html": (
+            "main > *, .grid > * { min-width: 0; }",
+        ),
+        "examples/receipt-verifier-playground/index.html": (
+            "main > *, .grid > * { min-width:0; }",
+        ),
+        "examples/transaction-status-playground/index.html": (
+            "main > *, .grid > * { min-width:0; }",
+        ),
+        "examples/agent-commerce-components/index.html": (
+            ".wrap > *, .grid > *, .cards > * { min-width: 0; }",
+            ".actions { flex-wrap: wrap; }",
+        ),
+        "examples/arc-agent-treasury-lab/index.html": (
+            "grid-template-columns: minmax(320px, .78fr) minmax(420px, 1.22fr)",
+            "@media (max-width: 980px) { .layout { grid-template-columns: 1fr; }",
             "overflow-wrap: anywhere",
         ),
     }
@@ -522,6 +698,17 @@ def validate_docs_viewer_registry() -> None:
     for source_path in ("../SECURITY.md", "../CONTRIBUTING.md", "../CODE_OF_CONDUCT.md"):
         if f"path: '{source_path}'" not in viewer:
             fail(f"docs/viewer.js: missing community source path: {source_path}")
+    for marker in (
+        "const DOC_TIMEOUT_MS = 8_000;",
+        "const MAX_DOC_BYTES = 1_000_000;",
+        "async function fetchDocText(path)",
+        "new AbortController()",
+        "new TextEncoder().encode(markdown).byteLength",
+        "window.clearTimeout(timeout)",
+        "const markdown = await fetchDocText(page.path);",
+    ):
+        if marker not in viewer:
+            fail(f"docs/viewer.js: missing bounded document fetch marker: {marker}")
 
 
 def validate_completion_contract() -> None:
@@ -541,7 +728,7 @@ def validate_completion_contract() -> None:
         "## Explicit non-goals",
         "## Canonical verification",
         "no private keys",
-        "no transaction broadcast",
+        "no transaction broadcast on page load",
     ):
         if marker.lower() not in contract.lower():
             fail(f"{contract_relative}: missing completion marker: {marker}")
@@ -625,10 +812,26 @@ def validate_x402_boundary_demo() -> None:
         'DEFAULT_ASSET = "USDC"',
         "def from_env",
         "validate_payment_config",
+        "human approval must remain required in this demo",
+        "verifier mode must stay local-simulation in this demo",
+        "request jsonrpc must be exactly 2.0",
+        "request id must be a string, integer, or null",
+        "request method must be a string",
         "validate_bind_target",
         "LOCAL_BIND_HOSTS",
         "X402_DEMO_MAINNET_ENABLED",
         "PaymentConfig.from_env()",
+        "MAX_MCP_LINE_BYTES = 1_000_000",
+        "MAX_PAYMENT_PROOF_BYTES = 4_096",
+        "def require_exact_keys",
+        "def validate_payment_proof",
+        "def extract_payment_proof",
+        "exactly one X-Payment header is required",
+        "X-Payment proof exceeds the 4 KB safety limit",
+        '"error": "payment_verifier_unavailable"',
+        '"error": "invalid_verifier_result"',
+        '"error": "unsafe_verifier_result"',
+        "object_pairs_hook=reject_duplicate_json_keys",
     )
     for marker in required_server_markers:
         if marker not in server:
@@ -678,6 +881,11 @@ def validate_arc_production_deployment_assets() -> None:
         "ARC_PAID_AGENT_URL",
         "ARC_LIVE_X_PAYMENT",
         "X-Payment",
+        "NoRedirectHandler",
+        "redirects are disabled for live smoke requests",
+        "MAX_RESPONSE_BYTES",
+        'first.get("asset") != "USDC"',
+        'payload.get("mainnetEnabled") is not False',
         "--expect-402-only",
         "No payments were created",
         "transactionBroadcast",
@@ -753,6 +961,8 @@ def validate_payment_intent_playground_status_panel() -> None:
         "walletConnected: false",
         "transactionBroadcast: false",
         "signingRequiresWalletChainGateAndHumanApproval: true",
+        "!/^0x0{40}$/.test(normalized)",
+        "normalized !== ARC_TESTNET_STATUS.erc20UsdcAddress.toLowerCase()",
         "renderArcStatusPanel()",
     ):
         if marker not in js:
@@ -788,6 +998,9 @@ def validate_receipt_verifier_playground() -> None:
         "assetDecimals: 6",
         "function normalizeReceipt(rawReceipt)",
         "function verifyReceipt(receipt)",
+        "function isValidAddress(value)",
+        "!/^0x0{40}$/.test(normalized)",
+        "normalized !== '0x3600000000000000000000000000000000000000'",
         "walletConnected: false",
         "backendCalls: false",
         "transactionBroadcast: false",
@@ -810,6 +1023,8 @@ def validate_transaction_status_playground() -> None:
     js = (ROOT / js_relative).read_text(encoding="utf-8")
     for marker in (
         'id="transaction-hash"',
+        'id="expected-recipient"',
+        'id="expected-amount"',
         'id="check-transaction"',
         'id="status-pill"',
         'id="status-check-list"',
@@ -828,15 +1043,37 @@ def validate_transaction_status_playground() -> None:
         "expectedChainIdHex: '0x4cef52'",
         "rpcUrl: 'https://rpc.testnet.arc.network'",
         "explorerUrl: 'https://testnet.arcscan.app'",
+        "usdcAddress: '0x3600000000000000000000000000000000000000'",
+        "usdcDecimals: 6",
+        "const TRANSFER_SELECTOR = 'a9059cbb'",
         "method: 'eth_chainId'",
         "method: 'eth_getTransactionByHash'",
         "method: 'eth_getTransactionReceipt'",
+        "const RPC_TIMEOUT_MS = 10_000",
+        "const MAX_RPC_RESPONSE_BYTES = 1_000_000",
+        "const RPC_REQUEST_ID = 'arc-transaction-status-read-only'",
+        "new AbortController()",
+        "new TextEncoder().encode(responseText).byteLength",
+        "window.clearTimeout(timeout)",
+        "RPC response must be a JSON object",
+        "RPC response envelope did not match the request",
+        "RPC response must contain exactly one result or error field",
+        "function hashMatchesExpected(value, expectedHash)",
+        "rpcObjectHashesMatch",
+        "unknown_hash_mismatch",
         "readOnlyRpcCheckOnly: true",
         "transactionBroadcast: false",
         "autonomousSpending: false",
         "humanApprovalRequired: true",
         "signingRequiresWalletChainGateAndHumanApproval: true",
-        "function classifyTransactionStatus(chainIdHex, transaction, receipt)",
+        "function buildExpectedTransfer()",
+        "function decodeTransferCalldata(data)",
+        "function reviewExpectedTransfer(transaction, expectedTransfer)",
+        "function withTransferEvidence(result, transaction, expectedTransfer)",
+        "function classifyTransactionStatus(chainIdHex, transaction, receipt, expectedTransfer, expectedTransactionHash)",
+        "evidenceVerdict",
+        "settlementProven: false",
+        "businessAcceptanceProven: false",
         "state: 'not_checked'",
         "state: 'pending'",
         "state: 'confirmed'",
@@ -848,6 +1085,162 @@ def validate_transaction_status_playground() -> None:
     for marker in ("window.ethereum", "personal_sign", "eth_sendTransaction", "wallet_switchEthereumChain", "signTransaction", "PRIVATE_KEY", "localStorage"):
         if marker in js:
             fail(f"{js_relative}: forbidden wallet/signing marker: {marker}")
+    behavior_test = (ROOT / "scripts/test_transaction_status_behavior.py").read_text(encoding="utf-8")
+    behavior_harness = (ROOT / "scripts/transaction_status_behavior_harness.mjs").read_text(encoding="utf-8")
+    for marker in ("shutil.which(\"node\")", "transaction_status_behavior_harness.mjs", "timeout=30"):
+        if marker not in behavior_test:
+            fail(f"scripts/test_transaction_status_behavior.py: missing behavior test marker: {marker}")
+    for marker in (
+        "testConfirmedExpectedTransferShape",
+        "testMismatchAndWrongChainFailClosed",
+        "testInvalidExpectedFieldsAvoidRpc",
+        "testRpcEnvelopeAndHashBindingFailClosed",
+        "confirmed_expected_transfer_shape",
+        "mismatch_expected_transfer",
+        "unknown_wrong_chain",
+        "unknown_hash_mismatch",
+    ):
+        if marker not in behavior_harness:
+            fail(f"scripts/transaction_status_behavior_harness.mjs: missing behavior marker: {marker}")
+
+
+def validate_guarded_wallet_send_gate() -> None:
+    """Keep the only write-capable browser surface narrow and fail-closed."""
+    html_relative = "examples/arc-testnet-wallet-send-gate/index.html"
+    js_relative = "examples/arc-testnet-wallet-send-gate/wallet-send-gate.js"
+    runbook_relative = "docs/guarded-wallet-send-runbook.md"
+    gates_relative = "docs/custody-and-mainnet-gates.md"
+    policy_relative = "examples/arc-testnet-wallet-send-gate/live-infrastructure-policy.example.json"
+    html = (ROOT / html_relative).read_text(encoding="utf-8")
+    js = (ROOT / js_relative).read_text(encoding="utf-8")
+    runbook = (ROOT / runbook_relative).read_text(encoding="utf-8").lower()
+    gates = (ROOT / gates_relative).read_text(encoding="utf-8").lower()
+    policy = (ROOT / policy_relative).read_text(encoding="utf-8")
+
+    for marker in (
+        "Arc Testnet Wallet Send Gate",
+        'id="risk-acknowledgement"',
+        'id="connect-wallet"',
+        'id="switch-network"',
+        'id="freeze-intent"',
+        'id="send-transaction"',
+        'id="confirmation-phrase"',
+        'id="final-send-confirmation"',
+        "Disabled by default",
+        "Arc Testnet only",
+        "One attempt per page load",
+        "No custody",
+        "No private keys",
+    ):
+        if marker not in html:
+            fail(f"{html_relative}: missing guarded send marker: {marker}")
+    for marker in (
+        "const ARC_TESTNET = Object.freeze",
+        "chainId: 5042002",
+        "chainIdHex: '0x4cef52'",
+        "rpcUrl: 'https://rpc.testnet.arc.network'",
+        "explorerUrl: 'https://testnet.arcscan.app'",
+        "usdcAddress: '0x3600000000000000000000000000000000000000'",
+        "usdcDecimals: 6",
+        "maxAmountBaseUnits: 1000000n",
+        "enableArcTestnetSend",
+        "reviewed-testnet-only",
+        "function parseUsdcAmount",
+        "function encodeTransferCalldata",
+        "function decodeTransferCalldata",
+        "function buildGuardReport",
+        "function canAttemptSend",
+        "const ALLOWED_WALLET_METHODS = new Set",
+        "if (!ALLOWED_WALLET_METHODS.has(request.method))",
+        "topLevelContext: window.top === window.self",
+        "['top-level-context', state.topLevelContext",
+        "function isNonZeroAddress",
+        "Recipient cannot be the pinned USDC token contract address.",
+        "const failedPrerequisite = report.checks.find",
+        "throw new Error(failedPrerequisite.detail",
+        "Risk acknowledgement cleared. Freeze and review the intent again.",
+        "sendAttempted = true",
+        "method: 'eth_requestAccounts'",
+        "method: 'wallet_switchEthereumChain'",
+        "method: 'wallet_addEthereumChain'",
+        "method: 'eth_sendTransaction'",
+        "No automatic retry",
+    ):
+        if marker not in js:
+            fail(f"{js_relative}: missing guarded send marker: {marker}")
+    for forbidden in (
+        "personal_sign",
+        "eth_sign",
+        "signTransaction",
+        "eth_sendRawTransaction",
+        "PRIVATE_KEY",
+        "seed phrase",
+        "localStorage",
+        "sessionStorage",
+        "fetch(",
+        "XMLHttpRequest",
+        "WebSocket",
+        "mainnet",
+    ):
+        if forbidden in js:
+            fail(f"{js_relative}: forbidden guarded send marker: {forbidden}")
+    for marker in (
+        "injected user-controlled browser wallet",
+        "wallet confirmation dialog is the only signing path",
+        "no automatic retry",
+        "one attempt per page load",
+        "arc testnet only",
+        "rollback",
+    ):
+        if marker not in runbook:
+            fail(f"{runbook_relative}: missing guarded runbook marker: {marker}")
+    for marker in (
+        "non-custodial",
+        "static site",
+        "secret manager",
+        "mainnet remains blocked",
+        "upcoming",
+        "separate security review",
+        "no fake mainnet constants",
+    ):
+        if marker not in gates:
+            fail(f"{gates_relative}: missing custody/mainnet gate marker: {marker}")
+    for marker in (
+        '"activeProfile": "arc-testnet-injected-wallet"',
+        '"enabled": false',
+        '"status": "blocked_official_configuration_upcoming"',
+        '"implemented": false',
+        '"mode": "non-custodial"',
+        '"staticSiteMayHoldSecrets": false',
+        '"maxAttemptsPerPageLoad": 1',
+        '"transactionChainIdRequired": "0x4cef52"',
+        '"topLevelBrowsingContextRequired": true',
+        '"zeroAddressAllowed": false',
+        '"tokenContractRecipientAllowed": false',
+        '"automaticRetry": false',
+    ):
+        if marker not in policy:
+            fail(f"{policy_relative}: missing fail-closed policy marker: {marker}")
+    policy_validator = (ROOT / "scripts/validate_live_infrastructure_policy.py").read_text(encoding="utf-8")
+    for marker in ("require_exact_keys", "reject_duplicate_keys", "object_pairs_hook=reject_duplicate_keys"):
+        if marker not in policy_validator:
+            fail(f"scripts/validate_live_infrastructure_policy.py: missing strict policy marker: {marker}")
+    behavior_test = (ROOT / "scripts/test_arc_testnet_wallet_send_behavior.py").read_text(encoding="utf-8")
+    behavior_harness = (ROOT / "scripts/wallet_send_behavior_harness.mjs").read_text(encoding="utf-8")
+    for marker in ("shutil.which(\"node\")", "wallet_send_behavior_harness.mjs", "timeout=30"):
+        if marker not in behavior_test:
+            fail(f"scripts/test_arc_testnet_wallet_send_behavior.py: missing behavior test marker: {marker}")
+    for marker in (
+        "vm.runInContext(SOURCE",
+        "testDefaultDisabled",
+        "testExactOneShotSend",
+        "testWrongChainAndAccountChangeBlock",
+        "testRejectionKeepsOneShotLock",
+        "eth_sendTransaction",
+        "EXPECTED_DATA",
+    ):
+        if marker not in behavior_harness:
+            fail(f"scripts/wallet_send_behavior_harness.mjs: missing fake-provider marker: {marker}")
 
 
 def validate_job_escrow_simulator() -> None:
@@ -922,8 +1315,67 @@ def validate_job_escrow_simulator() -> None:
             fail(f"{html_relative}/{js_relative}: forbidden network/wallet marker: {marker}")
 
 
+def validate_arc_agent_treasury_lab() -> None:
+    """Keep the local self-funding-agent product exact, bounded, and wallet-free."""
+    html_relative = "examples/arc-agent-treasury-lab/index.html"
+    js_relative = "examples/arc-agent-treasury-lab/treasury.js"
+    test_relative = "scripts/test_arc_agent_treasury_lab.py"
+    harness_relative = "scripts/arc_agent_treasury_behavior_harness.mjs"
+    html = (ROOT / html_relative).read_text(encoding="utf-8")
+    js = (ROOT / js_relative).read_text(encoding="utf-8")
+    tests = (ROOT / test_relative).read_text(encoding="utf-8")
+    harness = (ROOT / harness_relative).read_text(encoding="utf-8")
+    for marker in (
+        "Arc Agent Treasury Lab",
+        'id="review-task"',
+        'id="run-loop"',
+        'id="ledger"',
+        'id="snapshot"',
+        "No wallet, custody, mainnet, backend, signing, settlement, or transaction broadcast.",
+    ):
+        if marker not in html:
+            fail(f"{html_relative}: missing treasury product marker: {marker}")
+    for marker in (
+        "const MICRO_USDC = 1_000_000",
+        "request_replay_detected",
+        "receipt_replay_detected",
+        "single_task_cap_exceeded",
+        "daily_spend_cap_exceeded",
+        "protected_reserve_would_be_breached",
+        "minimum_profit_not_met",
+        "Runtime spend preflight failed closed",
+        "settled: false",
+        "transactionBroadcast: false",
+        "autonomousSpendingEnabled: false",
+        "mainnetEnabled: false",
+        "custodyEnabled: false",
+    ):
+        if marker not in js:
+            fail(f"{js_relative}: missing treasury safety marker: {marker}")
+    for marker in (
+        "test_product_surface_is_complete",
+        "test_domain_exposes_fail_closed_policy_and_loop",
+        "test_local_lab_forbids_wallet_network_storage_and_secrets",
+        "test_actual_javascript_behavior",
+    ):
+        if marker not in tests:
+            fail(f"{test_relative}: missing treasury regression marker: {marker}")
+    for marker in (
+        "exact micro-USDC",
+        "request replay reason missing",
+        "single-task cap must fail closed",
+        "reserve breach must fail closed",
+        "runtime policy drift must fail closed before spend",
+    ):
+        if marker not in harness:
+            fail(f"{harness_relative}: missing treasury behavior marker: {marker}")
+    for marker in ("fetch(", "XMLHttpRequest", "WebSocket", "window.ethereum", "ethereum.request", "eth_sendTransaction", "eth_sendRawTransaction", "personal_sign", "signTypedData", "PRIVATE_KEY", "localStorage", "sessionStorage"):
+        if marker in html or marker in js:
+            fail(f"{html_relative}/{js_relative}: forbidden treasury network/wallet marker: {marker}")
+
+
 def validate_arc_testnet_send_readiness_gate() -> None:
-    """Keep the future Arc Testnet send handoff docs-only and guard-first."""
+    """Keep the Arc Testnet send handoff narrow, explicit, and guard-first."""
     doc_relative = "docs/arc-testnet-send-readiness-gate.md"
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     index = (ROOT / "index.html").read_text(encoding="utf-8")
@@ -935,13 +1387,16 @@ def validate_arc_testnet_send_readiness_gate() -> None:
         "5042002",
         "0x4cef52",
         "unsigned transaction draft",
-        "final local confirmation",
-        "No wallet connection in this increment",
+        "disabled by default",
+        "eth_sendTransaction",
+        "external wallet confirmation dialog is the only signing path",
+        "top-level browsing context",
+        "Zero addresses",
+        "pinned USDC token contract",
+        "one-attempt lock",
         "No private keys",
-        "No signing",
-        "No transaction broadcast",
-        "eth_sendTransaction remains forbidden",
-        "rollback criteria",
+        "No mainnet profile",
+        "Rollback criteria",
     ):
         if marker not in doc:
             fail(f"{doc_relative}: missing send readiness marker: {marker}")
@@ -958,7 +1413,7 @@ def validate_arc_testnet_send_readiness_gate() -> None:
 
 
 def validate_arc_testnet_operator_runbook() -> None:
-    """Keep the operator handoff manual, Arc-only, and docs-only."""
+    """Keep the operator handoff manual, Arc-only, and fail-closed."""
     doc_relative = "docs/arc-testnet-operator-runbook.md"
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     index = (ROOT / "index.html").read_text(encoding="utf-8")
@@ -970,11 +1425,14 @@ def validate_arc_testnet_operator_runbook() -> None:
         "5042002",
         "0x4cef52",
         "manual review",
-        "eth_sendTransaction remains forbidden",
+        "separate guarded Arc Testnet send lab",
         "no private keys",
-        "no signing",
-        "no transaction broadcast",
-        "separate guarded PR",
+        "no custody",
+        "no mainnet",
+        "no automatic retry",
+        "no transaction request on page load",
+        "top-level tab",
+        "pinned-token-contract recipients fail closed",
     ):
         if marker not in doc:
             fail(f"{doc_relative}: missing operator runbook marker: {marker}")
@@ -1047,6 +1505,8 @@ def validate_arc_testnet_operator_evidence() -> None:
         "validate_references",
         "validate_expected_commit",
         "SECRET_VALUE_PATTERNS",
+        "MAX_PACKET_BYTES",
+        "reject_duplicate_keys",
         "controls.{field} must be false",
         "decision.status must be blocked_pending_separate_guarded_pr",
     ):
@@ -1173,8 +1633,11 @@ def validate_sitemap_xml() -> None:
 
 def main() -> None:
     validate_required_files()
+    validate_workflow_security()
     validate_no_secrets()
     validate_public_text_integrity()
+    validate_repository_line_ending_policy()
+    validate_documented_secret_handling()
     validate_html()
     validate_reduced_motion_css()
     validate_responsive_layout_guards()
@@ -1192,7 +1655,9 @@ def main() -> None:
     validate_payment_intent_playground_status_panel()
     validate_receipt_verifier_playground()
     validate_transaction_status_playground()
+    validate_guarded_wallet_send_gate()
     validate_job_escrow_simulator()
+    validate_arc_agent_treasury_lab()
     validate_arc_testnet_send_readiness_gate()
     validate_arc_testnet_operator_runbook()
     validate_arc_testnet_operator_evidence()

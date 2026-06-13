@@ -18,6 +18,7 @@ from validate_operator_evidence import (
     TRUE_EVIDENCE,
     EvidenceValidationError,
     display_path,
+    load_json_object,
     validate_commit_sha,
     validate_packet,
     validate_references,
@@ -124,21 +125,6 @@ def build_report(
         "liveSendApproved": False,
         "note": "Read-only readiness report. This command never approves signing or transaction broadcast.",
     }
-
-
-def load_json_object(path: Path) -> dict[str, Any]:
-    try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except FileNotFoundError as exc:
-        raise ReportInputError(f"packet file not found: {display_path(path)}") from exc
-    except json.JSONDecodeError as exc:
-        raise ReportInputError(f"packet is not valid JSON: {exc}") from exc
-    except OSError as exc:
-        error = exc.strerror or exc.__class__.__name__
-        raise ReportInputError(f"could not read packet: {error}") from exc
-    if not isinstance(value, dict):
-        raise ReportInputError("packet must be a JSON object")
-    return value
 
 
 def main() -> int:

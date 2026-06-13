@@ -21,6 +21,7 @@ This repo now ships a GitHub Pages site, docs, prompts, and local demos that sho
 - Lightweight validator and GitHub Actions workflow covering required files, safety copy, static-page invariants, public links, and the x402 verifier boundary.
 - Safe-scope completion contract with a dependency-free completion check and canonical-suite coverage enforcement.
 - Arc Testnet operator evidence packet, fail-closed validator, create-only ignored draft generator, and read-only readiness report.
+- Separate disabled-by-default Arc Testnet browser-wallet send lab with frozen USDC payload parity, explicit confirmation, and a one-attempt lock.
 
 ## Safety boundaries
 
@@ -28,8 +29,8 @@ This repo now ships a GitHub Pages site, docs, prompts, and local demos that sho
 - No private-key handling in the repo.
 - No seed phrases, wallet credentials, Circle API keys, Entity Secrets, or production tokens in examples.
 - No autonomous mainnet spending.
-- Local demos do not broadcast transactions.
-- Human approval remains required before any future wallet action.
+- Local-only demos do not broadcast transactions; the isolated guarded send lab can request one manual Arc Testnet transaction.
+- Human approval remains required before every wallet action.
 - Current chain, contract, wallet, and x402 settlement assumptions must be re-verified through Arc docs/MCP and Circle docs before real testnet integration.
 
 ## How to verify locally
@@ -45,6 +46,7 @@ Then open:
 - `http://localhost:8080/`
 - `http://localhost:8080/examples/payment-intent-playground/`
 - `http://localhost:8080/examples/job-escrow-simulator/`
+- `http://localhost:8080/examples/arc-testnet-wallet-send-gate/` (disabled state)
 - `http://localhost:8080/docs/view.html#build-log.md`
 
 To run the x402 boundary demo:
@@ -90,9 +92,9 @@ The current public builder-kit scope is complete according to the
 [safe-scope completion contract](./completion-contract.md). Remaining work is
 optional higher-risk extension work, not a hidden blocker:
 
-1. A guarded Arc Testnet wallet-send path in a separate reviewed PR.
+1. A custody/account-abstraction provider integration with secrets held outside the repo.
 2. A real x402/Circle verifier handoff with secrets held outside the repo.
-3. Human-reviewed public distribution of the existing launch packet.
+3. Mainnet evaluation only after official Arc mainnet configuration exists and passes a separate review.
 
 Each extension must preserve explicit human approval, Arc-only positioning,
 testnet-first verification, and fail-closed safety gates.

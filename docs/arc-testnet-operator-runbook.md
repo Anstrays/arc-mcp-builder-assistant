@@ -1,6 +1,6 @@
 # Arc Testnet Operator Runbook
 
-> A manual review checklist for operators evaluating any future guarded Arc Testnet live-send PR. This runbook does not connect a wallet, sign, hold secrets, or broadcast transactions.
+> A manual review checklist for operators evaluating the separate guarded Arc Testnet send lab. Reading this runbook does not connect a wallet, sign, hold secrets, or broadcast transactions.
 
 ## Chain scope
 
@@ -13,13 +13,13 @@ Stop the review if the proposed implementation cannot prove this exact chain sco
 
 ## Current safety boundary
 
-The shipped public kit remains local-first and read-only. There are no private keys, no signing, no transaction broadcast, and no wallet connection in this increment. `eth_sendTransaction remains forbidden` until a separate guarded PR explicitly changes and proves that boundary.
+Local-only examples remain wallet-free and read-only. The separate guarded send lab is disabled by default, delegates signing to the external wallet confirmation dialog, and can request one Arc Testnet transaction only after every human gate passes.
 
-This document is an operator checklist, not approval for a live-send implementation.
+There are no private keys, no custody, no mainnet, no autonomous spending, no automatic retry, and no transaction request on page load. This document is an operator checklist, not approval for production use.
 
 ## Evidence required before manual review
 
-Collect these artifacts from a clean checkout before reviewing any future live-send PR:
+Collect these artifacts from a clean checkout before reviewing the guarded send lab:
 
 1. The frozen payment intent with exact recipient, token target, decimal amount, base-unit amount, memo, expiry, and Arc Testnet chain IDs.
 2. The final local confirmation recorded after the frozen intent is visible.
@@ -42,7 +42,10 @@ Missing or inconsistent evidence is a stop condition, not a reason to approve wi
 ### 2. Reproduce the local preflight
 
 - [ ] Start from a clean browser session.
+- [ ] Confirm the page is open as a top-level tab and blocks embedded-frame
+      execution.
 - [ ] Enter a known test recipient and a small test amount.
+- [ ] Confirm zero-address and pinned-token-contract recipients fail closed.
 - [ ] Freeze the intent and record final local confirmation.
 - [ ] Verify that the unsigned draft decodes to the same recipient and amount.
 - [ ] Verify the ERC-20 token target and zero native transaction value.
@@ -91,15 +94,17 @@ Reject or pause the future PR when any of these conditions appear:
 - any secret, credential, private key, or seed phrase appears in code, UI, logs, CI, screenshots, or review artifacts;
 - signing or transaction broadcast can happen without the final human confirmation;
 - the implementation can send on page load, retry automatically, or submit more than once;
+- the implementation can request a wallet from an embedded frame;
+- a zero address or the pinned USDC token contract can be frozen as recipient;
 - wallet-request spy evidence is missing or shows unexpected methods;
 - tests, validation, status checks, or browser smoke fail;
 - rollback is unclear or cannot be performed quickly.
 
-## Acceptance boundary for a future PR
+## Acceptance boundary
 
-A future live-send implementation may be considered only in a separate guarded PR with explicit human approval, test-first wallet-request coverage, fail-closed Arc Testnet checks, and complete operator evidence.
+The current guarded lab may be considered only with explicit human approval, test-first wallet-request coverage, fail-closed Arc Testnet checks, and complete operator evidence.
 
-Until that review is complete: no private keys, no signing, no transaction broadcast, and `eth_sendTransaction remains forbidden`.
+Until that review is complete, keep the page disabled. Custody, mainnet, backend signing, and autonomous transaction policy remain forbidden.
 
 ## Machine-readable evidence record
 
@@ -109,4 +114,4 @@ After completing this checklist, record the result with the [Arc Testnet Operato
 python scripts/validate_operator_evidence.py path/to/operator-evidence.json --expect-commit FULL_LOWERCASE_COMMIT_SHA
 ```
 
-The expected commit must exactly match `review.reviewedCommit`. The packet stays blocked pending a separate guarded PR and cannot authorize signing or transaction broadcast.
+The expected commit must exactly match `review.reviewedCommit`. The packet records review evidence only and cannot authorize signing or transaction broadcast.

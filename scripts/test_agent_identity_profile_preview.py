@@ -42,6 +42,9 @@ def test_identity_preview_exposes_profile_schema_and_review_states() -> None:
         "agentId: 'unknown_until_registered'",
         'ownerCannotSelfValidate: true',
         'futureRegistrationRequiresSeparatePr: true',
+        "const profileFrozen = state === 'profile_frozen_for_review'",
+        "field.disabled = profileFrozen",
+        "buttons.freeze.disabled = profileFrozen",
     ):
         assert marker in js
 

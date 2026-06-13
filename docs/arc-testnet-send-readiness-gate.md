@@ -1,119 +1,118 @@
 # Arc Testnet Send Readiness Gate
 
-> Guard-only reviewer contract after the unsigned transaction draft preview. This page does **not** enable wallet connection, signing, custody, settlement, or transaction broadcast.
+> Reviewer contract for the repository's separate guarded Arc Testnet
+> browser-wallet send lab. Local-only playgrounds remain wallet-free.
 
 ## Verdict
 
-The current repo is still a public-ready static builder kit, not a live send product. This page defines the minimum evidence required before a separate future PR can even propose an Arc Testnet send path.
+The readiness gate is implemented for one narrow Arc Testnet transaction
+shape. The guarded lab is disabled by default and can request one manually
+confirmed USDC transaction only after every visible guard passes.
 
-No wallet connection in this increment. No private keys. No signing. No transaction broadcast. `eth_sendTransaction` remains forbidden in the shipped public kit. Plain-language gate: eth_sendTransaction remains forbidden until a separate reviewed send PR changes that boundary.
+This is not a production wallet, custody system, autonomous agent, settlement
+service, or mainnet implementation.
 
 ## Real today
 
-- Arc Testnet constants are documented and used by local-only surfaces: decimal chain ID `5042002`, hex chain ID `0x4cef52`, and the public Arc Testnet RPC status helper.
-- The payment-intent playground can freeze reviewed money fields, record final local confirmation, and produce an unsigned transaction draft for reviewer comparison.
-- The local calldata consistency check compares the unsigned transaction draft against the reviewed recipient, token target, USDC amount, zero native value, and Arc Testnet chain metadata.
-- Receipt and transaction-status playgrounds are available for local/read-only review paths.
-- CI validates that current demos do not collect keys, connect wallets, sign, or broadcast.
+- Arc Testnet is pinned to decimal chain ID `5042002` and hex chain ID
+  `0x4cef52`.
+- The payment-intent playground remains local-only and produces a frozen
+  unsigned transaction draft for review.
+- The separate guarded send lab can explicitly request an injected wallet
+  account, switch or add Arc Testnet, and request one `eth_sendTransaction`.
+- The token target, six-decimal USDC amount, zero native value, recipient,
+  memo, expiry, and deterministic calldata are frozen and compared
+  immediately before wallet handoff.
+- The external wallet confirmation dialog is the only signing path.
+- Embedded-frame execution is blocked; the write surface requires a top-level browsing context.
+- Zero addresses and the pinned USDC token contract are rejected as
+  recipients.
+- A one-attempt lock prevents automatic retry or a second transaction request
+  during the same page load.
+- A returned transaction hash is labeled submitted/pending, never confirmed.
 
-## Intentionally not real yet
+## Still intentionally blocked
 
-- No wallet permission prompt.
-- No injected-wallet account request.
-- No chain switching request.
-- No transaction signing.
-- No `eth_sendTransaction` call.
-- No custody, relayer, backend signer, or autonomous spending path.
-- No claim that a real Arc Testnet transfer is shipped in this repo today.
+- No private keys, seed phrases, raw signed transactions, or custody secrets.
+- No backend signer, relayer, sponsor, unattended policy engine, or autonomous
+  spending.
+- No mainnet profile, mainnet fallback, or unrelated chain selector.
+- No transaction request on page load.
+- No wallet connection or transaction broadcast from local-only playgrounds,
+  docs, tests, or CI.
+- No claim of live settlement or production payment processing.
 
-## Required evidence before a future send PR
+## Required evidence
 
-A future send PR must include all of the following evidence before reviewers should consider it:
+Reviewers must be able to reproduce:
 
-1. **Frozen intent evidence**
-   - recipient address;
-   - token contract target;
-   - USDC amount with 6-decimal conversion;
-   - memo or intent hash;
-   - expiry;
-   - Arc Testnet chain ID `5042002` and `0x4cef52`.
-2. **Unsigned draft evidence**
-   - calldata decodes back to the reviewed recipient and amount;
-   - transaction `to` equals the reviewed token target;
-   - transaction `value` is zero for ERC-20 USDC transfer drafts;
-   - unsigned transaction draft is visibly separate from any wallet handoff.
-3. **Final local confirmation evidence**
-   - final local confirmation was recorded after the frozen intent and unsigned draft were visible;
-   - the confirmation copy names the exact recipient, amount, chain, and token;
-   - reviewers can reproduce the same preflight report from a clean browser session.
-4. **Arc Testnet status evidence**
-   - chain ID probe succeeds against the Arc Testnet RPC when a live network check is in scope;
-   - failures stay non-destructive and block send readiness;
-   - RPC downtime is treated as a stop condition, not a reason to bypass checks.
-5. **Safety evidence**
-   - No wallet connection in this increment remains true until the send PR explicitly changes it;
-   - No private keys are accepted, pasted, logged, or committed;
-   - No signing is possible before the future PR's new tests pass;
-   - No transaction broadcast is possible from current pages;
-   - `eth_sendTransaction` remains forbidden outside the future, reviewed send implementation.
-
-## Human approval checkpoint
-
-A future send PR must require a human to review, in one visible screen or report:
-
-- chain: Arc Testnet only;
-- chain ID: `5042002` / `0x4cef52`;
-- asset: USDC;
-- recipient: exact address;
-- amount: exact decimal value and base-unit value;
-- token target: exact contract address used by the draft;
-- expiry and memo/intent hash;
-- the unsigned transaction draft and decoded fields;
-- explicit warning that signing and broadcast can move real testnet assets.
-
-The approval state must not be inferred from earlier actions such as opening the playground, editing the intent, generating calldata, or copying a report. It has to be a distinct final local confirmation step before any future live wallet handoff.
+1. **Default-disabled evidence**
+   - opening the page without the exact query gate keeps wallet controls
+     disabled;
+   - opening the page inside an embedded frame keeps wallet controls disabled;
+   - no wallet method fires on page load.
+2. **Frozen intent evidence**
+   - exact recipient;
+   - token target;
+   - decimal and base-unit USDC amount;
+   - memo and expiry;
+   - exact Arc Testnet chain IDs.
+3. **Payload parity evidence**
+   - calldata decodes back to the frozen recipient and amount;
+   - transaction `to` is the pinned Arc Testnet USDC target;
+   - transaction `value` is `0x0`;
+   - any post-freeze change blocks the request.
+4. **Human approval evidence**
+   - risk acknowledgement;
+   - explicit wallet connection and chain proof;
+   - typed confirmation phrase;
+   - final confirmation checkbox;
+   - external wallet dialog controlled by the human.
+5. **One-shot and failure evidence**
+   - the attempt lock engages before the wallet transaction request;
+   - rejection and errors do not retry automatically;
+   - a returned hash is not called confirmed.
 
 ## Rollback criteria
 
-The future send PR must document rollback criteria before it is merged. At minimum, the implementation should be stopped, reverted, or disabled when any of these happen:
+Disable or revert the guarded lab when:
 
-- Arc Testnet chain ID is not `5042002` or `0x4cef52`.
-- The wallet is on a non-Arc chain or cannot prove the selected chain.
-- The decoded calldata differs from the reviewed recipient, amount, token target, or zero native value.
-- The recipient, amount, token target, or expiry changes after final local confirmation.
-- Any private key, seed phrase, verifier token, API key, or secret appears in browser state, logs, commits, screenshots, CI output, or public docs.
-- A test, validator, browser smoke, or reviewer report shows an unexpected wallet call, signing call, backend call, or broadcast attempt.
+- the wallet cannot prove exact Arc Testnet chain ID;
+- frozen fields and calldata differ;
+- token target or native value differs;
+- the page can request a wallet from an embedded frame;
+- a zero address or the pinned USDC token contract can be frozen as recipient;
+- a request fires on page load or retries automatically;
+- more than one transaction request can occur per page load;
+- an unexpected wallet method fires;
+- any key, seed phrase, opaque proof, credential, or secret appears;
+- tests, validation, or browser smoke fail.
 
-## Future PR acceptance criteria
-
-The first real send PR should be narrow and reversible:
-
-- It must be Arc Testnet only.
-- It must add tests before production code for wallet-request behavior.
-- It must keep private keys out of the repo and browser UI.
-- It must preserve a disabled or dry-run path for reviewers.
-- It must verify the exact wallet request payload before any transaction can be submitted.
-- It must update public copy so the site distinguishes local-only pages from live testnet behavior.
-- It must include a browser smoke test that spies on wallet requests and proves no extra wallet methods fire.
+The fastest rollback is to remove or revert the separate guarded page while
+leaving every local-only example available.
 
 ## Public wording to use
 
 Safe wording:
 
-> The project has a reviewed local payment-intent flow, unsigned Arc Testnet transaction draft preview, final local confirmation, and a public send-readiness gate. A real Arc Testnet send path is intentionally deferred to a separate PR.
+> The project includes a separate disabled-by-default Arc Testnet
+> browser-wallet send lab for one capped, manually confirmed USDC transaction
+> request. It has no custody, private-key handling, mainnet, or autonomous
+> spending.
 
 Unsafe wording:
 
-> The app already sends Arc payments.
-
 > The agent can autonomously pay.
 
-> The wallet integration is complete.
+> The wallet integration is production-ready.
 
-> Production settlement is live.
+> Mainnet settlement is live.
 
 ## Reviewer shortcut
 
-Before approving any future live-send work, ask one question: can a reviewer independently compare the frozen intent, final local confirmation, unsigned transaction draft, wallet request payload, Arc Testnet chain proof, and rollback criteria without trusting hidden state?
+Ask one question: can a reviewer independently compare the frozen intent,
+decoded calldata, exact wallet request, Arc Testnet chain proof, human
+confirmation, one-attempt lock, and rollback path without trusting hidden
+state?
 
-If the answer is no, the send path is not ready.
+If the answer is no, the guarded send path is not ready.

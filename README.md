@@ -5,11 +5,11 @@
 [![Status: public-ready kit](https://img.shields.io/badge/status-public--ready%20kit-2dba4e.svg)](#status)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-live-2dba4e.svg)](https://anstrays.github.io/arc-mcp-builder-assistant/)
 
-> Independent local-first builder kit for Arc MCP, stablecoin payment intents, agent-wallet review flows, and x402-style paid-agent boundaries.
+> Independent Arc builder kit for MCP, stablecoin payment intents, guarded Arc Testnet wallet handoff, and x402-style paid-agent boundaries.
 
-Arc MCP Builder Assistant helps developers turn Arc docs and MCP context into practical, reviewable agent-commerce prototypes. It ships a static docs site, source-grounded prompts, local playgrounds, regression tests, and a dependency-free x402-style challenge server that models `402 -> proof -> protected response` without wallets, custody, signing, settlement, or transaction broadcast.
+Arc MCP Builder Assistant helps developers turn Arc docs and MCP context into practical, reviewable agent-commerce prototypes. It ships a static docs site, source-grounded prompts, local playgrounds, regression tests, a dependency-free x402-style challenge server, and a separate disabled-by-default Arc Testnet browser-wallet send lab.
 
-Use this repo when you want to prototype Arc-focused payment infrastructure before a live wallet or production verifier exists. The safe default is always: Arc Testnet context, reviewable JSON first, explicit human approval, no private keys, no mainnet, and no autonomous spending.
+Use this repo when you want to prototype Arc-focused payment infrastructure with reviewable JSON first, explicit human approval, no private keys, no mainnet, and no autonomous spending. Local examples remain wallet-free; the isolated send lab can request one manually reviewed Arc Testnet transaction only after every guard passes.
 
 ## Table of contents
 
@@ -44,7 +44,9 @@ This kit turns those steps into reusable guides, prompts, and examples.
 
 ## Builder quickstart
 
-The repo is static-site first and Python-only for tests. No npm install, package manager, database, wallet, or paid SaaS dependency is required.
+The repo is static-site first. Its test runner is Python-driven and uses
+Node.js built-ins for actual-JavaScript behavior checks. No npm install,
+package manager, database, wallet, or paid SaaS dependency is required.
 
 ```bash
 # 1. Run the full local regression suite.
@@ -53,6 +55,8 @@ python3 scripts/test_all.py
 # 2. Preview the GitHub Pages site locally.
 python3 -m http.server 8080
 # open http://localhost:8080/
+# open http://localhost:8080/examples/arc-agent-treasury-lab/ for the self-funding-agent simulator
+# guarded send lab stays disabled unless its exact reviewed-testnet query gate is present
 
 # 3. Run the local x402-style paid-agent boundary.
 python3 examples/x402-local-challenge-server/server.py --port 8087
@@ -72,14 +76,19 @@ python3 scripts/report_operator_evidence.py arc.operator-evidence.local.json --e
 ```
 
 On Windows, use `python` instead of `python3` if that is how Python is installed.
+The canonical suite also uses Node.js 18+ for dependency-free fake-provider
+and fake-RPC behavioral tests; it does not require npm install, live RPC, or
+browser-wallet access.
 
 ## Arc-focused use cases
 
 - **Paid API agent:** model an Arc Testnet USDC x402-style `402 -> proof -> protected response` boundary before production Gateway verification exists.
+- **Self-funding agent treasury:** simulate x402 revenue, bounded compute spending, replay protection, and verified repair loops without a wallet or real funds.
 - **Stablecoin payment request:** prepare reviewable payment-intent JSON with amount, recipient, memo, expiry, status, and human approval state.
 - **Job escrow workflow:** simulate ERC-8183-style job posting, agent acceptance, simulated funding, work review, disputes, expiry, and payout approval.
 - **Agent identity preview:** inspect ERC-8004-style agent metadata and controller/reputation notes before registration.
 - **MCP-assisted coding:** connect AI tools to Arc docs/MCP, then force retrieved facts, implementation suggestions, unknowns, and safety checks into the plan.
+- **Guarded wallet handoff:** manually review and request one capped Arc Testnet USDC transfer through an injected browser wallet, with no key handling or automatic retry.
 
 ## Configuration
 
@@ -88,9 +97,9 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 | Variable | Used by | Default | Notes |
 | --- | --- | --- | --- |
 | `X402_DEMO_NETWORK` | Local x402 server | `arc-testnet` | Must stay `arc-testnet`; non-Arc networks are rejected. |
-| `X402_DEMO_ASSET` | Local x402 server | `USDC` | Display/payment asset for the local challenge. |
+| `X402_DEMO_ASSET` | Local x402 server | `USDC` | Pinned to `USDC`; other assets are rejected because the demo uses USDC 6-decimal economics. |
 | `X402_DEMO_AMOUNT` | Local x402 server | `0.01` | Positive decimal string, max 6 decimal places. |
-| `X402_DEMO_PAY_TO` | Local x402 server | `0xA11CE00000000000000000000000000000000000` | Safe placeholder EVM address. |
+| `X402_DEMO_PAY_TO` | Local x402 server | `0xA11CE00000000000000000000000000000000000` | Non-zero placeholder EVM address; included in the local challenge/proof binding. |
 | `X402_DEMO_MAINNET_ENABLED` | Local x402 server | `false` | Must remain false; true exits safely. |
 | `ARC_PAID_AGENT_URL` | Live smoke script | empty | Deployed protected endpoint for challenge-only smoke checks. |
 | `EXPECT_402_ONLY` | Live smoke script | `true` | Stops after validating the unpaid 402 challenge. |
@@ -101,12 +110,13 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 ## Troubleshooting
 
 - **`python3` is not found:** use `python scripts/test_all.py` or install Python 3.12+. CI uses Python 3.12.
+- **Node.js is not found:** install Node.js 18+ and rerun the suite. The tests use Node built-ins only; do not run `npm install`.
 - **Port 8080 or 8087 is already in use:** choose another port, for example `python3 -m http.server 8090` or `python3 examples/x402-local-challenge-server/server.py --port 8097`.
 - **`ARC_PAID_AGENT_URL` is missing:** either skip live smoke or set it to a deployed `/protected` endpoint. The local x402 demo does not need it.
 - **Local x402 proof is rejected:** run `python3 examples/x402-local-challenge-server/server.py --print-challenge` and copy the exact `localDemoProof` value into the `X-Payment` header.
 - **Local x402 server rejects `--host`:** HTTP mode intentionally accepts only `127.0.0.1` or `localhost`; use a separate reviewed deployment for remote access.
 - **Live smoke rejects a URL:** use a valid HTTP/HTTPS URL without embedded credentials. A live `ARC_LIVE_X_PAYMENT` proof requires HTTPS.
-- **Config exits with `Invalid x402 demo configuration`:** keep `X402_DEMO_NETWORK=arc-testnet`, `X402_DEMO_MAINNET_ENABLED=false`, a positive 6-decimal-or-less amount, and a 42-character EVM `X402_DEMO_PAY_TO`.
+- **Config exits with `Invalid x402 demo configuration`:** keep `X402_DEMO_NETWORK=arc-testnet`, `X402_DEMO_ASSET=USDC`, `X402_DEMO_MAINNET_ENABLED=false`, a positive 6-decimal-or-less amount, and a non-zero 42-character EVM `X402_DEMO_PAY_TO`.
 - **A secret was pasted by mistake:** remove it from `.env` or shell history as needed, rotate the secret, and do not commit it. The repo scans common credential shapes during validation.
 
 ## Current kit
@@ -121,7 +131,7 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 - [`docs/payment-intent-demo.md`](./docs/payment-intent-demo.md) — first demo specification.
 - [`docs/payment-intent-quickstart.md`](./docs/payment-intent-quickstart.md) — 5-minute reviewer path for showing the local payment-intent playground without wallet or transaction side effects.
 - [`docs/payment-status-tutorial.md`](./docs/payment-status-tutorial.md) — step-by-step local payment status exercise for reviewers, plus the future Arc Testnet status checklist.
-- [`docs/transaction-status-playground.md`](./docs/transaction-status-playground.md) — read-only Arc Testnet transaction status playground for checking hashes through public RPC without wallet or broadcast side effects.
+- [`docs/transaction-status-playground.md`](./docs/transaction-status-playground.md) — read-only Arc Testnet transaction evidence playground that compares a hash with expected USDC recipient/amount fields without wallet or broadcast side effects.
 - [`docs/contest-demo-script.md`](./docs/contest-demo-script.md) — 60-90 second demo script, recording checklist, community post copy, and contest submission bullets.
 - [`docs/content-pack.md`](./docs/content-pack.md) — blog and contest content pack with Russian Telegram copy, X/Discord drafts, thumbnail prompts, video storyboard, and screenshot checklist.
 - [`docs/public-launch-packet.md`](./docs/public-launch-packet.md) — human-review launch packet with safe Russian Telegram, X, Discord/Arc House copy, submission checklist, links, and forbidden claims.
@@ -131,8 +141,10 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 - [`docs/current-readiness-report.md`](./docs/current-readiness-report.md) — concise current-scope verdict, local evidence commands, optional future extensions, and exact wording for public claims.
 - [`docs/arc-testnet-integration-runbook.md`](./docs/arc-testnet-integration-runbook.md) — stepwise path from local-only demos to a reviewed Arc Testnet transfer, including no-secret and no-mainnet gates.
 - [`docs/arc-wallet-integration-notes.md`](./docs/arc-wallet-integration-notes.md) — Circle Wallets vs browser-wallet decision notes for the next Phase 2 integration slice.
-- [`docs/wallet-preflight-contract.md`](./docs/wallet-preflight-contract.md) — secret-free wallet preflight contract for the next Arc Testnet wallet preview/send PRs.
-- [`docs/arc-testnet-send-readiness-gate.md`](./docs/arc-testnet-send-readiness-gate.md) — guard-only evidence contract for any future Arc Testnet send PR after the unsigned transaction draft and final local confirmation.
+- [`docs/wallet-preflight-contract.md`](./docs/wallet-preflight-contract.md) — secret-free preflight contract shared by the local payment preview and separate guarded Arc Testnet send lab.
+- [`docs/arc-testnet-send-readiness-gate.md`](./docs/arc-testnet-send-readiness-gate.md) — evidence contract for the separate disabled-by-default Arc Testnet browser-wallet send lab.
+- [`docs/guarded-wallet-send-runbook.md`](./docs/guarded-wallet-send-runbook.md) — operator sequence, stop conditions, and rollback for the separate Arc Testnet browser-wallet send lab.
+- [`docs/custody-and-mainnet-gates.md`](./docs/custody-and-mainnet-gates.md) — fail-closed boundary for custody and Arc mainnet work that cannot live in the static site.
 - [`docs/arc-testnet-operator-runbook.md`](./docs/arc-testnet-operator-runbook.md) — manual review checklist, stop conditions, and evidence record for any future guarded Arc Testnet live-send PR.
 - [`docs/arc-testnet-operator-evidence.md`](./docs/arc-testnet-operator-evidence.md) — strict machine-readable operator evidence packet, create-only local draft generator, and dependency-free fail-closed validator.
 - [`docs/agent-commerce-use-cases.md`](./docs/agent-commerce-use-cases.md) — practical use cases for API-call payments, creator payouts, job escrow, AI-service marketplace flows, and report agents.
@@ -140,6 +152,7 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 - [`docs/agent-commerce-flow-library.md`](./docs/agent-commerce-flow-library.md) — local-only paid API call, creator payout, and AI-agent commerce flow templates.
 - [`docs/agent-commerce-review-packet.md`](./docs/agent-commerce-review-packet.md) — local-only final review packet schema before any live wallet, settlement, or registration handoff.
 - [`docs/job-escrow-demo.md`](./docs/job-escrow-demo.md) — ERC-8183-style flow for posting jobs, funding escrow, reviewing agent output, and releasing stablecoin payouts.
+- [`docs/arc-agent-treasury-lab.md`](./docs/arc-agent-treasury-lab.md) — local product runbook for x402 earnings, bounded compute budgets, replay protection, and verified agentic loops.
 - [`docs/x402-mcp-manifest.md`](./docs/x402-mcp-manifest.md) — machine-readable paid-agent manifest and JSON-RPC tool surface for the local x402 boundary.
 - [`docs/x402-demo-transcript.md`](./docs/x402-demo-transcript.md) — copy-paste local `402 -> proof -> protected response` transcript with explicit no-wallet/no-settlement guardrails.
 - [`docs/arc-production-deployment.md`](./docs/arc-production-deployment.md) — secret-free production deployment runbook, live-smoke checklist, and Circle Gateway/x402 verifier handoff.
@@ -147,14 +160,16 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 - [`docs/arc-house-submission.md`](./docs/arc-house-submission.md) — ready-to-edit builder update for Arc community or Arc House-style submissions.
 - [`docs/build-log.md`](./docs/build-log.md) — public milestone note and community-update draft for sharing the current local-first builder kit.
 - [`examples/payment-intent-playground/`](./examples/payment-intent-playground/) — local-only interactive playground for editing a payment request, inspecting live JSON, viewing Arc Testnet read-only status constants, previewing injected wallet provider/address/chain state without requesting permissions, freezing reviewed intent fields, recording final local confirmation, reviewing an unsigned ERC-20 transaction draft and local calldata consistency check, reviewing a blocked wallet handoff manifest, reviewing disabled wallet guard reasons, and copying a preflight report while transaction requests remain disabled.
-- [`examples/transaction-status-playground/`](./examples/transaction-status-playground/) — read-only Arc Testnet transaction hash lookup with explicit `not_checked`, `pending`, `confirmed`, `failed`, and `unknown` states.
+- [`examples/transaction-status-playground/`](./examples/transaction-status-playground/) — read-only Arc Testnet transaction hash lookup with chain-first stopping, JSON-RPC envelope and exact-hash binding, explicit status states, and expected USDC transfer-shape comparison that never claims settlement.
+- [`examples/arc-testnet-wallet-send-gate/`](./examples/arc-testnet-wallet-send-gate/) — separate disabled-by-default browser-wallet lab for one human-confirmed, capped Arc Testnet USDC transaction request.
 - [`examples/agent-commerce-components/`](./examples/agent-commerce-components/) — reusable local-only agent/payment/receipt/log cards that freeze money fields before any future wallet handoff.
 - [`examples/agent-commerce-flows/`](./examples/agent-commerce-flows/) — local-only product-flow templates for paid API calls, creator payouts, and AI-agent commerce with frozen review artifacts.
 - [`examples/agent-commerce-review-packet/`](./examples/agent-commerce-review-packet/) — local-only exporter that combines agent identity, commerce flow, escrow outcome, approval note, and disabled-surface controls into a review JSON packet.
 - [`examples/arc-testnet-operator-evidence/`](./examples/arc-testnet-operator-evidence/) — safe example evidence packet for the Arc Testnet operator manual-review workflow.
 - [`examples/agent-identity-profile-preview/`](./examples/agent-identity-profile-preview/) — local-only ERC-8004 profile preview for agent metadata, controller notes, reputation notes, and validation requirements.
 - [`examples/job-escrow-simulator/`](./examples/job-escrow-simulator/) — local-only ERC-8183-style job escrow simulator for posting, accepting, simulated funding, submitting, requesting changes, resubmitting, rejection, dispute, expiry/cancellation, and payout approval.
-- [`examples/x402-local-challenge-server/`](./examples/x402-local-challenge-server/) — dependency-free local HTTP 402 challenge server with MCP-style manifest, JSON-RPC stdio tool mode, JSON CLI helpers, and a swappable verifier boundary for future Circle/x402 settlement work.
+- [`examples/arc-agent-treasury-lab/`](./examples/arc-agent-treasury-lab/) — local self-funding-agent product simulator with exact micro-USDC accounting, policy-gated compute, replay protection, deterministic verify/repair loops, and fail-closed manual-review outcomes.
+- [`examples/x402-local-challenge-server/`](./examples/x402-local-challenge-server/) — dependency-free local HTTP 402 challenge server with MCP-style manifest, strict schema/envelope validation, bounded unambiguous proof input, fail-closed verifier results/direct-helper config, JSON CLI helpers, and a swappable verifier boundary for future Circle/x402 settlement work.
 - [`examples/payment-intent-demo/`](./examples/payment-intent-demo/) — tiny static mockup for the first payment-intent flow, including trust-boundary and review-state UI copy.
 
 ## Screenshots
@@ -171,7 +186,7 @@ These screenshots are committed so reviewers can quickly see the live-site UX wi
 
 ## Completion status
 
-The public static kit is complete for its current safe scope: docs-grounded Arc/MCP workflows, local playgrounds, review packets, screenshots, and CI validation. It intentionally stops before wallet permissions, private keys, signing, custody, live settlement, or transaction broadcast.
+The public static kit is complete for its current guarded scope: docs-grounded Arc/MCP workflows, local playgrounds, review packets, screenshots, CI validation, and a separate disabled-by-default Arc Testnet wallet-send lab. It still stops before private-key handling, custody, mainnet, autonomous spending, or live settlement.
 
 For the shortest reviewer-facing checkpoint, see [`docs/current-readiness-report.md`](./docs/current-readiness-report.md).
 
@@ -181,22 +196,23 @@ For the shortest reviewer-facing checkpoint, see [`docs/current-readiness-report
 - Builder readiness checklist, MCP query examples, agent-commerce use cases, job escrow demo spec, Arc House submission draft, public build log, and community copy packs.
 - Styled GitHub Pages docs viewer so docs and community-health pages render like web pages instead of raw Markdown.
 - Local payment-intent playground with reviewable JSON, status transitions, USDC unit preview, unsigned transaction draft preview, final local confirmation, send-readiness gate, and calldata consistency check.
-- Local receipt verifier playground (`examples/receipt-verifier-playground/index.html`, `docs/receipt-verifier-playground.md`), read-only transaction-status playground (`examples/transaction-status-playground/index.html`, `docs/transaction-status-playground.md`), and local-only job escrow simulator with change-request, rejection, dispute, expiry, cancellation, and human-approved payout states.
+- Local receipt verifier playground (`examples/receipt-verifier-playground/index.html`, `docs/receipt-verifier-playground.md`), read-only transaction-evidence playground (`examples/transaction-status-playground/index.html`, `docs/transaction-status-playground.md`), and local-only job escrow simulator with change-request, rejection, dispute, expiry, cancellation, and human-approved payout states.
+- Arc Agent Treasury Lab connecting local x402 revenue, treasury policy, bounded compute attempts, verification, replay protection, and machine-readable evidence.
 - x402 local challenge boundary with machine-readable manifest, JSON-RPC/MCP-style stdio helpers, `.env.example`, local transcript, and production deployment runbook.
 - Agent commerce starter-kit examples: components, flows, identity profile preview, and review packet exporter.
 - Committed screenshots for the landing page, docs viewer, payment-intent playground, and job escrow simulator.
 
 ### Safe default
 
-- No wallet connection.
 - No private-key, seed-phrase, API-key, or token collection.
-- No signing or transaction broadcast.
+- No wallet request or transaction broadcast on page load.
+- No signing path outside the external wallet confirmation dialog.
 - No custody or real fund movement.
-- Human approval stays required for any future send path.
+- Human approval stays required for the guarded Arc Testnet send path.
 
 ### Optional future extensions
 
-- Real wallet-submission tutorial after wallet integration exists and has a separate review.
+- Custody or account-abstraction integration only as a separate backend/provider security review.
 - Optional Circle Wallets or Circle Contracts notes for teams that want a live integration path.
 - Public community sharing of the build log as a distribution step, not a missing product feature.
 
@@ -226,8 +242,9 @@ Use Arc MCP/docs context and this repo to design a minimal Arc payment-intent de
 
 ## Local development
 
-The repo is intentionally dependency-free: only Python 3 (used by the
-validator) and a web browser are required.
+The repo has no package-install step or third-party runtime dependencies.
+Python 3.12+, Node.js 18+ for the built-in behavioral harnesses, and a web
+browser are required.
 
 ```bash
 # Validate the repo the same way CI does.
@@ -274,11 +291,12 @@ The architecture is intentionally small and explicit:
 | --- | --- |
 | `index.html`, `404.html`, `docs/view.html`, `docs/viewer.js` | Dependency-free GitHub Pages site and styled Markdown reader. |
 | `docs/` | Arc setup, payment/agent workflows, safety contracts, runbooks, readiness, and completion evidence. |
-| `examples/` | Static local playgrounds plus the loopback-only x402 challenge/MCP demo. |
+| `examples/` | Static local playgrounds, the loopback-only x402 challenge/MCP demo, and the separate guarded Arc Testnet wallet-send lab. |
 | `prompts/` | Copy-ready Arc docs/MCP prompts for AI coding tools. |
 | `scripts/test_*.py` | Focused dependency-free regression tests. |
 | `scripts/test_all.py`, `scripts/validate_repo.py`, `scripts/check_completion.py` | Canonical suite, repository invariants, and measurable completion check. |
 | `.github/` | Least-privilege validation and Pages deployment workflows plus contribution templates. |
+| `.gitattributes`, `.editorconfig` | Cross-platform LF and editor whitespace policy for compact Windows/WSL/CI diffs. |
 
 Representative file map:
 
@@ -319,6 +337,7 @@ Representative file map:
 │   ├── receipt-verifier-playground/  # Local-only simulated receipt verifier
 │   ├── transaction-status-playground/ # Read-only Arc Testnet transaction status lookup
 │   ├── job-escrow-simulator/        # Local-only ERC-8183-style escrow flow simulator
+│   ├── arc-agent-treasury-lab/      # Local x402 revenue and bounded compute treasury simulator
 │   └── x402-local-challenge-server/ # Local-only 402 challenge/verifier boundary demo
 ├── assets/screenshots/              # Committed preview proof for reviewers
 ├── scripts/
@@ -339,6 +358,8 @@ Representative file map:
 ## Safety and honesty
 
 - Do not paste private keys, wallet seed phrases, access tokens, or API keys into AI tools.
+- Keep the guarded wallet lab Arc Testnet only; custody and mainnet remain
+  blocked behind separate security reviews.
 - Do not imply official Arc endorsement unless confirmed.
 - Treat all generated code as a draft until tested against current Arc docs.
 - Keep claims honest: this is an early independent builder resource.
@@ -358,4 +379,4 @@ expectations.
 
 ## Status
 
-Public-ready static builder kit for the current safe scope. Built in public as an independent Arc builder experiment, with wallet/signing/broadcast work kept behind separate future review gates.
+Public-ready static builder kit for the current safe scope. Local demos remain wallet-free, while the separate disabled-by-default Arc Testnet lab permits one manually reviewed browser-wallet transaction. Custody, mainnet, autonomous spending, and live settlement remain blocked behind separate security reviews.

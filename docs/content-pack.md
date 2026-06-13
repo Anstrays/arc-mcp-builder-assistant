@@ -7,12 +7,12 @@ This pack is for turning the Arc MCP Builder Assistant into posts, screenshots, 
 Keep these lines close to every public post:
 
 - Independent builder resource, not an official Arc product.
-- Local-first demo today: docs, prompts, playgrounds, simulators, and reviewable JSON.
-- No wallet connection today.
+- Local-only demos: docs, prompts, playgrounds, simulators, and reviewable JSON.
+- No wallet request on page load or from local-only demos.
 - No private keys.
 - No backend custody.
-- No transaction broadcast.
-- Testnet wiring should be a separate guarded PR with chain checks and manual confirmation.
+- No mainnet, autonomous spending, or live settlement.
+- The separate guarded Arc Testnet lab permits only one manually reviewed browser-wallet transaction.
 
 Do not use official Arc logos, Circle logos, or brand marks in generated images unless the contest rules or brand guidelines explicitly allow it. A screenshot of this repo or local UI is safer.
 
@@ -20,7 +20,7 @@ Do not use official Arc logos, Circle logos, or brand marks in generated images 
 
 Short thesis:
 
-> AI agents should be able to prepare payment and escrow actions, but humans should still review the JSON and approve the wallet step. This repo makes that boundary visible before any testnet transaction exists.
+> AI agents should be able to prepare payment and escrow actions, but humans should still review the exact JSON and approve the wallet step. This repo keeps local demos wallet-free and isolates one guarded Arc Testnet send path.
 
 Plain version:
 
@@ -33,7 +33,7 @@ Use this for a Telegram channel or contest update:
 ```text
 Собрал локальный Arc MCP Builder Assistant для agent-commerce демо.
 
-Идея простая: агент может подготовить payment intent или escrow job, но человек сначала видит JSON, статусы и preflight. Wallet/signing пока заблокированы намеренно.
+Идея простая: агент может подготовить payment intent или escrow job, но человек сначала видит JSON, статусы и preflight. Local-only demos не запрашивают wallet.
 
 Что уже есть:
 - styled docs viewer
@@ -41,11 +41,12 @@ Use this for a Telegram channel or contest update:
 - payment-intent playground
 - job escrow simulator
 - x402 local boundary
+- отдельная guarded Arc Testnet wallet-send lab
 - demo script для конкурса
 
-Главный safety point: no wallet, no keys, no custody, no broadcast. Сейчас это честный public proof-of-work, а не фейковый "мы уже платим ончейн".
+Главный safety point: no private keys, no custody, no mainnet, no autonomous spending. Guarded lab разрешает только одну вручную подтверждённую Arc Testnet транзакцию.
 
-Следующий шаг: guarded Arc Testnet slice: read-only status, chain checks, wallet availability, ручное подтверждение, потом testnet tx.
+Следующий шаг: отдельный review disposable-wallet smoke или live x402 verifier handoff без расширения custody/mainnet scope.
 ```
 
 Shorter Telegram version:
@@ -55,16 +56,16 @@ Arc MCP Builder Assistant update:
 
 Сделал local-first kit для agent-commerce демо: docs viewer, Arc docs map, payment-intent playground, job escrow simulator и x402 boundary.
 
-Фокус не на хайпе, а на safety boundary: агент готовит intent, человек видит JSON и approve state, wallet/signing пока намеренно заблокированы.
+Фокус не на хайпе, а на safety boundary: агент готовит intent, человек видит JSON и approve state, а wallet action изолирован в отдельной guarded testnet lab.
 
-No wallet. No keys. No custody. No broadcast.
-Next: guarded Arc Testnet status/signing.
+No keys. No custody. No mainnet. No autonomous spending.
+Guarded Arc Testnet send: one manual attempt only.
 ```
 
 ## X post
 
 ```text
-Built a local-first Arc MCP kit for agent-commerce demos: docs viewer, Arc map, payment-intent playground, escrow simulator, x402 boundary. No wallet/keys/broadcast yet, just reviewable JSON + human approval before testnet wiring.
+Built an Arc MCP kit with local-only agent-commerce demos, read-only checks, and a separate guarded Arc Testnet wallet-send lab. No keys, custody, mainnet, autonomous spending, or live settlement.
 ```
 
 ## Discord or Arc House update
@@ -81,9 +82,9 @@ The important part is the safety boundary. The payment playground now shows revi
 - approved_local
 - blocked_wallet_unavailable
 
-That means the demo can show an agent preparing a payment intent without pretending it already broadcasts transactions. No wallet connection, no private keys, no custody, no real payment yet.
+That means the local demo can show an agent preparing a payment intent without pretending it broadcasts transactions. The separate guarded lab can request one manually reviewed Arc Testnet transaction; there are no private keys, custody, mainnet, or live settlement claims.
 
-Next slice: guarded Arc Testnet integration. Read-only status first, chain checks, wallet availability checks, preflight report, then manually confirmed signing.
+Next review: a separately approved disposable-wallet smoke or a live x402 verifier handoff without widening custody/mainnet scope.
 ```
 
 ## Contest form summary
@@ -91,9 +92,9 @@ Next slice: guarded Arc Testnet integration. Read-only status first, chain check
 Use this when the form asks "what did you build?":
 
 ```text
-Arc MCP Builder Assistant is an independent local-first builder kit for safer agent-commerce demos on Arc. It turns Arc docs and MCP context into practical public artifacts: a styled docs viewer, Arc docs map, MCP prompt library, payment-intent playground, job escrow simulator, x402 local boundary, and contest-ready demo script.
+Arc MCP Builder Assistant is an independent builder kit for safer agent-commerce demos on Arc. It turns Arc docs and MCP context into practical public artifacts: a styled docs viewer, Arc docs map, MCP prompt library, local payment and escrow playgrounds, an x402 local boundary, read-only status checks, and a separate guarded Arc Testnet wallet-send lab.
 
-The demo makes the human approval boundary visible. An agent can prepare reviewable payment or escrow JSON, but wallet/signing is blocked until a separate guarded testnet integration. Current version has no wallet connection, no private-key handling, no backend custody, and no transaction broadcast.
+The local demos make the human approval boundary visible and never request a wallet or broadcast. The separate disabled-by-default lab permits one manually reviewed Arc Testnet transaction through an injected user-controlled wallet. There is no private-key handling, backend custody, mainnet, autonomous spending, or live settlement.
 ```
 
 ## Screenshot checklist
@@ -214,13 +215,13 @@ Visual: contest demo script or repo.
 Overlay:
 
 ```text
-No wallet. No keys. No broadcast.
-Next: guarded Arc Testnet.
+Local demos: no wallet request or broadcast.
+Guarded Arc Testnet lab: one manual attempt.
 ```
 
 Voiceover:
 
-> Current version is public proof-of-work. Next is read-only status, chain checks, and manually confirmed testnet signing.
+> Current version is public proof-of-work: local demos stay wallet-free, while the separate guarded Arc Testnet lab permits one manually confirmed attempt.
 
 ## Carousel slides
 
@@ -235,22 +236,21 @@ Use this for Telegram, X thread images, or a LinkedIn-style carousel.
    - payment-intent playground
    - job escrow simulator
    - x402 local boundary
+   - guarded Arc Testnet wallet-send lab
 3. **Payment states**
    - `draft`
    - `ready_for_review`
    - `approved_local`
    - `blocked_wallet_unavailable`
-4. **What is not live yet**
-   - no wallet
+4. **What remains blocked**
    - no keys
    - no custody
-   - no transaction broadcast
-5. **Next PR**
-   - read-only Arc status
-   - chain ID checks
-   - wallet availability
-   - preflight report
-   - manual testnet signing
+   - no mainnet
+   - no autonomous spending
+   - no live settlement
+5. **Next review**
+   - disposable-wallet testnet smoke
+   - live x402 verifier handoff
 
 ## Short blog outline
 
@@ -263,11 +263,11 @@ Title options:
 Outline:
 
 1. The problem: agent-commerce demos often skip the review step.
-2. The constraint: no wallet or transaction broadcast until the flow is inspectable.
-3. What the repo ships today: docs, prompts, playground, escrow simulator, x402 boundary.
+2. The constraint: local demos stay wallet-free and any testnet send stays isolated and inspectable.
+3. What the repo ships today: docs, prompts, local playgrounds, escrow simulator, x402 boundary, read-only checks, and guarded send lab.
 4. The payment-intent state machine.
 5. Why local proof-of-work matters before testnet.
-6. Next step: guarded Arc Testnet integration.
+6. Next review: disposable-wallet smoke or live x402 verifier handoff.
 
 ## One-minute voiceover
 
@@ -280,9 +280,9 @@ The repo already has a styled docs viewer, Arc docs map, MCP prompt library, pay
 
 In the payment playground, the flow is explicit: draft, ready_for_review, approved_local, and blocked_wallet_unavailable. That last state matters. It prevents the demo from pretending that wallet signing or transaction broadcast exists before it has been reviewed.
 
-So the current artifact is public proof-of-work, not a fake mainnet claim. No wallet, no keys, no custody, no broadcast.
+So the current artifact is public proof-of-work, not a fake mainnet claim. Local demos request no wallet or broadcast; the separate guarded lab permits one manual Arc Testnet attempt. No keys, custody, mainnet, autonomous spending, or live settlement.
 
-Next step is a guarded Arc Testnet slice: read-only status, chain checks, wallet availability checks, preflight report, and manually confirmed signing.
+Next review is a separately approved disposable-wallet smoke or a live x402 verifier handoff without widening custody/mainnet scope.
 ```
 
 ## Submission checklist
@@ -293,7 +293,7 @@ Before posting or submitting:
 - Record the local site or GitHub Pages site, not private dashboards.
 - Show the payment state names on screen.
 - Say "local-first" or "local-only" for the current payment playground.
-- Say "next step" when talking about testnet signing.
+- Distinguish the local-only playgrounds from the separate guarded Arc Testnet send lab.
 - Do not imply real funds moved.
 - Do not paste secrets, RPC keys, wallet phrases, or private addresses.
 - Link the repo and the exact docs page used in the demo.

@@ -25,6 +25,8 @@ const PAGES = [
   { id: 'arc-wallet-integration-notes.md', path: './arc-wallet-integration-notes.md', githubPath: 'docs/arc-wallet-integration-notes.md', label: 'Arc wallet integration notes', group: 'Playbooks' },
   { id: 'wallet-preflight-contract.md', path: './wallet-preflight-contract.md', githubPath: 'docs/wallet-preflight-contract.md', label: 'Wallet preflight contract', group: 'Playbooks' },
   { id: 'arc-testnet-send-readiness-gate.md', path: './arc-testnet-send-readiness-gate.md', githubPath: 'docs/arc-testnet-send-readiness-gate.md', label: 'Arc Testnet send readiness gate', group: 'Playbooks' },
+  { id: 'guarded-wallet-send-runbook.md', path: './guarded-wallet-send-runbook.md', githubPath: 'docs/guarded-wallet-send-runbook.md', label: 'Guarded wallet send runbook', group: 'Playbooks' },
+  { id: 'custody-and-mainnet-gates.md', path: './custody-and-mainnet-gates.md', githubPath: 'docs/custody-and-mainnet-gates.md', label: 'Custody and mainnet gates', group: 'Playbooks' },
   { id: 'arc-testnet-operator-runbook.md', path: './arc-testnet-operator-runbook.md', githubPath: 'docs/arc-testnet-operator-runbook.md', label: 'Arc Testnet operator runbook', group: 'Playbooks' },
   { id: 'arc-testnet-operator-evidence.md', path: './arc-testnet-operator-evidence.md', githubPath: 'docs/arc-testnet-operator-evidence.md', label: 'Arc Testnet operator evidence packet', group: 'Playbooks' },
   { id: 'agent-commerce-use-cases.md', path: './agent-commerce-use-cases.md', githubPath: 'docs/agent-commerce-use-cases.md', label: 'Agent commerce use cases', group: 'Playbooks' },
@@ -32,6 +34,7 @@ const PAGES = [
   { id: 'agent-commerce-flow-library.md', path: './agent-commerce-flow-library.md', githubPath: 'docs/agent-commerce-flow-library.md', label: 'Agent commerce flow library', group: 'Playbooks' },
   { id: 'agent-commerce-review-packet.md', path: './agent-commerce-review-packet.md', githubPath: 'docs/agent-commerce-review-packet.md', label: 'Agent commerce review packet', group: 'Playbooks' },
   { id: 'job-escrow-demo.md', path: './job-escrow-demo.md', githubPath: 'docs/job-escrow-demo.md', label: 'Job escrow demo', group: 'Playbooks' },
+  { id: 'arc-agent-treasury-lab.md', path: './arc-agent-treasury-lab.md', githubPath: 'docs/arc-agent-treasury-lab.md', label: 'Arc Agent Treasury Lab', group: 'Playbooks' },
   { id: 'mcp-query-examples.md', path: './mcp-query-examples.md', githubPath: 'docs/mcp-query-examples.md', label: 'MCP query examples', group: 'Playbooks' },
   { id: 'arc-house-submission.md', path: './arc-house-submission.md', githubPath: 'docs/arc-house-submission.md', label: 'Arc House submission draft', group: 'Playbooks' },
   { id: 'build-log.md', path: './build-log.md', githubPath: 'docs/build-log.md', label: 'Build log', group: 'Playbooks' },
@@ -48,6 +51,9 @@ const docBody = document.querySelector('#doc-body');
 const docList = document.querySelector('#doc-list');
 const docsHomeLink = document.querySelector('#docs-home-link');
 const githubLink = document.querySelector('#github-link');
+const DOC_TIMEOUT_MS = 8_000;
+const MAX_DOC_BYTES = 1_000_000;
+const DOC_SECTION_SEPARATOR = '::';
 
 function escapeHtml(value) {
   return String(value)
@@ -58,14 +64,38 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
-function currentPage() {
+async function fetchDocText(path) {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), DOC_TIMEOUT_MS);
+  try {
+    const response = await fetch(path, { cache: 'no-store', signal: controller.signal });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const markdown = await response.text();
+    if (new TextEncoder().encode(markdown).byteLength > MAX_DOC_BYTES) {
+      throw new Error('Document exceeded the 1 MB safety limit');
+    }
+    return markdown;
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
+function currentRoute() {
   let fromHash = '';
   try {
     fromHash = decodeURIComponent(window.location.hash.replace(/^#/, '')).trim().toLowerCase();
   } catch (_error) {
     fromHash = '';
   }
-  return pagesById.get(fromHash) || PAGES[0];
+  const [pageId, section = ''] = fromHash.split(DOC_SECTION_SEPARATOR, 2);
+  return {
+    page: pagesById.get(pageId) || PAGES[0],
+    section: section ? slugify(section) : '',
+  };
+}
+
+function currentPage() {
+  return currentRoute().page;
 }
 
 function slugify(value) {
@@ -81,7 +111,7 @@ function normalizeLocalDocHref(href) {
   const cleanPath = path.replace(/^\.\//, '').replace(/^docs\//, '');
   const page = docsByFilename.get(cleanPath) || pagesById.get(cleanPath.toLowerCase());
   if (!page) return null;
-  return `#${encodeURIComponent(page.id)}${fragment ? `-${encodeURIComponent(fragment)}` : ''}`;
+  return `#${encodeURIComponent(page.id)}${fragment ? `${DOC_SECTION_SEPARATOR}${encodeURIComponent(fragment)}` : ''}`;
 }
 
 function inlineMarkdown(line) {
@@ -100,7 +130,8 @@ function inlineMarkdown(line) {
       return `<a href="${localDoc}">${safeText}</a>`;
     }
     if (cleanHref.startsWith('#')) {
-      return `<a href="${escapeHtml(cleanHref)}">${safeText}</a>`;
+      const page = currentPage();
+      return `<a href="#${encodeURIComponent(page.id)}${DOC_SECTION_SEPARATOR}${encodeURIComponent(cleanHref.slice(1))}">${safeText}</a>`;
     }
     return `<code>${safeText}</code>`;
   });
@@ -273,18 +304,23 @@ function renderList(activePage) {
 }
 
 async function loadDoc() {
-  const page = currentPage();
+  const route = currentRoute();
+  const page = route.page;
   renderList(page);
   docTitle.textContent = page.label;
   docMeta.textContent = `Rendering ${page.githubPath} as a styled GitHub Pages document.`;
   docsHomeLink.href = '../index.html#docs';
   githubLink.href = `https://github.com/Anstrays/arc-mcp-builder-assistant/blob/main/${page.githubPath}`;
   try {
-    const response = await fetch(page.path, { cache: 'no-store' });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const markdown = await response.text();
+    const markdown = await fetchDocText(page.path);
     docBody.innerHTML = renderMarkdown(markdown);
     document.title = `${page.label} · Arc MCP Builder Assistant`;
+    if (route.section) {
+      const section = document.getElementById(route.section);
+      if (section && typeof section.scrollIntoView === 'function') {
+        section.scrollIntoView();
+      }
+    }
   } catch (error) {
     docBody.innerHTML = `<p class="error">Could not load ${escapeHtml(page.githubPath)}. ${escapeHtml(error.message)}</p>`;
   }

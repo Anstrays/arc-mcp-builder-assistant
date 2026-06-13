@@ -41,10 +41,18 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+function amountIsValid(value) {
+  return /^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(String(value || '').trim())
+    && Number(value) > 0;
+}
+
+function recipientIsValid(value) {
+  return /^0x[a-fA-F0-9]{40}$/.test(String(value || '').trim())
+    && !/^0x0{40}$/i.test(String(value || '').trim());
+}
+
 function normalizedAmount() {
-  const amount = Number(fields.amount.value || 0);
-  if (!Number.isFinite(amount) || amount < 0) return '0.00';
-  return amount.toFixed(2);
+  return amountIsValid(fields.amount.value) ? Number(fields.amount.value).toFixed(2) : '0.00';
 }
 
 function addEvent(event, actor = 'system') {
@@ -129,6 +137,7 @@ function combinedObject() {
 }
 
 function render() {
+  const moneyFieldsFrozen = status !== 'draft';
   cards.status.textContent = status === 'draft' ? 'Draft review object' : status === 'frozen' ? 'Money fields frozen' : status === 'approved' ? 'Local approval recorded' : 'Simulated receipt added';
   cards.agent.textContent = JSON.stringify(agentCard(), null, 2);
   cards.payment.textContent = JSON.stringify(paymentRequestCard(), null, 2);
@@ -139,7 +148,12 @@ function render() {
     li.textContent = `${entry.actor}: ${entry.event} · ${entry.at}`;
     return li;
   }));
-  buttons.freeze.disabled = status !== 'draft';
+  for (const field of [fields.purpose, fields.amount, fields.recipient]) {
+    field.disabled = moneyFieldsFrozen;
+  }
+  buttons.freeze.disabled = status !== 'draft'
+    || !amountIsValid(fields.amount.value)
+    || !recipientIsValid(fields.recipient.value);
   buttons.approve.disabled = status !== 'frozen';
   buttons.receipt.disabled = status !== 'approved';
 }

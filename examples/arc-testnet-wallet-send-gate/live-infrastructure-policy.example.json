@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "scope": "arc-live-infrastructure-gates",
+  "activeProfile": "arc-testnet-injected-wallet",
+  "profiles": {
+    "arcTestnet": {
+      "enabled": true,
+      "network": "Arc Testnet",
+      "chainId": 5042002,
+      "chainIdHex": "0x4cef52",
+      "rpcUrl": "https://rpc.testnet.arc.network",
+      "explorerUrl": "https://testnet.arcscan.app",
+      "asset": {
+        "symbol": "USDC",
+        "tokenAddress": "0x3600000000000000000000000000000000000000",
+        "decimals": 6,
+        "maxBaseUnitsPerRequest": "1000000"
+      },
+      "signing": {
+        "mode": "external_wallet_confirmation_only",
+        "autonomous": false,
+        "rawPrivateKeysAccepted": false
+      },
+      "broadcast": {
+        "method": "eth_sendTransaction",
+        "transactionChainIdRequired": "0x4cef52",
+        "explicitHumanApprovalRequired": true,
+        "topLevelBrowsingContextRequired": true,
+        "zeroAddressAllowed": false,
+        "tokenContractRecipientAllowed": false,
+        "maxAttemptsPerPageLoad": 1,
+        "automaticRetry": false
+      }
+    },
+    "arcMainnet": {
+      "enabled": false,
+      "status": "blocked_official_configuration_upcoming",
+      "chainId": null,
+      "chainIdHex": null,
+      "rpcUrl": null,
+      "explorerUrl": null
+    }
+  },
+  "custody": {
+    "implemented": false,
+    "mode": "non-custodial",
+    "staticSiteMayHoldSecrets": false,
+    "requiredBeforeEnable": [
+      "owned_backend_or_reviewed_provider",
+      "secret_manager_hsm_or_mpc",
+      "chain_asset_method_and_address_allowlists",
+      "per_transaction_and_cumulative_limits",
+      "idempotency_replay_and_nonce_controls",
+      "immutable_redacted_audit_logs",
+      "kill_switch_and_incident_runbook",
+      "separate_security_review"
+    ]
+  }
+}

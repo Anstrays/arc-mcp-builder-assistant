@@ -58,7 +58,8 @@ What is live now:
 - local job-escrow simulator
 - local x402-style 402 challenge boundary for paid API flows
 - Arc Testnet integration runbook and read-only status helper
-- wallet guardrails: no signing, no private keys, no autonomous spending
+- separate disabled-by-default guarded Arc Testnet wallet-send lab
+- wallet guardrails: no private keys, no custody, no mainnet, no autonomous spending
 - quickstart/tutorial/content pack for reviewers and builders
 
 Useful links:
@@ -66,7 +67,7 @@ GitHub: https://github.com/Anstrays/arc-mcp-builder-assistant
 Live demo: https://anstrays.github.io/arc-mcp-builder-assistant/
 
 What I’m looking for:
-- feedback on the safest next wallet/testnet status slice
+- feedback on the guarded Arc Testnet wallet boundary and disposable-wallet runbook
 - missing Arc docs or constants I should cite better
 - ideas for small paid-agent/API demos that stay testnet-first and human-approved
 ```
@@ -74,9 +75,9 @@ What I’m looking for:
 ## Office-hours question
 
 ```text
-I’m building a static Arc builder kit around MCP/docs-driven agent-commerce demos. The current flow stops before signing: it creates payment intents, checks Arc Testnet status read-only, and explains wallet guard failures.
+I’m building a static Arc builder kit around MCP/docs-driven agent-commerce demos. Local flows stop before signing; a separate disabled-by-default lab can request one manually reviewed Arc Testnet transaction through an injected wallet.
 
-For the next testnet slice, would you recommend starting with a browser wallet/external signer path, or a Circle wallet path for an agent-wallet demo? I’m trying to keep custody assumptions explicit and avoid adding any private-key or backend-secret surface to the public GitHub Pages demo.
+For the next independently reviewed slice, which live verifier boundary would be most useful without adding custody or backend secrets to the public GitHub Pages demo?
 ```
 
 ## Product feedback framing

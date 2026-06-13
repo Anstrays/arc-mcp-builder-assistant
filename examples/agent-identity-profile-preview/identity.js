@@ -93,11 +93,15 @@ function profileObject() {
 
 function render() {
   const profile = profileObject();
+  const profileFrozen = state === 'profile_frozen_for_review';
   nodes.status.textContent = state;
   nodes.registries.textContent = JSON.stringify(ARC_IDENTITY_PREVIEW.registries, null, 2);
   nodes.safety.textContent = JSON.stringify(safetyFlags(), null, 2);
   nodes.profile.textContent = JSON.stringify(profile, null, 2);
-  buttons.freeze.disabled = state === 'profile_frozen_for_review';
+  for (const field of Object.values(fields)) {
+    field.disabled = profileFrozen;
+  }
+  buttons.freeze.disabled = profileFrozen;
 }
 
 buttons.freeze.addEventListener('click', () => {

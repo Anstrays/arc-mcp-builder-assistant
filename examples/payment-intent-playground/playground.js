@@ -18,6 +18,7 @@ const validationSummaryList = document.querySelector('#validation-summary-list')
 const statusStateList = document.querySelector('#status-state-list');
 const signingPreflightReport = document.querySelector('#signing-preflight-report');
 const copyPreflightButton = document.querySelector('#copy-preflight-report');
+const expiryInput = document.querySelector('#expiry');
 const erc20BaseUnits = document.querySelector('#erc20-base-units');
 const erc20Decimals = document.querySelector('#erc20-decimals');
 const nativeGasDecimals = document.querySelector('#native-gas-decimals');
@@ -83,6 +84,12 @@ let events = [...initialEvents];
 let frozenIntentSnapshot = null;
 let finalConfirmationRecorded = false;
 
+function setDefaultExpiry() {
+  const future = new Date(Date.now() + (24 * 60 * 60 * 1000));
+  const local = new Date(future.getTime() - (future.getTimezoneOffset() * 60 * 1000));
+  expiryInput.value = local.toISOString().slice(0, 16);
+}
+
 function readIntent() {
   const data = new FormData(form);
   const intent = {
@@ -139,7 +146,10 @@ function renderArcStatusPanel() {
 }
 
 function hasValidRecipient(recipient) {
-  return /^0x[a-fA-F0-9]{40}$/.test(recipient);
+  const normalized = String(recipient || '').trim().toLowerCase();
+  return /^0x[a-f0-9]{40}$/.test(normalized)
+    && !/^0x0{40}$/.test(normalized)
+    && normalized !== ARC_TESTNET_STATUS.erc20UsdcAddress.toLowerCase();
 }
 
 function hasValidUsdcAmount(amount) {
@@ -210,7 +220,7 @@ function buildUnsignedTransactionDraft(intent) {
     },
     blockers: [
       ...(!isSupportedAsset ? ['Only USDC is supported for the first transaction draft.'] : []),
-      ...(!hasValidRecipient(intent.recipient) ? ['Recipient is not a 0x-prefixed 40-byte address.'] : []),
+      ...(!hasValidRecipient(intent.recipient) ? ['Recipient must be a non-zero 0x-prefixed address and cannot be the USDC token contract.'] : []),
       ...(!hasValidUsdcAmount(intent.amount) ? ['Amount must be positive with at most 6 decimals.'] : []),
       ...(!hasFutureExpiry(intent.expiry) ? ['Expiry must be in the future.'] : []),
       'Draft is not a wallet request and cannot move funds.',
@@ -815,9 +825,11 @@ resetButton.addEventListener('click', () => {
   frozenIntentSnapshot = null;
   finalConfirmationRecorded = false;
   form.reset();
+  setDefaultExpiry();
   finalConfirmationCheckbox.checked = false;
   render();
 });
 
 renderArcStatusPanel();
+setDefaultExpiry();
 render();

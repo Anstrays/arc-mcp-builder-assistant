@@ -1,16 +1,16 @@
 # Wallet preflight contract
 
-> Scope: a secret-free contract for the **next** Arc Testnet wallet PR. It describes the exact data a future wallet adapter must display, validate, and freeze before a human can sign. This document does not connect a wallet, create a payment, submit a transaction, or store credentials.
+> Scope: a secret-free contract shared by the local payment-intent playground and the separate guarded Arc Testnet send lab. It describes the exact data a wallet adapter must display, validate, and freeze before a human can approve a request. This document itself does not connect a wallet, create a payment, submit a transaction, or store credentials.
 
 ## Why this exists
 
-The current payment-intent playground already produces a local signing preflight report. Before adding any wallet adapter, the project needs a stable contract that reviewers can compare against the UI, tests, and future transaction builder.
+The payment-intent playground produces a local signing preflight report, and the separate guarded lab implements the narrow browser-wallet send slice. Reviewers need one stable contract they can compare against both UIs, their tests, and any later extension.
 
 Use this page as the handoff between:
 
 1. the local-only playground;
-2. a future browser-wallet preview PR;
-3. a later human-approved testnet send PR.
+2. the separate disabled-by-default guarded Arc Testnet send lab;
+3. any later wallet, verifier, custody, or mainnet proposal that requires its own review.
 
 ## Non-negotiable boundary
 
@@ -29,7 +29,7 @@ The preflight contract is allowed to contain only public or user-entered payment
 - expiry;
 - guard reasons;
 - user-visible approval state;
-- transaction hash after a later send PR.
+- transaction hash returned by the guarded send lab after wallet confirmation.
 
 It must never contain:
 
@@ -44,7 +44,7 @@ It must never contain:
 
 ## Required preflight fields
 
-A future wallet adapter must render these fields before enabling any signing button.
+The guarded wallet adapter must render these fields before enabling its transaction-request button.
 
 | Field | Required value / source | Fail-closed rule |
 | --- | --- | --- |
@@ -59,29 +59,29 @@ A future wallet adapter must render these fields before enabling any signing but
 | `intent.recipient` | 0x-prefixed 40-byte address | Block invalid, empty, or changed-after-review recipients. |
 | `intent.amountDecimal` | positive decimal with at most 6 fractional digits | Block zero, negative, scientific notation, or more than 6 decimals. |
 | `intent.amountBaseUnits` | deterministic 6-decimal parse of `amountDecimal` | Block if base units do not match the decimal display. |
-| `transactionDraft.unsignedOnly` | `true` until a separate send PR | Block if a draft can trigger wallet UI by itself. |
+| `transactionDraft.unsignedOnly` | `true` in the local playground; the guarded lab freezes the same draft before wallet handoff | Block if draft creation itself can trigger wallet UI. |
 | `transactionDraft.to` | reviewed Arc Testnet USDC token address | Block if transfer target differs from the reviewed token address. |
 | `transactionDraft.value` | `0x0` for ERC-20 transfer | Block native-value transfers for the first USDC send PR. |
 | `transactionDraft.data` | deterministic `transfer(address,uint256)` calldata | Block if decoded recipient or base units differ from the frozen intent. |
-| `transactionDraftConsistency.allPassed` | `true` before any later wallet handoff | Block if calldata cannot be decoded back to the reviewed recipient and amount. |
-| `walletHandoffReadiness.walletRequestEnabled` | `false` in the local playground | Block any preview PR that can open a wallet request before the send PR. |
-| `walletHandoffReadiness.canRequestWallet` | `false` until a separate send PR | Block if local guard manifests can flip into a wallet action. |
-| `walletHandoffReadiness.sendPrRequired` | `true` | Block unless reviewers can see that wallet/send remains separate from preview guards. |
+| `transactionDraftConsistency.allPassed` | `true` before the guarded wallet handoff | Block if calldata cannot be decoded back to the reviewed recipient and amount. |
+| `walletHandoffReadiness.walletRequestEnabled` | `false` in the local playground | Block the local preview from opening a wallet request. |
+| `walletHandoffReadiness.canRequestWallet` | `false` in the local playground | Block if local guard manifests can flip into a wallet action. |
+| `walletHandoffReadiness.sendPrRequired` | `true` in the local playground | Keep wallet/send isolated from preview guards. |
 | `walletHandoffReadiness.requiredBeforeSend` | validation, frozen intent, human approval, final confirmation, draft consistency, wallet chain proof | Block if any required guard is omitted from the handoff manifest. |
 | `intent.memo` | visible user-facing description | Block hidden memo/resource changes after review starts. |
 | `intent.expiry` | future timestamp | Block expired intents before signing. |
 | `approval.humanRequired` | `true` | Block any auto-submit or unattended spending path. |
-| `approval.finalConfirmation` | local-only marker before any later wallet request | Block unless user confirms the frozen fields immediately before wallet handoff. |
-| `safety.transactionBroadcast` | `false` for preview PR, `true` only in a later send PR after wallet confirmation | Block any background broadcast. |
+| `approval.finalConfirmation` | local marker before any guarded wallet request | Block unless user confirms the frozen fields immediately before wallet handoff. |
+| `safety.transactionBroadcast` | `false` in local preview; the guarded lab can request one wallet transaction only after confirmation | Block any background or repeated broadcast. |
 
 ## JSON shape
 
-The local playground or a future wallet-preview component should be able to produce a report with this shape:
+The local playground produces a report with this shape:
 
 ```json
 {
   "walletAction": "blocked",
-  "nextRequiredReview": "separate testnet-only wallet PR",
+  "nextRequiredReview": "separate guarded Arc Testnet send lab",
   "network": {
     "name": "Arc Testnet",
     "chainId": 5042002,
@@ -100,7 +100,7 @@ The local playground or a future wallet-preview component should be able to prod
     "amountDecimal": "5.00",
     "amountBaseUnits": "5000000",
     "memo": "Paid data/API task for Arc market research report.",
-    "expiry": "2026-05-30T00:00"
+    "expiry": "2030-05-30T00:00"
   },
   "transactionDraft": {
     "type": "unsigned_erc20_transfer_preview",
@@ -178,13 +178,13 @@ The first wallet-related PR should still avoid sending funds. It is acceptable w
 - [x] Unsigned transaction draft is inspectable and cannot trigger a wallet request.
 - [x] Unsigned transaction draft consistency is checked by decoding calldata back to reviewed fields.
 - [x] Wallet handoff readiness manifest keeps wallet requests disabled and lists required send-PR guards.
-- [x] The app cannot call `sendTransaction`, `eth_sendTransaction`, or equivalent write APIs.
-- [x] Tests prove that the no-broadcast path remains default.
+- [x] The local playground cannot call `sendTransaction`, `eth_sendTransaction`, or equivalent write APIs.
+- [x] Tests prove that the no-broadcast path remains default in the local playground.
 - [x] The local playground remains usable when no wallet is present.
 
 ## Send PR acceptance criteria
 
-A later send PR may submit a testnet transaction only if all preview criteria are already met and these additional rules pass:
+The separate guarded Arc Testnet send lab may submit one testnet transaction only if all preview criteria are already met and these additional rules pass:
 
 - [ ] Wallet handoff readiness manifest passes immediately before wallet prompt creation.
 - [ ] Unsigned transaction draft decodes back to the frozen recipient, amount, token address, and chain before wallet handoff.
@@ -210,4 +210,4 @@ Before approving any wallet PR, verify:
 
 ## Current status
 
-This repository currently implements the safe local side of the contract: deterministic amount parsing, optional read-only injected-wallet preview state, explicit wrong-chain/provider/account guard reasons, frozen reviewed intent fields, unsigned transaction draft generation, calldata consistency checks, wallet handoff readiness manifest, a copyable preflight report, and disabled wallet actions. Real wallet permission requests, signing, and transaction submission remain future work and must land in separate reviewed PRs.
+This repository implements the safe local side of the contract in the payment-intent playground: deterministic amount parsing, optional read-only injected-wallet preview state, explicit wrong-chain/provider/account guard reasons, frozen reviewed intent fields, unsigned transaction draft generation, calldata consistency checks, a wallet handoff readiness manifest, a copyable preflight report, and disabled wallet actions. A separate disabled-by-default Arc Testnet lab implements the narrow reviewed send slice with an injected user-controlled wallet. Custody, mainnet, autonomous spending, and live settlement remain future work requiring separate security reviews.

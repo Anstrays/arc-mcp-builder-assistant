@@ -8,10 +8,12 @@ import io
 import os
 import subprocess
 import sys
+import threading
 import time
 import unittest
 import urllib.error
 import urllib.request
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -228,6 +230,64 @@ class ArcProductionDeploymentTests(unittest.TestCase):
             self.smoke.decode_json_object(
                 io.BytesIO(b"{" + b" " * self.smoke.MAX_RESPONSE_BYTES + b"}")
             )
+
+    def test_live_smoke_requires_usdc_and_mainnet_false(self) -> None:
+        payload = {
+            "accepts": [{"network": "arc-testnet", "asset": "USDC"}],
+            "mainnetEnabled": False,
+            "mcpManifest": {
+                "safety": {
+                    "transactionBroadcast": False,
+                    "humanApprovalRequired": True,
+                }
+            },
+        }
+        self.smoke.validate_402(402, payload)
+
+        changed_asset = {**payload, "accepts": [{"network": "arc-testnet", "asset": "EURC"}]}
+        with self.assertRaisesRegex(SystemExit, "pinned USDC"):
+            self.smoke.validate_402(402, changed_asset)
+
+        changed_mainnet = {**payload, "mainnetEnabled": True}
+        with self.assertRaisesRegex(SystemExit, "mainnetEnabled"):
+            self.smoke.validate_402(402, changed_mainnet)
+
+    def test_live_smoke_never_follows_redirects_or_forwards_payment_header(self) -> None:
+        requests: list[tuple[str, str | None]] = []
+
+        class RedirectHandler(BaseHTTPRequestHandler):
+            def do_GET(self) -> None:  # noqa: N802 - stdlib handler API
+                requests.append((self.path, self.headers.get("X-Payment")))
+                body = b"{}"
+                if self.path == "/redirect":
+                    self.send_response(302)
+                    self.send_header("Location", "/target")
+                else:
+                    self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, format: str, *args: object) -> None:
+                return
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), RedirectHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            status, _payload = self.smoke.http_json(
+                f"http://127.0.0.1:{server.server_port}/redirect",
+                timeout=5,
+                x_payment="proof-must-not-be-forwarded",
+            )
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=5)
+
+        self.assertEqual(status, 302)
+        self.assertEqual(requests, [("/redirect", "proof-must-not-be-forwarded")])
 
 
 if __name__ == "__main__":

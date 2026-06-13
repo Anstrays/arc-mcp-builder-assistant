@@ -74,6 +74,14 @@ class OperatorEvidenceReportTests(unittest.TestCase):
         self.assertEqual(completed.returncode, 2)
         self.assertIn("not valid JSON", completed.stdout)
 
+    def test_duplicate_json_key_exits_two(self) -> None:
+        with tempfile.TemporaryDirectory(dir=ROOT) as directory:
+            path = Path(directory) / "duplicate.operator-evidence.local.json"
+            path.write_text('{"schema":"first","schema":"second"}', encoding="utf-8")
+            completed = run_report(path)
+        self.assertEqual(completed.returncode, 2)
+        self.assertIn("duplicate JSON key", completed.stdout)
+
     def test_credential_like_value_is_reported_without_echoing_it(self) -> None:
         secret = "ghp_" + ("z" * 24)
         packet = json.loads(DEFAULT_PACKET.read_text(encoding="utf-8"))

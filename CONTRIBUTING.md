@@ -15,7 +15,8 @@ python -m http.server 8080
 ```
 
 Open `http://localhost:8080/`. No npm install, wallet, database, or secret is
-required.
+required. The canonical suite requires Python 3.12+ and Node.js 18+, using
+Node built-ins only.
 
 ## Useful contributions
 
