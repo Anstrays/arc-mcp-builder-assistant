@@ -11,6 +11,7 @@ REQUIRED_SURFACES = (
     "README.md",
     ".env.example",
     ".gitattributes",
+    ".github/workflows/readiness-monitor.yml",
     "SECURITY.md",
     "CONTRIBUTING.md",
     "index.html",

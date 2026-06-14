@@ -62,6 +62,20 @@ class WorkflowSecurityTests(unittest.TestCase):
             ".github/workflows/pages.yml",
             workflow("  contents: read\n  pages: write\n  id-token: write"),
         )
+        self.write(
+            ".github/workflows/readiness-monitor.yml",
+            workflow("  contents: read", trigger="schedule:\n    - cron: \"17 6 * * 1\"\n  workflow_dispatch:")
+            + """
+    timeout-minutes: 10
+      - run: |
+          set +e
+          python scripts/arc_builder_doctor.py --include-arc-rpc --include-public-site --strict --markdown > "$RUNNER_TEMP/arc-builder-doctor.md"
+          doctor_status=$?
+          set -e
+          cat "$RUNNER_TEMP/arc-builder-doctor.md" >> "$GITHUB_STEP_SUMMARY"
+          exit "$doctor_status"
+""",
+        )
 
     def test_current_runtime_and_permission_contract_passes(self) -> None:
         self.validator.validate_workflow_security()
@@ -150,6 +164,33 @@ class WorkflowSecurityTests(unittest.TestCase):
             workflow("  contents: read\n  pages: write\n  id-token: write\n  packages: read"),
         )
         with self.assertRaisesRegex(SystemExit, "permissions must be exactly"):
+            self.validator.validate_workflow_security()
+
+    def test_readiness_monitor_write_permission_fails_closed(self) -> None:
+        path = ".github/workflows/readiness-monitor.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace(
+            "permissions:\n  contents: read",
+            "permissions:\n  contents: write",
+        )
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "permissions must be exactly"):
+            self.validator.validate_workflow_security()
+
+    def test_readiness_monitor_requires_strict_opt_in_summary_markers(self) -> None:
+        path = ".github/workflows/readiness-monitor.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace("--strict", "--relaxed")
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "missing active readiness-monitor safety marker"):
+            self.validator.validate_workflow_security()
+
+    def test_commented_readiness_marker_cannot_spoof_active_command(self) -> None:
+        path = ".github/workflows/readiness-monitor.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace(
+            "          set +e",
+            "          # set +e",
+        )
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "missing active readiness-monitor safety marker"):
             self.validator.validate_workflow_security()
 
 
