@@ -58,6 +58,9 @@ Expected safe result:
 - `config/arc_testnet.facts.json` plus `scripts/validate_arc_testnet_facts.py`:
   offline consistency proof for critical Arc Testnet implementation, policy,
   and demo surfaces; official-source re-check remains required before release.
+- `.github/workflows/readiness-monitor.yml`: weekly/manual least-privilege
+  monitor that publishes strict read-only Doctor Markdown evidence to the
+  GitHub Actions summary without deploy or comment permissions.
 
 ## Remaining work is optional extension work
 
