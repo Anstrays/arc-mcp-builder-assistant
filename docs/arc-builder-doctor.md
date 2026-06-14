@@ -17,6 +17,9 @@ python3 scripts/arc_builder_doctor.py
 # Machine-readable report (only JSON on stdout; diagnostics on stderr).
 python3 scripts/arc_builder_doctor.py --json
 
+# Markdown report for CI summaries or PR comments.
+python3 scripts/arc_builder_doctor.py --markdown
+
 # Full local verification (runs the canonical suite once, bounded).
 python3 scripts/arc_builder_doctor.py --full
 
@@ -34,6 +37,11 @@ Optional network checks are **opt-in only** and **read-only**. The Arc Testnet
 status check uses JSON-RPC `POST`; public-site checks use `GET` against reviewed
 public endpoints. They never connect a wallet, never submit a transaction, and
 never read `.env`, credentials, or wallet material.
+
+`--json` and `--markdown` are mutually exclusive stdout formats. Markdown table
+cells escape HTML and table delimiters before rendering child-check details or
+sources. The doctor still writes no files; a caller may explicitly redirect
+stdout when it wants to retain a report.
 
 ## Report contract (schemaVersion 1)
 

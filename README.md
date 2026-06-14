@@ -95,6 +95,9 @@ python3 scripts/arc_builder_doctor.py
 # Machine-readable report (only JSON on stdout).
 python3 scripts/arc_builder_doctor.py --json
 
+# Markdown report for CI summaries or PR comments.
+python3 scripts/arc_builder_doctor.py --markdown
+
 # Full local verification (also runs the canonical suite once).
 python3 scripts/arc_builder_doctor.py --full
 
