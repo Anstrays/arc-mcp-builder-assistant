@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import http.client as http_client
+import html
 import json
 import re
 import shutil
@@ -677,6 +678,56 @@ def render_human(report: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def markdown_cell(value: Any) -> str:
+    """Escape a value for a single-line Markdown table cell."""
+    escaped = html.escape(str(value), quote=True)
+    for token in ("\\", "|", "`", "*", "_", "[", "]"):
+        escaped = escaped.replace(token, "\\" + token)
+    return escaped.replace("\r", " ").replace("\n", " ")
+
+
+def render_markdown(report: dict[str, Any]) -> str:
+    enabled_modes = [key for key, value in report["mode"].items() if value]
+    lines = [
+        "# Arc Builder Doctor",
+        "",
+        f"- **Overall:** `{markdown_cell(report['overallStatus'].upper())}`",
+        f"- **Generated:** `{markdown_cell(report['generatedAt'])}`",
+        f"- **Mode:** `{markdown_cell(', '.join(enabled_modes) or 'none')}`",
+        "",
+        "## Checks",
+        "",
+        "| Status | Check | Detail | Source | Duration |",
+        "| --- | --- | --- | --- | ---: |",
+    ]
+    for check in report["checks"]:
+        lines.append(
+            "| "
+            + " | ".join(
+                (
+                    markdown_cell(_STATUS_GLYPH.get(check["status"], check["status"])),
+                    markdown_cell(check["id"]),
+                    markdown_cell(check["detail"]),
+                    markdown_cell(check.get("source", "")),
+                    markdown_cell(f"{check['durationMs']} ms"),
+                )
+            )
+            + " |"
+        )
+    lines.extend(
+        (
+            "",
+            "## Safety Boundaries",
+            "",
+            "| Boundary | Enabled |",
+            "| --- | --- |",
+        )
+    )
+    for key, value in report["safety"].items():
+        lines.append(f"| {markdown_cell(key)} | {markdown_cell(str(value).lower())} |")
+    return "\n".join(lines)
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="arc_builder_doctor",
@@ -687,7 +738,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             "never connect a wallet, sign, or broadcast a transaction."
         ),
     )
-    parser.add_argument("--json", action="store_true", help="print only the JSON report to stdout")
+    output = parser.add_mutually_exclusive_group()
+    output.add_argument("--json", action="store_true", help="print only the JSON report to stdout")
+    output.add_argument(
+        "--markdown",
+        action="store_true",
+        help="print a Markdown report suitable for CI summaries or PR comments",
+    )
     parser.add_argument(
         "--full",
         action="store_true",
@@ -729,6 +786,8 @@ def main(argv: list[str] | None = None) -> int:
     report = build_report(options)
     if args.json:
         print(json.dumps(report, indent=2))
+    elif args.markdown:
+        print(render_markdown(report))
     else:
         print(render_human(report))
     return 1 if report["overallStatus"] == STATUS_FAIL else 0
