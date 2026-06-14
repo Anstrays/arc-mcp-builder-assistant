@@ -184,6 +184,11 @@ class DefaultModeBoundaryTests(unittest.TestCase):
             for token in forbidden:
                 self.assertNotIn(token, argv)
 
+    def test_default_mode_includes_offline_arc_testnet_facts_check(self) -> None:
+        with mock.patch.object(doctor, "run_child", side_effect=canned_run_child):
+            ids = [check["id"] for check in doctor.build_report(self.options)["checks"]]
+        self.assertIn("repo.arc_testnet_facts", ids)
+
     def test_report_schema_and_safety(self) -> None:
         with mock.patch.object(doctor, "run_child", side_effect=canned_run_child):
             report = doctor.build_report(self.options)
