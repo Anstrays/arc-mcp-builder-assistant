@@ -8,9 +8,11 @@ runtime so this source never contains a literal secret.
 from __future__ import annotations
 
 import importlib.util
+import io
 import json
 import subprocess
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest import mock
 
@@ -226,6 +228,74 @@ class RuntimeCheckTests(unittest.TestCase):
             check = doctor.check_node(doctor.Options())
         self.assertEqual(check["status"], "warn")
         self.assertEqual(check["id"], "runtime.node")
+
+
+class MarkdownOutputTests(unittest.TestCase):
+    def test_markdown_report_contains_checks_and_safety_boundaries(self) -> None:
+        with mock.patch.object(doctor, "run_child", side_effect=canned_run_child):
+            report = doctor.build_report(doctor.Options())
+        rendered = doctor.render_markdown(report)
+        self.assertIn("# Arc Builder Doctor", rendered)
+        self.assertIn("| Status | Check | Detail | Source | Duration |", rendered)
+        self.assertIn("| PASS | runtime.python |", rendered)
+        self.assertIn("## Safety Boundaries", rendered)
+        self.assertIn("| transactionBroadcast | false |", rendered)
+        self.assertIn("| networkChecksOptIn | true |", rendered)
+
+    def test_markdown_cells_escape_untrusted_markup_and_table_delimiters(self) -> None:
+        rendered = doctor.markdown_cell("<script>|[link](https://example.invalid)\nnext")
+        self.assertNotIn("<script>", rendered)
+        self.assertNotIn("\n", rendered)
+        self.assertNotIn("[link](https://example.invalid)", rendered)
+        self.assertIn("&lt;script&gt;", rendered)
+        self.assertIn("\\|", rendered)
+        self.assertIn("\\[link\\](https://example.invalid)", rendered)
+
+    def test_json_and_markdown_flags_are_mutually_exclusive(self) -> None:
+        stderr = io.StringIO()
+        with redirect_stderr(stderr), self.assertRaises(SystemExit):
+            doctor.parse_args(["--json", "--markdown"])
+        self.assertIn("not allowed with argument", stderr.getvalue())
+
+    def test_markdown_cli_writes_only_markdown_to_stdout(self) -> None:
+        report = {
+            "kind": doctor.KIND,
+            "schemaVersion": doctor.SCHEMA_VERSION,
+            "overallStatus": doctor.STATUS_PASS,
+            "generatedAt": "2026-06-14T00:00:00+00:00",
+            "mode": {
+                "localOnly": True,
+                "arcRpcIncluded": False,
+                "publicSiteIncluded": False,
+                "full": False,
+                "strict": False,
+            },
+            "checks": [
+                {
+                    "id": "test.check",
+                    "label": "Test",
+                    "status": doctor.STATUS_PASS,
+                    "detail": "passed",
+                    "durationMs": 0,
+                }
+            ],
+            "safety": {
+                "walletConnected": False,
+                "privateKeysAccepted": False,
+                "signingEnabled": False,
+                "transactionBroadcast": False,
+                "custodyEnabled": False,
+                "mainnetEnabled": False,
+                "autonomousSpending": False,
+                "networkChecksOptIn": True,
+            },
+        }
+        stdout = io.StringIO()
+        with mock.patch.object(doctor, "build_report", return_value=report), redirect_stdout(stdout):
+            exit_code = doctor.main(["--markdown"])
+        self.assertEqual(exit_code, 0)
+        self.assertTrue(stdout.getvalue().startswith("# Arc Builder Doctor\n"))
+        self.assertNotIn('"kind":', stdout.getvalue())
 
 
 class ArcRpcCheckTests(unittest.TestCase):
