@@ -88,8 +88,12 @@ python3 scripts/validate_repo.py
 
 ## 9. Arc official facts re-check
 
+- Run `python3 scripts/validate_arc_testnet_facts.py` and confirm all pinned
+  repository targets match `config/arc_testnet.facts.json` and its reviewed
+  validator baseline.
 - Re-confirm Arc Testnet chain id, RPC URL, explorer URL, and USDC token
-  address against current official Arc documentation before announcing.
+  address against the official source URLs recorded in that contract before
+  announcing.
 
 ## 10. Release authorization (maintainer only)
 

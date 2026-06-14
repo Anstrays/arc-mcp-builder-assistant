@@ -106,6 +106,7 @@ credentialed URLs, or Python object reprs.
 | `repo.clean_safety_markers` | default | composes `scripts/check_completion.py`. |
 | `repo.public_claims` | default | composes `scripts/test_public_claims.py`. |
 | `repo.live_infrastructure_policy` | default | composes `scripts/validate_live_infrastructure_policy.py`. |
+| `repo.arc_testnet_facts` | default | composes the offline `scripts/validate_arc_testnet_facts.py` consistency check. |
 | `repo.workflow_security` | default | composes `scripts/test_workflow_security.py`. |
 | `repo.canonical_suite` | `--full` | composes `scripts/test_all.py`. |
 | `arc_testnet.read_only_status` | `--include-arc-rpc` | composes `scripts/check_arc_testnet_status.py`; requires chain id `5042002` / `0x4cef52`. |
@@ -137,6 +138,8 @@ that the selected mode enabled.
 - No shell command-string execution; child commands run as argument lists with
   bounded timeouts and bounded captured output.
 - No repository files are mutated and no servers are started.
+- The default offline facts check reads `config/arc_testnet.facts.json` and
+  critical repository surfaces; it does not contact Arc RPC or official docs.
 
 See [`../scripts/arc_builder_doctor.py`](../scripts/arc_builder_doctor.py) for
 the implementation and

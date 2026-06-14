@@ -73,6 +73,9 @@ CRITICAL_FILES = (
     "scripts/check_completion.py",
     "scripts/validate_repo.py",
     "scripts/check_arc_testnet_status.py",
+    "config/arc_testnet.facts.json",
+    "scripts/validate_arc_testnet_facts.py",
+    "scripts/test_arc_testnet_facts.py",
     "scripts/test_public_claims.py",
     "scripts/validate_live_infrastructure_policy.py",
     "scripts/test_workflow_security.py",
@@ -389,6 +392,14 @@ def check_live_infrastructure_policy(options: Options) -> dict[str, Any]:
     )
 
 
+def check_arc_testnet_facts(options: Options) -> dict[str, Any]:
+    return _python_script_check(
+        "repo.arc_testnet_facts",
+        "Arc Testnet facts consistency",
+        "scripts/validate_arc_testnet_facts.py",
+    )
+
+
 def check_workflow_security(options: Options) -> dict[str, Any]:
     return _python_script_check(
         "repo.workflow_security",
@@ -577,6 +588,7 @@ _DEFAULT_CHECKS: tuple[Callable[[Options], dict[str, Any]], ...] = (
     check_clean_safety_markers,
     check_public_claims,
     check_live_infrastructure_policy,
+    check_arc_testnet_facts,
     check_workflow_security,
 )
 

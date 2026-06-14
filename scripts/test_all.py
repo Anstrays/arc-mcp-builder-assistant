@@ -24,6 +24,7 @@ CHECKS = [
     "scripts/test_docs_viewer_behavior.py",
     "scripts/test_workflow_security.py",
     "scripts/test_arc_builder_doctor.py",
+    "scripts/test_arc_testnet_facts.py",
     "scripts/test_payment_intent_playground.py",
     "scripts/test_x402_boundary.py",
     "scripts/test_arc_production_deployment.py",

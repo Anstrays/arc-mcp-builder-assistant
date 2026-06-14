@@ -115,6 +115,7 @@ contract and check list.
 Useful one-shot checks:
 
 ```bash
+python3 scripts/validate_arc_testnet_facts.py
 python3 examples/x402-local-challenge-server/server.py --print-challenge
 python3 examples/x402-local-challenge-server/server.py --print-manifest
 python3 scripts/check_completion.py
@@ -123,6 +124,14 @@ python3 scripts/validate_operator_evidence.py
 python3 scripts/generate_operator_evidence_draft.py --reviewed-commit FULL_LOWERCASE_COMMIT_SHA
 python3 scripts/report_operator_evidence.py arc.operator-evidence.local.json --expect-commit FULL_LOWERCASE_COMMIT_SHA
 ```
+
+`config/arc_testnet.facts.json` is the reviewed offline source of truth for the
+Arc Testnet chain ID, RPC, explorer, USDC interfaces, and decimal boundaries.
+The facts validator makes no network calls; it fails if critical implementation,
+policy, or demo surfaces drift from that contract or its reviewed baseline.
+Re-check the linked official Arc sources before publication because Testnet
+facts can change; a legitimate update must change the contract and validator
+baseline together in a reviewed PR.
 
 On Windows, use `python` instead of `python3` if that is how Python is installed.
 The canonical suite also uses Node.js 18+ for dependency-free fake-provider
