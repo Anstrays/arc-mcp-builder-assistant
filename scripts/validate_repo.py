@@ -26,6 +26,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW_FILES = (
     ".github/workflows/validate.yml",
     ".github/workflows/pages.yml",
+    ".github/workflows/readiness-monitor.yml",
 )
 REQUIRED_FILES = [
     "README.md",
@@ -399,6 +400,7 @@ def validate_workflow_security() -> None:
             ("pages", "write"),
             ("id-token", "write"),
         },
+        WORKFLOW_FILES[2]: {("contents", "read")},
     }
     for relative, expected in expected_permissions.items():
         text = (ROOT / relative).read_text(encoding="utf-8")
@@ -408,6 +410,30 @@ def validate_workflow_security() -> None:
                 f"{relative}: workflow permissions must be exactly "
                 f"{sorted(expected)}; observed {sorted(observed)}"
             )
+
+    monitor = (ROOT / WORKFLOW_FILES[2]).read_text(encoding="utf-8")
+    monitor_active_lines = [
+        line.strip().removeprefix("- ").lstrip()
+        for line in monitor.splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    ]
+    for marker in (
+        "schedule:",
+        "workflow_dispatch:",
+        "timeout-minutes: 10",
+        "set +e",
+        "--include-arc-rpc",
+        "--include-public-site",
+        "--strict",
+        "--markdown",
+        '"$RUNNER_TEMP/arc-builder-doctor.md"',
+        '"$GITHUB_STEP_SUMMARY"',
+        "doctor_status=$?",
+        "set -e",
+        'exit "$doctor_status"',
+    ):
+        if not any(marker in line for line in monitor_active_lines):
+            fail(f"{WORKFLOW_FILES[2]}: missing active readiness-monitor safety marker: {marker}")
 
 
 def validate_no_secrets() -> None:

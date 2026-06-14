@@ -85,6 +85,9 @@ python3 scripts/validate_repo.py
 - The `Validate static site` workflow is green on the release commit.
 - The Pages deploy workflow is green and least-privilege permissions are
   unchanged.
+- The read-only `Monitor Arc builder readiness` workflow is green or has a
+  reviewed explanation for Arc RPC / public Pages drift. It has only
+  `contents: read` permission and cannot deploy or comment on PRs.
 
 ## 9. Arc official facts re-check
 

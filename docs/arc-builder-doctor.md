@@ -43,6 +43,12 @@ cells escape HTML and table delimiters before rendering child-check details or
 sources. The doctor still writes no files; a caller may explicitly redirect
 stdout when it wants to retain a report.
 
+The weekly and manually dispatchable
+`.github/workflows/readiness-monitor.yml` job runs the canonical suite, then
+publishes a strict read-only Arc RPC and public-site Markdown report to the
+GitHub Actions step summary. It has only `contents: read` permission and cannot
+deploy Pages, write issues, or post PR comments.
+
 ## Report contract (schemaVersion 1)
 
 The `--json` output is a single object with stable field names:
