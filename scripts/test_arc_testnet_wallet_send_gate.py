@@ -3,6 +3,9 @@
 
 from __future__ import annotations
 
+import base64
+import hashlib
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,6 +21,11 @@ def read(path: Path) -> str:
 
 def assert_contains(text: str, marker: str, source: Path) -> None:
     assert marker in text, f"missing marker in {source.relative_to(ROOT)}: {marker}"
+
+
+def compute_sri_hash(path: Path) -> str:
+    digest = hashlib.sha384(path.read_bytes()).digest()
+    return f"sha384-{base64.b64encode(digest).decode('ascii')}"
 
 
 def test_page_is_disabled_by_default_and_requires_explicit_human_gates() -> None:
@@ -56,6 +64,35 @@ def test_page_is_disabled_by_default_and_requires_explicit_human_gates() -> None
         "Risk acknowledgement cleared. Freeze and review the intent again.",
     ):
         assert_contains(js, marker, JS)
+
+
+def test_security_headers_and_csp_are_present_and_strict() -> None:
+    html = read(HTML)
+    assert_contains(html, '<meta name="robots" content="noindex,nofollow" />', HTML)
+    assert_contains(html, '<meta http-equiv="X-Content-Type-Options" content="nosniff" />', HTML)
+    assert_contains(html, "frame-ancestors 'none'", HTML)
+    assert_contains(html, "connect-src 'none'", HTML)
+    assert_contains(html, "script-src 'self'", HTML)
+    assert_contains(html, "object-src 'none'", HTML)
+    assert_contains(html, "base-uri 'none'", HTML)
+    assert_contains(html, "form-action 'none'", HTML)
+
+
+def test_script_tag_has_subresource_integrity_matching_current_source() -> None:
+    html = read(HTML)
+    js = read(JS)
+    script_match = re.search(
+        r'<script[^>]*src="\./wallet-send-gate\.js"[^>]*integrity="(sha384-[A-Za-z0-9+/=]+)"[^>]*>',
+        html,
+    )
+    assert script_match, "wallet-send-gate.js script tag must have an integrity attribute"
+    observed_integrity = script_match.group(1)
+    expected_integrity = compute_sri_hash(JS)
+    assert observed_integrity == expected_integrity, (
+        f"SRI hash mismatch: expected {expected_integrity}, got {observed_integrity}. "
+        "Recompute with: openssl dgst -sha384 -binary examples/arc-testnet-wallet-send-gate/wallet-send-gate.js | openssl base64 -A"
+    )
+    assert 'crossorigin="anonymous"' in html, "SRI script tag must use crossorigin=\"anonymous\""
 
 
 def test_transaction_shape_is_pinned_to_arc_testnet_usdc_and_frozen_payload() -> None:
@@ -150,6 +187,8 @@ def test_custody_and_mainnet_are_fail_closed_documented_boundaries() -> None:
 
 if __name__ == "__main__":
     test_page_is_disabled_by_default_and_requires_explicit_human_gates()
+    test_security_headers_and_csp_are_present_and_strict()
+    test_script_tag_has_subresource_integrity_matching_current_source()
     test_transaction_shape_is_pinned_to_arc_testnet_usdc_and_frozen_payload()
     test_only_reviewed_wallet_methods_are_present_and_no_request_runs_on_load()
     test_custody_and_mainnet_are_fail_closed_documented_boundaries()

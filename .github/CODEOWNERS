@@ -1,0 +1,30 @@
+# Default owner for everything in the repo.
+* @Anstrays
+
+# Repository automation and security policy.
+/.github/ @Anstrays
+/CODE_OF_CONDUCT.md @Anstrays
+/CONTRIBUTING.md @Anstrays
+/LICENSE @Anstrays
+/SECURITY.md @Anstrays
+
+# Canonical on-chain facts and validators.
+/config/ @Anstrays
+/scripts/validate_arc_testnet_facts.py @Anstrays
+/scripts/validate_live_infrastructure_policy.py @Anstrays
+/scripts/validate_operator_evidence.py @Anstrays
+
+# Secret scanning and repository integrity.
+/scripts/scan_for_secrets.py @Anstrays
+/scripts/validate_repo.py @Anstrays
+/scripts/test_workflow_security.py @Anstrays
+
+# Wallet-send gate and any future guarded transaction examples.
+/examples/arc-testnet-wallet-send-gate/ @Anstrays
+/docs/guarded-wallet-send-runbook.md @Anstrays
+/docs/custody-and-mainnet-gates.md @Anstrays
+/docs/arc-testnet-send-readiness-gate.md @Anstrays
+
+# Readiness monitor and builder doctor.
+/scripts/arc_builder_doctor.py @Anstrays
+/.github/workflows/readiness-monitor.yml @Anstrays

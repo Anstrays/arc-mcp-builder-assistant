@@ -45,6 +45,8 @@ REQUIRED_FILES = [
     "config/arc_testnet.facts.json",
     ".github/workflows/validate.yml",
     ".github/workflows/pages.yml",
+    ".github/dependabot.yml",
+    ".github/CODEOWNERS",
     ".github/PULL_REQUEST_TEMPLATE.md",
     ".github/ISSUE_TEMPLATE/config.yml",
     ".github/ISSUE_TEMPLATE/bug_report.yml",
@@ -127,6 +129,8 @@ REQUIRED_FILES = [
     "scripts/check_completion.py",
     "scripts/live_arc_gateway_smoke.py",
     "scripts/test_all.py",
+    "scripts/scan_for_secrets.py",
+    "scripts/serve_local.py",
     "scripts/test_arc_production_deployment.py",
     "scripts/test_arc_testnet_status_helper.py",
     "scripts/test_completion_contract.py",
@@ -253,6 +257,7 @@ MOJIBAKE_MARKERS = (
 # not real credentials.
 SECRET_SCAN_SKIP = {
     Path("scripts/validate_repo.py"),
+    Path("scripts/scan_for_secrets.py"),
 }
 
 # script type values that are inert (no JavaScript execution).

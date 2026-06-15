@@ -459,5 +459,14 @@ if (state.provider && typeof state.provider.on === 'function') {
   });
 }
 
+if (typeof window.addEventListener === 'function') {
+  window.addEventListener('beforeunload', (event) => {
+    if (state.transactionHash) {
+      event.preventDefault();
+      event.returnValue = 'A wallet transaction has been submitted and may still be pending. Leave anyway?';
+    }
+  });
+}
+
 setDefaultExpiry();
 render();

@@ -25,6 +25,26 @@ This repository is an early independent builder resource.
 - Never add a mainnet fallback, raw-key input, automatic retry, or unattended
   signing path to the static site.
 
+## Real-wallet automation refusal
+
+This repository deliberately does **not** support automated real-wallet
+transactions. Any tool, script, agent, or CI step must refuse to:
+
+- read, request, inject, or store private keys, seed phrases, keystore files,
+  or wallet passwords
+- call `personal_sign`, `eth_sign`, typed-data signing, or any signing method
+  other than the human-approved `eth_sendTransaction` path in the guarded
+  wallet-send gate
+- confirm, retry, or submit a transaction on behalf of a user
+- add custody, mainnet support, automatic retry, or unattended signing paths
+- proceed when chain ID, recipient, amount, calldata, or wallet method does not
+  match the reviewed testnet-only intent
+
+Real-wallet smoke tests (even on testnet) must be performed manually by the
+wallet owner using a disposable test wallet. The only allowed automation is
+read-only validation, static-site serving, and evidence recording after a human
+has already submitted a transaction.
+
 ## Reporting
 
 Do not open a public issue containing a secret, payment proof, wallet material,

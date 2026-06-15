@@ -6,11 +6,12 @@
   <title>Arc Testnet Wallet Send Gate | Arc MCP Builder Assistant</title>
   <meta name="description" content="Disabled-by-default Arc Testnet browser-wallet send gate with frozen USDC payload review, explicit human confirmation, and one-attempt transaction broadcast." />
   <meta name="author" content="Arc MCP Builder Assistant contributors" />
-  <meta name="robots" content="index,follow" />
+  <meta name="robots" content="noindex,nofollow" />
   <meta name="theme-color" content="#101417" />
   <meta name="color-scheme" content="dark" />
   <meta name="referrer" content="no-referrer" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests" />
   <link rel="canonical" href="https://anstrays.github.io/arc-mcp-builder-assistant/examples/arc-testnet-wallet-send-gate/" />
   <style>
     :root {
@@ -89,7 +90,7 @@
     @media (max-width: 620px) { .shell { width: min(100% - 20px, 1220px); padding-top: 12px; } .topbar, .panel-head { align-items: stretch; flex-direction: column; } .field-grid, .facts { grid-template-columns: minmax(0, 1fr); } h1 { font-size: 36px; } }
     @media (prefers-reduced-motion: reduce) { * { animation-duration: 0s !important; transition: none !important; } }
   </style>
-  <script src="./wallet-send-gate.js" defer></script>
+  <script src="./wallet-send-gate.js" integrity="sha384-JbqsIjZYwC20XbCS5YMMSYEi7ZEPGB1ow14Um8yby2dQ43AjSSvVmAUWw3heQ6vZ" crossorigin="anonymous" defer></script>
 </head>
 <body>
   <main class="shell">

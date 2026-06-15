@@ -36,6 +36,7 @@ CHECKS = [
     "scripts/test_arc_testnet_wallet_send_behavior.py",
     "scripts/validate_live_infrastructure_policy.py",
     "scripts/test_live_infrastructure_policy.py",
+    "scripts/scan_for_secrets.py",
     "scripts/test_agent_commerce_components.py",
     "scripts/test_agent_commerce_flows.py",
     "scripts/test_agent_commerce_review_packet.py",
