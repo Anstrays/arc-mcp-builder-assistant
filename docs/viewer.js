@@ -11,6 +11,7 @@ const PAGES = [
   { id: 'public-launch-packet.md', path: './public-launch-packet.md', githubPath: 'docs/public-launch-packet.md', label: 'Public launch packet', group: 'Builder kit' },
   { id: 'arc-discord-introduction.md', path: './arc-discord-introduction.md', githubPath: 'docs/arc-discord-introduction.md', label: 'Arc Discord introduction pack', group: 'Builder kit' },
   { id: 'receipt-verifier-playground.md', path: './receipt-verifier-playground.md', githubPath: 'docs/receipt-verifier-playground.md', label: 'Receipt verifier playground', group: 'Builder kit' },
+  { id: 'receipt-viewer.md', path: './receipt-viewer.md', githubPath: 'docs/receipt-viewer.md', label: 'Agent payment receipt viewer', group: 'Builder kit' },
   { id: 'transaction-status-playground.md', path: './transaction-status-playground.md', githubPath: 'docs/transaction-status-playground.md', label: 'Transaction status playground', group: 'Builder kit' },
   { id: 'x402-mcp-manifest.md', path: './x402-mcp-manifest.md', githubPath: 'docs/x402-mcp-manifest.md', label: 'x402 MCP manifest', group: 'Builder kit' },
   { id: 'x402-demo-transcript.md', path: './x402-demo-transcript.md', githubPath: 'docs/x402-demo-transcript.md', label: 'x402 demo transcript', group: 'Builder kit' },

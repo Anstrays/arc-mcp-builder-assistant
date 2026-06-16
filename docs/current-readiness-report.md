@@ -33,6 +33,10 @@ Expected safe result:
 - Arc MCP setup, docs map, prompt library, builder workflows, and deployment/runbook docs.
 - Local payment-intent playground with reviewable JSON, frozen intent fields, explicit local approval states, USDC unit preview, unsigned ERC-20 transaction draft, calldata consistency check, final local confirmation, and blocked wallet handoff manifest.
 - Read-only transaction-status playground for Arc Testnet transaction hashes.
+- Read-only receipt viewer for Arc Testnet payment evidence, including receipt
+  status, block number, gas used, raw logs, pinned USDC Transfer log decoding,
+  chain-first stopping, JSON-RPC envelope checks, and settlement claims always
+  false.
 - Expected-transfer evidence comparison for pinned Arc Testnet USDC target,
   zero native value, decoded recipient, and decoded amount, with chain-first
   stopping, JSON-RPC envelope/exact-hash binding, and settlement claims always

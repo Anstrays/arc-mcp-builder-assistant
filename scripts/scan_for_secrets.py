@@ -358,6 +358,13 @@ PATTERNS = [
     ),
 ]
 
+# Public, deterministic 32-byte constants that look like Ethereum private keys
+# to a generic scanner but are not credentials.
+KNOWN_PUBLIC_32_BYTE_HEXES = {
+    # keccak256("Transfer(address,address,uint256)") ERC-20 event topic.
+    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+}
+
 # Compile the mnemonic phrase regex once.
 MNEMONIC_RE = re.compile(
     r"\b(?:" + "|".join(sorted(BIP39_WORDS)) + r")\b"
@@ -433,6 +440,8 @@ def scan() -> list[tuple[Path, str, str]]:
                 if any(marker in lowered for marker in ("placeholder", "example", "changeme", "your_")):
                     continue
                 if name == "ethereum_private_key" and is_placeholder_hex(snippet[2:]):
+                    continue
+                if name == "ethereum_private_key" and lowered in KNOWN_PUBLIC_32_BYTE_HEXES:
                     continue
                 findings.append((relative, name, snippet))
         for line_number, run_length in detect_mnemonic_runs(text):

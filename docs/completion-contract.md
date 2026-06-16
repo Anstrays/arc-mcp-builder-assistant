@@ -40,6 +40,9 @@ autonomous spending agent.
   closed when verification retries or runtime spend preflight fail.
 - Dependency-free Node fake-provider/fake-RPC harnesses execute the actual
   guarded-send and transaction-status JavaScript without wallets or live RPC.
+- The read-only receipt viewer stops on a wrong chain, validates the JSON-RPC
+  response envelope, binds the receipt hash to the reviewer input, highlights
+  pinned Arc Testnet USDC Transfer logs, and keeps settlement claims false.
 - A dependency-free actual-JavaScript docs-viewer harness proves malicious
   Markdown HTML and URLs stay escaped while reviewed links remain usable.
 - Read-only transaction evidence stops on a wrong chain, validates the

@@ -65,6 +65,7 @@ REQUIRED_FILES = [
     "docs/public-launch-packet.md",
     "docs/arc-discord-introduction.md",
     "docs/receipt-verifier-playground.md",
+    "docs/receipt-viewer.md",
     "docs/transaction-status-playground.md",
     "docs/x402-mcp-manifest.md",
     "docs/x402-demo-transcript.md",
@@ -102,6 +103,8 @@ REQUIRED_FILES = [
     "examples/payment-intent-playground/playground.js",
     "examples/receipt-verifier-playground/index.html",
     "examples/receipt-verifier-playground/verifier.js",
+    "examples/receipt-viewer/index.html",
+    "examples/receipt-viewer/receipt-viewer.js",
     "examples/transaction-status-playground/index.html",
     "examples/transaction-status-playground/status.js",
     "examples/arc-testnet-wallet-send-gate/index.html",
@@ -144,6 +147,8 @@ REQUIRED_FILES = [
     "scripts/test_transaction_status_playground.py",
     "scripts/test_transaction_status_behavior.py",
     "scripts/transaction_status_behavior_harness.mjs",
+    "scripts/test_receipt_viewer.py",
+    "scripts/receipt_viewer_behavior_harness.mjs",
     "scripts/test_arc_testnet_wallet_send_gate.py",
     "scripts/test_arc_testnet_wallet_send_behavior.py",
     "scripts/wallet_send_behavior_harness.mjs",
@@ -176,6 +181,7 @@ HTML_FILES_TO_VALIDATE = [
     "examples/payment-intent-demo/index.html",
     "examples/payment-intent-playground/index.html",
     "examples/receipt-verifier-playground/index.html",
+    "examples/receipt-viewer/index.html",
     "examples/transaction-status-playground/index.html",
     "examples/arc-testnet-wallet-send-gate/index.html",
     "examples/agent-commerce-components/index.html",
@@ -194,6 +200,7 @@ SITEMAP_REQUIRED_LOCATIONS = (
     CANONICAL_BASE_URL + "examples/payment-intent-demo/",
     CANONICAL_BASE_URL + "examples/payment-intent-playground/",
     CANONICAL_BASE_URL + "examples/receipt-verifier-playground/",
+    CANONICAL_BASE_URL + "examples/receipt-viewer/",
     CANONICAL_BASE_URL + "examples/transaction-status-playground/",
     CANONICAL_BASE_URL + "examples/arc-testnet-wallet-send-gate/",
     CANONICAL_BASE_URL + "examples/agent-commerce-components/",
@@ -611,6 +618,10 @@ def validate_responsive_layout_guards() -> None:
         ),
         "examples/transaction-status-playground/index.html": (
             "main > *, .grid > * { min-width:0; }",
+        ),
+        "examples/receipt-viewer/index.html": (
+            "main > *, .grid > * { min-width:0; }",
+            "overflow-wrap:anywhere",
         ),
         "examples/agent-commerce-components/index.html": (
             ".wrap > *, .grid > *, .cards > * { min-width: 0; }",
@@ -1046,6 +1057,111 @@ def validate_receipt_verifier_playground() -> None:
     for marker in ("fetch(", "XMLHttpRequest", "WebSocket", "ethereum.request", "sendTransaction", "signTransaction", "PRIVATE_KEY", "seed phrase"):
         if marker in js:
             fail(f"{js_relative}: forbidden network/wallet marker: {marker}")
+
+
+def validate_receipt_viewer() -> None:
+    """Keep the receipt viewer read-only, receipt-scoped, and wallet-free."""
+    html_relative = "examples/receipt-viewer/index.html"
+    js_relative = "examples/receipt-viewer/receipt-viewer.js"
+    test_relative = "scripts/test_receipt_viewer.py"
+    harness_relative = "scripts/receipt_viewer_behavior_harness.mjs"
+    html = (ROOT / html_relative).read_text(encoding="utf-8")
+    js = (ROOT / js_relative).read_text(encoding="utf-8")
+    tests = (ROOT / test_relative).read_text(encoding="utf-8")
+    harness = (ROOT / harness_relative).read_text(encoding="utf-8")
+    for marker in (
+        "Agent Payment Receipt Viewer",
+        'id="transaction-hash"',
+        'id="load-receipt"',
+        'id="reset-receipt"',
+        'id="status-pill"',
+        'id="receipt-summary-list"',
+        'id="transfer-log-list"',
+        'id="receipt-json"',
+        "Read-only Arc Testnet RPC",
+        "USDC Transfer logs",
+        "No wallet connection",
+        "No transaction broadcast",
+        "connect-src 'self' https://rpc.testnet.arc.network",
+        'crossorigin="anonymous"',
+    ):
+        if marker not in html:
+            fail(f"{html_relative}: missing receipt viewer marker: {marker}")
+    for marker in (
+        "const ARC_RECEIPT_VIEWER = Object.freeze",
+        "expectedChainId: 5042002",
+        "expectedChainIdHex: '0x4cef52'",
+        "rpcUrl: 'https://rpc.testnet.arc.network'",
+        "explorerUrl: 'https://testnet.arcscan.app'",
+        "usdcAddress: '0x3600000000000000000000000000000000000000'",
+        "usdcDecimals: 6",
+        "const RPC_TIMEOUT_MS = 15_000",
+        "const MAX_RPC_RESPONSE_BYTES = 1_000_000",
+        "const RPC_REQUEST_ID = 'arc-receipt-viewer-read-only'",
+        "const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'",
+        "method: 'eth_chainId'",
+        "method: 'eth_getTransactionReceipt'",
+        "new AbortController()",
+        "new TextEncoder().encode(responseText).byteLength",
+        "window.clearTimeout(timeout)",
+        "Request timed out after 15 seconds.",
+        "RPC response must be a JSON object",
+        "RPC response envelope did not match the request",
+        "RPC response must contain exactly one result or error field",
+        "function decodeUsdcTransferLog(log)",
+        "function extractUsdcTransferLogs(receipt)",
+        "function classifyReceiptStatus(chainIdHex, receipt, expectedTransactionHash)",
+        "success_receipt_observed",
+        "reverted_receipt_observed",
+        "receipt_not_found",
+        "unknown_wrong_chain",
+        "unknown_hash_mismatch",
+        "settlementProven: false",
+        "businessAcceptanceProven: false",
+    ):
+        if marker not in js:
+            fail(f"{js_relative}: missing receipt viewer marker: {marker}")
+    if "eth_getTransactionByHash" in js:
+        fail(f"{js_relative}: receipt viewer must not fetch full transactions")
+    for marker in (
+        "window.ethereum",
+        "ethereum.request",
+        "personal_sign",
+        "eth_sendTransaction",
+        "eth_sendRawTransaction",
+        "wallet_switchEthereumChain",
+        "sendTransaction",
+        "signTransaction",
+        "PRIVATE_KEY",
+        "localStorage",
+        "sessionStorage",
+    ):
+        if marker in html or marker in js:
+            fail(f"{html_relative}/{js_relative}: forbidden receipt viewer marker: {marker}")
+    for marker in (
+        "test_receipt_viewer_page_has_read_only_receipt_ui",
+        "test_receipt_viewer_script_tag_has_matching_sri",
+        "test_receipt_viewer_js_uses_receipt_only_read_only_rpc",
+        "test_receipt_viewer_forbids_wallet_signing_storage_or_broadcast_surface",
+        "test_actual_receipt_viewer_javascript_behavior",
+        "receipt_viewer_behavior_harness.mjs",
+    ):
+        if marker not in tests:
+            fail(f"{test_relative}: missing receipt viewer regression marker: {marker}")
+    for marker in (
+        "testSuccessfulReceiptHighlightsUsdcTransfer",
+        "testRevertedReceiptAndNullReceipt",
+        "testWrongChainStopsBeforeReceipt",
+        "testInvalidHashAvoidsRpc",
+        "testRpcEnvelopeAndHashBindingFailClosed",
+        "testTimeoutFailsClosed",
+        "success_receipt_observed",
+        "reverted_receipt_observed",
+        "unknown_wrong_chain",
+        "unknown_hash_mismatch",
+    ):
+        if marker not in harness:
+            fail(f"{harness_relative}: missing receipt viewer behavior marker: {marker}")
 
 
 
@@ -1688,6 +1804,7 @@ def main() -> None:
     validate_arc_testnet_status_helper()
     validate_payment_intent_playground_status_panel()
     validate_receipt_verifier_playground()
+    validate_receipt_viewer()
     validate_transaction_status_playground()
     validate_guarded_wallet_send_gate()
     validate_job_escrow_simulator()
