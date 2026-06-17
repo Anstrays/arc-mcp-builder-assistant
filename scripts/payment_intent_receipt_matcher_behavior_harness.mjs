@@ -227,6 +227,44 @@ async function testInvalidHashOrIntentAvoidsRpc() {
   assert.deepEqual(badIntent.calls, []);
 }
 
+function invalidIntentHarness(intentPatch) {
+  const harness = createHarness();
+  const patched = { ...SAMPLE_INTENT, ...intentPatch };
+  harness.elements.get('payment-intent').value = JSON.stringify(patched);
+  return harness;
+}
+
+async function testInvalidLocalIntentAvoidsRpc() {
+  const cases = [
+    { patch: { chainId: 1 }, name: 'wrong chainId' },
+    { patch: { network: 'Ethereum Mainnet' }, name: 'wrong network' },
+    { patch: { asset: 'DAI' }, name: 'wrong asset' },
+    { patch: { token: '0x2222222222222222222222222222222222222222' }, name: 'non-USDC token' },
+    { patch: { decimals: 18 }, name: 'wrong decimals' },
+    { patch: { recipient: '0x0000000000000000000000000000000000000000' }, name: 'zero recipient' },
+    { patch: { recipient: USDC }, name: 'recipient is USDC contract' },
+    { patch: { amount: '0.0100009', amountBaseUnits: undefined }, name: 'too many fractional digits' },
+    { patch: { amount: '0', amountBaseUnits: undefined }, name: 'zero amount' },
+    { patch: { amount: '-1', amountBaseUnits: undefined }, name: 'negative amount' },
+    { patch: { amountBaseUnits: '0x2710', amount: undefined }, name: 'hex amountBaseUnits' },
+    { patch: { amountBaseUnits: '0', amount: undefined }, name: 'zero amountBaseUnits' },
+    { patch: { amountBaseUnits: '-1', amount: undefined }, name: 'negative amountBaseUnits' },
+    { patch: { amountBaseUnits: '1.5', amount: undefined }, name: 'decimal amountBaseUnits' },
+    { patch: { amountBaseUnits: '1e6', amount: undefined }, name: 'scientific amountBaseUnits' },
+    { patch: { amount: '0.02', amountBaseUnits: '10000' }, name: 'mismatched amount/baseUnits' },
+    { patch: { amount: '1,000', amountBaseUnits: undefined }, name: 'comma-separated amount' },
+    { patch: { amount: '1e6', amountBaseUnits: undefined }, name: 'scientific decimal amount' },
+  ];
+  for (const { patch, name } of cases) {
+    const harness = invalidIntentHarness(patch);
+    await harness.elements.get('match-receipt').trigger('click');
+    const value = result(harness);
+    assert.equal(value.state, 'unknown', `expected state 'unknown' for ${name}, got '${value.state}'`);
+    assert.equal(value.evidenceVerdict, 'invalid_local_input', `expected verdict 'invalid_local_input' for ${name}, got '${value.evidenceVerdict}'`);
+    assert.deepEqual(harness.calls, [], `expected no RPC calls for ${name}, got ${JSON.stringify(harness.calls)}`);
+  }
+}
+
 async function testRpcEnvelopeAndHashBindingFailClosed() {
   const wrongEnvelope = createHarness({
     responseOverride(_body, response) {
@@ -254,5 +292,6 @@ await testMismatchWhenRecipientDiffers();
 await testRevertedReceiptAndNullReceipt();
 await testWrongChainStopsBeforeReceipt();
 await testInvalidHashOrIntentAvoidsRpc();
+await testInvalidLocalIntentAvoidsRpc();
 await testRpcEnvelopeAndHashBindingFailClosed();
-console.log('payment intent receipt matcher behavior harness passed: match/mismatch/revert/not-found, wrong-chain stop, invalid-input no-RPC, envelope/hash binding');
+console.log('payment intent receipt matcher behavior harness passed: match/mismatch/revert/not-found, wrong-chain stop, invalid-input no-RPC, invalid-local-intent no-RPC, envelope/hash binding');

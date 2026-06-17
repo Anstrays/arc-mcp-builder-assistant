@@ -47,12 +47,22 @@ const READ_ONLY_RPC_METHODS = Object.freeze([
   { method: 'eth_getTransactionReceipt', params: ['transactionHash'] },
 ]);
 
+const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+
 function isValidHash(value) {
   return /^0x[a-fA-F0-9]{64}$/.test(String(value || '').trim());
 }
 
 function normalizeHex(value) {
   return String(value || '').trim().toLowerCase();
+}
+
+function isValidEvmAddress(value) {
+  return /^0x[0-9a-fA-F]{40}$/.test(String(value || '').trim());
+}
+
+function isNonZeroAddress(value) {
+  return isValidEvmAddress(value) && normalizeHex(value) !== ZERO_ADDRESS;
 }
 
 function hashMatchesExpected(value, expectedHash) {
@@ -77,9 +87,11 @@ function formatUsdcBaseUnits(baseUnits) {
   return trimmed ? `${whole}.${trimmed}` : whole.toString(10);
 }
 
-function parseAmountString(value) {
+function parseAmountBaseUnits(value) {
   const trimmed = String(value || '').trim();
   if (!trimmed) return null;
+  // Reject hex, signs, scientific notation, commas, decimals, and leading zeros.
+  if (!/^[1-9]\d*$/.test(trimmed)) return null;
   try {
     return BigInt(trimmed);
   } catch (_error) {
@@ -90,13 +102,25 @@ function parseAmountString(value) {
 function usdcBaseUnitsFromDecimal(decimalStringValue) {
   const trimmed = String(decimalStringValue || '').trim();
   if (!trimmed) return null;
+
+  // Allow "1" or "0.01", but reject signs, scientific notation, commas, hex, empty parts,
+  // leading zeros, and anything with more than usdcDecimals fractional digits.
+  const isInteger = /^[1-9]\d*$/.test(trimmed);
+  const isDecimal = /^(0|[1-9]\d*)\.\d+$/.test(trimmed);
+  if (!isInteger && !isDecimal) return null;
+
   const [wholePart, fractionPart = ''] = trimmed.split('.');
-  if (!/^\d+$/.test(wholePart) || !/^\d*$/.test(fractionPart)) return null;
+  if (fractionPart.length > ARC_MATCHER.usdcDecimals) return null;
+
   const scale = 10n ** BigInt(ARC_MATCHER.usdcDecimals);
-  const whole = BigInt(wholePart);
-  const fractionPadded = fractionPart.slice(0, ARC_MATCHER.usdcDecimals).padEnd(ARC_MATCHER.usdcDecimals, '0');
+  const whole = BigInt(wholePart || '0');
+  const fractionPadded = fractionPart.padEnd(ARC_MATCHER.usdcDecimals, '0');
   const fraction = BigInt(fractionPadded);
-  return whole * scale + fraction;
+  const baseUnits = whole * scale + fraction;
+
+  // Reject zero and negative (the regex already rejects '-' signs; this is a second guard).
+  if (baseUnits <= 0n) return null;
+  return baseUnits;
 }
 
 function topicToAddress(topic) {
@@ -226,23 +250,75 @@ function parseIntent(rawValue) {
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
     return { ok: false, error: 'Payment intent must be a JSON object.', intent: null };
   }
+
+  // Network pinning: only Arc Testnet is supported.
+  const network = parsed.network;
+  if (network !== 'Arc Testnet' && network !== 'arc-testnet') {
+    return { ok: false, error: "Payment intent network must be 'Arc Testnet' or 'arc-testnet'.", intent: null };
+  }
+  if (parsed.chainId !== ARC_MATCHER.expectedChainId) {
+    return { ok: false, error: `Payment intent chainId must be ${ARC_MATCHER.expectedChainId}.`, intent: null };
+  }
+  if (parsed.asset !== 'USDC') {
+    return { ok: false, error: "Payment intent asset must be 'USDC'.", intent: null };
+  }
+
+  // Token pinning: reject any token other than the canonical Arc Testnet USDC contract.
+  const token = normalizeHex(parsed.token);
+  if (token !== ARC_MATCHER.usdcAddress.toLowerCase()) {
+    return { ok: false, error: 'Payment intent token must be the pinned Arc Testnet USDC contract.', intent: null };
+  }
+
+  // Decimals pinning: only 6 decimals are supported for Arc Testnet USDC.
+  if (parsed.decimals !== ARC_MATCHER.usdcDecimals) {
+    return { ok: false, error: `Payment intent decimals must be ${ARC_MATCHER.usdcDecimals}.`, intent: null };
+  }
+
+  // Recipient must be a non-zero 20-byte EVM address and must not be the token contract.
+  const recipient = normalizeHex(parsed.recipient);
+  if (!isNonZeroAddress(recipient)) {
+    return { ok: false, error: 'Payment intent recipient must include a valid non-zero 20-byte recipient address.', intent: null };
+  }
+  if (recipient === ARC_MATCHER.usdcAddress.toLowerCase()) {
+    return { ok: false, error: 'Payment intent recipient must not be the USDC token contract.', intent: null };
+  }
+
+  // Amount: at least one of amount or amountBaseUnits must be present.
+  const hasAmount = typeof parsed.amount === 'string' && parsed.amount.trim() !== '';
+  const hasBaseUnits = typeof parsed.amountBaseUnits === 'string' && parsed.amountBaseUnits.trim() !== '';
+  if (!hasAmount && !hasBaseUnits) {
+    return { ok: false, error: 'Payment intent must include amount or amountBaseUnits.', intent: null };
+  }
+
+  let amountBaseUnits = null;
+  if (hasBaseUnits) {
+    amountBaseUnits = parseAmountBaseUnits(parsed.amountBaseUnits);
+    if (amountBaseUnits === null) {
+      return { ok: false, error: 'Payment intent amountBaseUnits must be a positive base-10 integer string.', intent: null };
+    }
+  }
+  if (hasAmount) {
+    const decimalBaseUnits = usdcBaseUnitsFromDecimal(parsed.amount);
+    if (decimalBaseUnits === null) {
+      return { ok: false, error: 'Payment intent amount must be a positive decimal with at most 6 fractional digits.', intent: null };
+    }
+    if (hasBaseUnits && decimalBaseUnits !== amountBaseUnits) {
+      return { ok: false, error: 'Payment intent amount and amountBaseUnits do not match.', intent: null };
+    }
+    amountBaseUnits = decimalBaseUnits;
+  }
+
   const intent = {
-    version: parsed.version || null,
-    network: parsed.network || null,
-    chainId: parsed.chainId || null,
-    asset: parsed.asset || null,
-    token: normalizeHex(parsed.token || null),
-    recipient: normalizeHex(parsed.recipient || null),
-    amountBaseUnits: parseAmountString(parsed.amountBaseUnits) || usdcBaseUnitsFromDecimal(parsed.amount),
-    decimals: Number.isFinite(parsed.decimals) ? parsed.decimals : ARC_MATCHER.usdcDecimals,
-    memo: parsed.memo || null,
+    version: typeof parsed.version === 'string' ? parsed.version : null,
+    network,
+    chainId: parsed.chainId,
+    asset: parsed.asset,
+    token,
+    recipient,
+    amountBaseUnits,
+    decimals: parsed.decimals,
+    memo: typeof parsed.memo === 'string' ? parsed.memo : null,
   };
-  if (!intent.recipient || !/^0x[0-9a-f]{40}$/.test(intent.recipient)) {
-    return { ok: false, error: 'Payment intent must include a valid 20-byte recipient address.', intent };
-  }
-  if (intent.amountBaseUnits === null) {
-    return { ok: false, error: 'Payment intent must include a valid amount or amountBaseUnits.', intent };
-  }
   return { ok: true, error: null, intent };
 }
 
@@ -267,7 +343,7 @@ function classifyMatch({ chainIdHex, receipt }, transactionHash, intent) {
     if (!transfer.amountBaseUnits) return false;
     const transferAmount = BigInt(transfer.amountBaseUnits);
     return transfer.to === intent.recipient
-      && transfer.token.toLowerCase() === (intent.token || ARC_MATCHER.usdcAddress.toLowerCase())
+      && transfer.token.toLowerCase() === intent.token
       && transferAmount === intent.amountBaseUnits;
   });
   const base = {
@@ -471,7 +547,7 @@ function renderTransferLogs(transfers, intent) {
   renderList(transferLogList, transfers.map((transfer, index) => {
     const matchesIntent = transfer.amountBaseUnits
       && transfer.to === intent.recipient
-      && transfer.token.toLowerCase() === (intent.token || ARC_MATCHER.usdcAddress.toLowerCase())
+      && transfer.token.toLowerCase() === intent.token
       && BigInt(transfer.amountBaseUnits) === intent.amountBaseUnits;
     return buildCheck(
       `usdc-transfer-${index + 1}`,

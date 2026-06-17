@@ -91,15 +91,118 @@ def test_payment_intent_receipt_matcher_has_no_forbidden_patterns() -> None:
         "mnemonic",
         "sendTransaction",
         "eth_sendTransaction",
+        "eth_sendRawTransaction",
         "eth_sign",
         "personal_sign",
         "walletConnected: true",
         "transactionBroadcast: true",
         "signingEnabled: true",
         "autonomousSpending: true",
+        "localStorage",
+        "sessionStorage",
+        "window.ethereum",
+        "ethereum.request",
     ]
     for fragment in forbidden:
         assert fragment not in content, f"Forbidden pattern in matcher JS: {fragment}"
+
+
+def test_payment_intent_receipt_matcher_js_pins_arc_testnet_chain() -> None:
+    content = JS.read_text(encoding="utf-8")
+    required = [
+        "expectedChainId: 5042002",
+        "expectedChainIdHex: '0x4cef52'",
+        "chainId !== ARC_MATCHER.expectedChainId",
+        "network !== 'Arc Testnet'",
+        "'arc-testnet'",
+    ]
+    for fragment in required:
+        assert fragment in content, f"Missing Arc Testnet chain pinning marker: {fragment}"
+
+
+def test_payment_intent_receipt_matcher_js_pins_usdc_token() -> None:
+    content = JS.read_text(encoding="utf-8")
+    required = [
+        "usdcAddress: '0x3600000000000000000000000000000000000000'",
+        "token !== ARC_MATCHER.usdcAddress.toLowerCase()",
+        "asset !== 'USDC'",
+    ]
+    for fragment in required:
+        assert fragment in content, f"Missing pinned USDC token marker: {fragment}"
+
+
+def test_payment_intent_receipt_matcher_js_enforces_six_decimals() -> None:
+    content = JS.read_text(encoding="utf-8")
+    required = [
+        "usdcDecimals: 6",
+        "decimals !== ARC_MATCHER.usdcDecimals",
+        "ARC_MATCHER.usdcDecimals",
+    ]
+    for fragment in required:
+        assert fragment in content, f"Missing six-decimal enforcement marker: {fragment}"
+
+
+def test_payment_intent_receipt_matcher_js_rejects_amount_precision_errors() -> None:
+    content = JS.read_text(encoding="utf-8")
+    required = [
+        "fractionPart.length > ARC_MATCHER.usdcDecimals",
+        "positive decimal with at most 6 fractional digits",
+        "amountBaseUnits must be a positive base-10 integer string",
+    ]
+    for fragment in required:
+        assert fragment in content, f"Missing amount precision rejection marker: {fragment}"
+
+
+def test_payment_intent_receipt_matcher_js_rejects_zero_address() -> None:
+    content = JS.read_text(encoding="utf-8")
+    required = [
+        "ZERO_ADDRESS",
+        "isNonZeroAddress",
+        "recipient must include a valid non-zero 20-byte recipient address",
+    ]
+    for fragment in required:
+        assert fragment in content, f"Missing zero-address rejection marker: {fragment}"
+
+
+def test_payment_intent_receipt_matcher_js_rejects_mismatched_amount_fields() -> None:
+    content = JS.read_text(encoding="utf-8")
+    required = [
+        "amount and amountBaseUnits do not match",
+        "decimalBaseUnits !== amountBaseUnits",
+    ]
+    for fragment in required:
+        assert fragment in content, f"Missing amount/baseUnits mismatch marker: {fragment}"
+
+
+def test_payment_intent_receipt_matcher_js_rejects_recipient_equal_to_usdc_contract() -> None:
+    content = JS.read_text(encoding="utf-8")
+    required = [
+        "recipient must not be the USDC token contract",
+        "recipient === ARC_MATCHER.usdcAddress.toLowerCase()",
+    ]
+    for fragment in required:
+        assert fragment in content, f"Missing recipient-equals-USDC rejection marker: {fragment}"
+
+
+def test_payment_intent_receipt_matcher_harness_tests_invalid_intent_cases() -> None:
+    harness = HARNESS.read_text(encoding="utf-8")
+    required = [
+        "testInvalidLocalIntentAvoidsRpc",
+        "wrong chainId",
+        "wrong network",
+        "wrong asset",
+        "non-USDC token",
+        "wrong decimals",
+        "zero recipient",
+        "recipient is USDC contract",
+        "too many fractional digits",
+        "zero amount",
+        "negative amount",
+        "hex amountBaseUnits",
+        "mismatched amount/baseUnits",
+    ]
+    for fragment in required:
+        assert fragment in harness, f"Missing behavior harness invalid-intent case: {fragment}"
 
 
 def test_payment_intent_receipt_matcher_harness_runs() -> None:
@@ -122,6 +225,14 @@ def main() -> int:
         test_payment_intent_receipt_matcher_script_tag_has_matching_sri,
         test_payment_intent_receipt_matcher_js_has_required_functions,
         test_payment_intent_receipt_matcher_has_no_forbidden_patterns,
+        test_payment_intent_receipt_matcher_js_pins_arc_testnet_chain,
+        test_payment_intent_receipt_matcher_js_pins_usdc_token,
+        test_payment_intent_receipt_matcher_js_enforces_six_decimals,
+        test_payment_intent_receipt_matcher_js_rejects_amount_precision_errors,
+        test_payment_intent_receipt_matcher_js_rejects_zero_address,
+        test_payment_intent_receipt_matcher_js_rejects_mismatched_amount_fields,
+        test_payment_intent_receipt_matcher_js_rejects_recipient_equal_to_usdc_contract,
+        test_payment_intent_receipt_matcher_harness_tests_invalid_intent_cases,
         test_payment_intent_receipt_matcher_harness_runs,
     ]
     failures = 0
