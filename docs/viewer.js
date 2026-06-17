@@ -39,6 +39,7 @@ const PAGES = [
   { id: 'agent-commerce-review-packet.md', path: './agent-commerce-review-packet.md', githubPath: 'docs/agent-commerce-review-packet.md', label: 'Agent commerce review packet', group: 'Playbooks' },
   { id: 'job-escrow-demo.md', path: './job-escrow-demo.md', githubPath: 'docs/job-escrow-demo.md', label: 'Job escrow demo', group: 'Playbooks' },
   { id: 'arc-agent-treasury-lab.md', path: './arc-agent-treasury-lab.md', githubPath: 'docs/arc-agent-treasury-lab.md', label: 'Arc Agent Treasury Lab', group: 'Playbooks' },
+  { id: 'agentic-maintainer-loop.md', path: './agentic-maintainer-loop.md', githubPath: 'docs/agentic-maintainer-loop.md', label: 'Agentic maintainer loop', group: 'Playbooks' },
   { id: 'mcp-query-examples.md', path: './mcp-query-examples.md', githubPath: 'docs/mcp-query-examples.md', label: 'MCP query examples', group: 'Playbooks' },
   { id: 'arc-house-submission.md', path: './arc-house-submission.md', githubPath: 'docs/arc-house-submission.md', label: 'Arc House submission draft', group: 'Playbooks' },
   { id: 'build-log.md', path: './build-log.md', githubPath: 'docs/build-log.md', label: 'Build log', group: 'Playbooks' },

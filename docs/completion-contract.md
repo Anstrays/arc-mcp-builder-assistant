@@ -76,6 +76,9 @@ autonomous spending agent.
   permission maps.
 - Current readiness and build-log pages distinguish shipped behavior from
   future extension work.
+- The agentic maintainer loop documents how coding agents should inspect,
+  edit, verify, respond to events, and convert review findings into regression
+  tests without bypassing human approval gates.
 
 ## Canonical verification
 

@@ -20,6 +20,7 @@ REQUIRED_SURFACES = (
     "docs/completion-contract.md",
     "docs/current-readiness-report.md",
     "docs/arc-builder-readiness-checklist.md",
+    "docs/agentic-maintainer-loop.md",
     "docs/arc-testnet-operator-evidence.md",
     "docs/guarded-wallet-send-runbook.md",
     "docs/custody-and-mainnet-gates.md",

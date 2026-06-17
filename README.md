@@ -225,6 +225,7 @@ Guarded Arc Testnet wallet-send lab (`examples/arc-testnet-wallet-send-gate/`):
 - [`docs/agent-commerce-review-packet.md`](./docs/agent-commerce-review-packet.md) — local-only final review packet schema before any live wallet, settlement, or registration handoff.
 - [`docs/job-escrow-demo.md`](./docs/job-escrow-demo.md) — ERC-8183-style flow for posting jobs, funding escrow, reviewing agent output, and releasing stablecoin payouts.
 - [`docs/arc-agent-treasury-lab.md`](./docs/arc-agent-treasury-lab.md) — local product runbook for x402 earnings, bounded compute budgets, replay protection, and verified agentic loops.
+- [`docs/agentic-maintainer-loop.md`](./docs/agentic-maintainer-loop.md) — maintainer-agent operating loop for scoped edits, deterministic verification, event-driven maintenance, and human approval gates.
 - [`docs/x402-mcp-manifest.md`](./docs/x402-mcp-manifest.md) — machine-readable paid-agent manifest and JSON-RPC tool surface for the local x402 boundary.
 - [`docs/x402-demo-transcript.md`](./docs/x402-demo-transcript.md) — copy-paste local `402 -> proof -> protected response` transcript with explicit no-wallet/no-settlement guardrails.
 - [`docs/arc-production-deployment.md`](./docs/arc-production-deployment.md) — secret-free production deployment runbook, live-smoke checklist, and Circle Gateway/x402 verifier handoff.
@@ -403,6 +404,7 @@ Representative file map:
 │   ├── wallet-preflight-contract.md
 │   ├── agent-commerce-use-cases.md
 │   ├── job-escrow-demo.md
+│   ├── agentic-maintainer-loop.md
 │   ├── mcp-query-examples.md
 │   ├── arc-house-submission.md
 │   └── build-log.md
