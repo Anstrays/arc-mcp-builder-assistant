@@ -295,8 +295,8 @@
             <a class="button" href="./docs/view.html#arc-production-deployment.md">Production runbook</a>
           </div>
           <div class="metrics" aria-label="Honest project metrics">
-            <div class="metric"><span>Examples</span><strong>14</strong></div>
-            <div class="metric"><span>Docs</span><strong>42</strong></div>
+            <div class="metric"><span>Examples</span><strong>15</strong></div>
+            <div class="metric"><span>Docs</span><strong>43</strong></div>
             <div class="metric"><span>Prompt packs</span><strong>5</strong></div>
             <div class="metric"><span>Wallet/RPC</span><strong>Guarded</strong></div>
           </div>
@@ -509,6 +509,12 @@ safety: human approval, no custody, no broadcast by default</code></pre>
             <span class="meta"><span class="mini">Infrastructure</span><span class="mini">Receipt</span><span class="mini">Read-only</span></span>
             <span class="recipe-link">View receipt →</span>
           </a>
+          <a class="recipe" href="./examples/payment-intent-receipt-matcher/index.html" data-doc="docs/payment-intent-receipt-matcher.md">
+            <h3>Payment intent receipt matcher</h3>
+            <p>Compare a payment intent JSON with an Arc Testnet transaction receipt and check whether the onchain USDC Transfer matches recipient, token, and amount.</p>
+            <span class="meta"><span class="mini">Infrastructure</span><span class="mini">Intent match</span><span class="mini">Read-only</span></span>
+            <span class="recipe-link">Match intent →</span>
+          </a>
           <a class="recipe" href="./examples/arc-testnet-wallet-send-gate/">
             <h3>Guarded Arc Testnet wallet send</h3>
             <p>Review a pinned USDC payload and keep the injected-wallet request disabled until every explicit human gate passes.</p>
@@ -552,6 +558,7 @@ safety: human approval, no custody, no broadcast by default</code></pre>
           <a class="doc-card" href="./docs/view.html#arc-testnet-operator-runbook.md"><h3>Arc Testnet operator runbook</h3><p>Manual review steps, stop conditions, and evidence records for the guarded send lab.</p><span class="recipe-link">Open runbook →</span></a>
           <a class="doc-card" href="./docs/view.html#arc-testnet-operator-evidence.md"><h3>Operator evidence packet</h3><p>Strict Arc Testnet review record with fail-closed validation and disabled live-send controls.</p><span class="recipe-link">Review schema →</span></a>
           <a class="doc-card" href="./docs/view.html#receipt-viewer.md"><h3>Receipt viewer</h3><p>Read-only Arc Testnet receipt lookup with USDC Transfer log highlighting and no wallet path.</p><span class="recipe-link">Review receipt flow →</span></a>
+          <a class="doc-card" href="./docs/view.html#payment-intent-receipt-matcher.md"><h3>Payment intent receipt matcher</h3><p>Compare a payment intent with an Arc Testnet receipt's USDC Transfer logs and emit a match/mismatch evidence verdict.</p><span class="recipe-link">Review matcher flow →</span></a>
           <a class="doc-card" href="./docs/view.html#public-launch-packet.md"><h3>Public launch packet</h3><p>Human-review Telegram, X, Discord/Arc House drafts, submission checklist, links, and claims to avoid.</p><span class="recipe-link">Prepare launch →</span></a>
           <a class="doc-card" href="./docs/view.html#arc-builder-readiness-checklist.md"><h3>Readiness checklist</h3><p>Pre-submit gates for docs grounding, payment safety, UX states, repo quality, and public proof.</p><span class="recipe-link">Check gates →</span></a>
           <a class="doc-card" href="./docs/view.html#build-log.md"><h3>Changelog / build log</h3><p>What shipped, what was verified, current safety boundaries, and optional future extensions.</p><span class="recipe-link">Read changelog →</span></a>

@@ -31,6 +31,7 @@ CHECKS = [
     "scripts/test_arc_testnet_status_helper.py",
     "scripts/test_receipt_verifier_playground.py",
     "scripts/test_receipt_viewer.py",
+    "scripts/test_payment_intent_receipt_matcher.py",
     "scripts/test_transaction_status_playground.py",
     "scripts/test_transaction_status_behavior.py",
     "scripts/test_arc_testnet_wallet_send_gate.py",

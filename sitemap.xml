@@ -31,6 +31,11 @@
     <priority>0.85</priority>
   </url>
   <url>
+    <loc>https://anstrays.github.io/arc-mcp-builder-assistant/examples/payment-intent-receipt-matcher/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
     <loc>https://anstrays.github.io/arc-mcp-builder-assistant/examples/transaction-status-playground/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>

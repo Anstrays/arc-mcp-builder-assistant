@@ -37,6 +37,10 @@ Expected safe result:
   status, block number, gas used, raw logs, pinned USDC Transfer log decoding,
   chain-first stopping, JSON-RPC envelope checks, and settlement claims always
   false.
+- Read-only payment-intent receipt matcher that compares a local intent JSON
+  with an Arc Testnet receipt's pinned USDC Transfer logs and emits a
+  match/mismatch/revert/not-found/unknown verdict plus machine-readable evidence,
+  without signing, broadcasting, or claiming settlement.
 - Expected-transfer evidence comparison for pinned Arc Testnet USDC target,
   zero native value, decoded recipient, and decoded amount, with chain-first
   stopping, JSON-RPC envelope/exact-hash binding, and settlement claims always

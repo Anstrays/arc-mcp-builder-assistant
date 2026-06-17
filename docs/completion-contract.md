@@ -43,6 +43,10 @@ autonomous spending agent.
 - The read-only receipt viewer stops on a wrong chain, validates the JSON-RPC
   response envelope, binds the receipt hash to the reviewer input, highlights
   pinned Arc Testnet USDC Transfer logs, and keeps settlement claims false.
+- The payment-intent receipt matcher compares a local intent JSON with an Arc
+  Testnet receipt's USDC Transfer logs, reports match/mismatch/revert/
+  not-found/unknown, and emits machine-readable evidence without signing or
+  broadcasting.
 - A dependency-free actual-JavaScript docs-viewer harness proves malicious
   Markdown HTML and URLs stay escaped while reviewed links remain usable.
 - Read-only transaction evidence stops on a wrong chain, validates the

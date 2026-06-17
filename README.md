@@ -202,6 +202,7 @@ Guarded Arc Testnet wallet-send lab (`examples/arc-testnet-wallet-send-gate/`):
 - [`docs/payment-intent-quickstart.md`](./docs/payment-intent-quickstart.md) — 5-minute reviewer path for showing the local payment-intent playground without wallet or transaction side effects.
 - [`docs/payment-status-tutorial.md`](./docs/payment-status-tutorial.md) — step-by-step local payment status exercise for reviewers, plus the future Arc Testnet status checklist.
 - [`docs/receipt-viewer.md`](./docs/receipt-viewer.md) — read-only Arc Testnet receipt viewer notes for inspecting status, gas used, raw logs, and pinned USDC Transfer events without wallet or broadcast side effects.
+- [`docs/payment-intent-receipt-matcher.md`](./docs/payment-intent-receipt-matcher.md) — read-only matcher that compares a payment intent JSON with an Arc Testnet receipt's USDC Transfer logs and emits a match/mismatch evidence verdict.
 - [`docs/transaction-status-playground.md`](./docs/transaction-status-playground.md) — read-only Arc Testnet transaction evidence playground that compares a hash with expected USDC recipient/amount fields without wallet or broadcast side effects.
 - [`docs/contest-demo-script.md`](./docs/contest-demo-script.md) — 60-90 second demo script, recording checklist, community post copy, and contest submission bullets.
 - [`docs/content-pack.md`](./docs/content-pack.md) — blog and contest content pack with Russian Telegram copy, X/Discord drafts, thumbnail prompts, video storyboard, and screenshot checklist.
@@ -232,6 +233,7 @@ Guarded Arc Testnet wallet-send lab (`examples/arc-testnet-wallet-send-gate/`):
 - [`docs/build-log.md`](./docs/build-log.md) — public milestone note and community-update draft for sharing the current local-first builder kit.
 - [`examples/payment-intent-playground/`](./examples/payment-intent-playground/) — local-only interactive playground for editing a payment request, inspecting live JSON, viewing Arc Testnet read-only status constants, previewing injected wallet provider/address/chain state without requesting permissions, freezing reviewed intent fields, recording final local confirmation, reviewing an unsigned ERC-20 transaction draft and local calldata consistency check, reviewing a blocked wallet handoff manifest, reviewing disabled wallet guard reasons, and copying a preflight report while transaction requests remain disabled.
 - [`examples/receipt-viewer/`](./examples/receipt-viewer/) — read-only Arc Testnet payment receipt viewer that checks `eth_chainId`, fetches `eth_getTransactionReceipt`, highlights pinned USDC Transfer logs, and keeps settlement claims false.
+- [`examples/payment-intent-receipt-matcher/`](./examples/payment-intent-receipt-matcher/) — read-only Arc Testnet matcher that compares a payment intent JSON with a transaction receipt, decodes pinned USDC Transfer logs, and reports match/mismatch/revert/not-found/unknown.
 - [`examples/transaction-status-playground/`](./examples/transaction-status-playground/) — read-only Arc Testnet transaction hash lookup with chain-first stopping, JSON-RPC envelope and exact-hash binding, explicit status states, and expected USDC transfer-shape comparison that never claims settlement.
 - [`examples/arc-testnet-wallet-send-gate/`](./examples/arc-testnet-wallet-send-gate/) — separate disabled-by-default browser-wallet lab for one human-confirmed, capped Arc Testnet USDC transaction request.
 - [`examples/agent-commerce-components/`](./examples/agent-commerce-components/) — reusable local-only agent/payment/receipt/log cards that freeze money fields before any future wallet handoff.
@@ -268,7 +270,7 @@ For the shortest reviewer-facing checkpoint, see [`docs/current-readiness-report
 - Builder readiness checklist, MCP query examples, agent-commerce use cases, job escrow demo spec, Arc House submission draft, public build log, and community copy packs.
 - Styled GitHub Pages docs viewer so docs and community-health pages render like web pages instead of raw Markdown.
 - Local payment-intent playground with reviewable JSON, status transitions, USDC unit preview, unsigned transaction draft preview, final local confirmation, send-readiness gate, and calldata consistency check.
-- Local receipt verifier playground (`examples/receipt-verifier-playground/index.html`, `docs/receipt-verifier-playground.md`), read-only receipt viewer (`examples/receipt-viewer/index.html`, `docs/receipt-viewer.md`), read-only transaction-evidence playground (`examples/transaction-status-playground/index.html`, `docs/transaction-status-playground.md`), and local-only job escrow simulator with change-request, rejection, dispute, expiry, cancellation, and human-approved payout states.
+- Local receipt verifier playground (`examples/receipt-verifier-playground/index.html`, `docs/receipt-verifier-playground.md`), read-only receipt viewer (`examples/receipt-viewer/index.html`, `docs/receipt-viewer.md`), read-only payment-intent receipt matcher (`examples/payment-intent-receipt-matcher/index.html`, `docs/payment-intent-receipt-matcher.md`), read-only transaction-evidence playground (`examples/transaction-status-playground/index.html`, `docs/transaction-status-playground.md`), and local-only job escrow simulator with change-request, rejection, dispute, expiry, cancellation, and human-approved payout states.
 - Arc Agent Treasury Lab connecting local x402 revenue, treasury policy, bounded compute attempts, verification, replay protection, and machine-readable evidence.
 - x402 local challenge boundary with machine-readable manifest, JSON-RPC/MCP-style stdio helpers, `.env.example`, local transcript, and production deployment runbook.
 - Agent commerce starter-kit examples: components, flows, identity profile preview, and review packet exporter.
@@ -392,6 +394,7 @@ Representative file map:
 │   ├── arc-discord-introduction.md
 │   ├── receipt-verifier-playground.md
 │   ├── receipt-viewer.md
+│   ├── payment-intent-receipt-matcher.md
 │   ├── transaction-status-playground.md
 │   ├── x402-mcp-manifest.md
 │   ├── x402-demo-transcript.md
@@ -409,6 +412,7 @@ Representative file map:
 │   ├── payment-intent-playground/   # Local-only intent playground with Arc status constants
 │   ├── receipt-verifier-playground/  # Local-only simulated receipt verifier
 │   ├── receipt-viewer/               # Read-only Arc Testnet payment receipt viewer
+│   ├── payment-intent-receipt-matcher/ # Read-only Arc Testnet payment-intent receipt matcher
 │   ├── transaction-status-playground/ # Read-only Arc Testnet transaction status lookup
 │   ├── job-escrow-simulator/        # Local-only ERC-8183-style escrow flow simulator
 │   ├── arc-agent-treasury-lab/      # Local x402 revenue and bounded compute treasury simulator
