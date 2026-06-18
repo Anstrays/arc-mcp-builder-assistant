@@ -251,6 +251,8 @@ async function testInvalidLocalIntentAvoidsRpc() {
     { patch: { amountBaseUnits: '-1', amount: undefined }, name: 'negative amountBaseUnits' },
     { patch: { amountBaseUnits: '1.5', amount: undefined }, name: 'decimal amountBaseUnits' },
     { patch: { amountBaseUnits: '1e6', amount: undefined }, name: 'scientific amountBaseUnits' },
+    { patch: { amount: '1' + '0'.repeat(78), amountBaseUnits: undefined }, name: 'oversized decimal amount' },
+    { patch: { amountBaseUnits: '9'.repeat(79), amount: undefined }, name: 'oversized amountBaseUnits' },
     { patch: { amount: '0.02', amountBaseUnits: '10000' }, name: 'mismatched amount/baseUnits' },
     { patch: { amount: '1,000', amountBaseUnits: undefined }, name: 'comma-separated amount' },
     { patch: { amount: '1e6', amountBaseUnits: undefined }, name: 'scientific decimal amount' },

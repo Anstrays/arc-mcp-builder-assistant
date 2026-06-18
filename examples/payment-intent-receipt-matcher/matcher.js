@@ -42,6 +42,9 @@ const RPC_TIMEOUT_MS = 15_000;
 const MAX_RPC_RESPONSE_BYTES = 1_000_000;
 const RPC_REQUEST_ID = 'arc-payment-intent-receipt-matcher-read-only';
 const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+const MAX_INTENT_INPUT_LENGTH = 16_384;
+const MAX_UINT256_DECIMAL_DIGITS = 78;
+const MAX_DECIMAL_INPUT_LENGTH = 96;
 const READ_ONLY_RPC_METHODS = Object.freeze([
   { method: 'eth_chainId', params: [] },
   { method: 'eth_getTransactionReceipt', params: ['transactionHash'] },
@@ -90,6 +93,7 @@ function formatUsdcBaseUnits(baseUnits) {
 function parseAmountBaseUnits(value) {
   const trimmed = String(value || '').trim();
   if (!trimmed) return null;
+  if (trimmed.length > MAX_UINT256_DECIMAL_DIGITS) return null;
   // Reject hex, signs, scientific notation, commas, decimals, and leading zeros.
   if (!/^[1-9]\d*$/.test(trimmed)) return null;
   try {
@@ -102,6 +106,7 @@ function parseAmountBaseUnits(value) {
 function usdcBaseUnitsFromDecimal(decimalStringValue) {
   const trimmed = String(decimalStringValue || '').trim();
   if (!trimmed) return null;
+  if (trimmed.length > MAX_DECIMAL_INPUT_LENGTH) return null;
 
   // Allow "1" or "0.01", but reject signs, scientific notation, commas, hex, empty parts,
   // leading zeros, and anything with more than usdcDecimals fractional digits.
@@ -110,6 +115,7 @@ function usdcBaseUnitsFromDecimal(decimalStringValue) {
   if (!isInteger && !isDecimal) return null;
 
   const [wholePart, fractionPart = ''] = trimmed.split('.');
+  if (wholePart.length > MAX_UINT256_DECIMAL_DIGITS) return null;
   if (fractionPart.length > ARC_MATCHER.usdcDecimals) return null;
 
   const scale = 10n ** BigInt(ARC_MATCHER.usdcDecimals);
@@ -190,6 +196,9 @@ async function rpcCall(method, params = []) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ jsonrpc: '2.0', id: RPC_REQUEST_ID, method, params }),
       signal: controller.signal,
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
+      cache: 'no-store',
     });
     if (!response.ok) {
       throw new Error(`RPC HTTP ${response.status}`);
@@ -240,6 +249,9 @@ function parseIntent(rawValue) {
   const text = String(rawValue || '').trim();
   if (!text) {
     return { ok: false, error: 'Payment intent is empty.', intent: null };
+  }
+  if (text.length > MAX_INTENT_INPUT_LENGTH) {
+    return { ok: false, error: 'Payment intent input is too large.', intent: null };
   }
   let parsed;
   try {
