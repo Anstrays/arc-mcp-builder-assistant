@@ -91,7 +91,8 @@ function createHarness({
 } = {}) {
   const ids = [
     'payment-intent', 'transaction-hash', 'match-receipt', 'reset-matcher', 'status-pill',
-    'match-summary-list', 'transfer-log-list', 'match-json',
+    'match-summary-list', 'transfer-log-list', 'match-json', 'download-json-evidence',
+    'download-markdown-evidence',
   ];
   const elements = new Map(ids.map((id) => [id, new FakeElement(id)]));
   elements.get('transaction-hash').value = HASH;
@@ -120,6 +121,21 @@ function createHarness({
     createElement(tag) {
       return new FakeElement(tag);
     },
+    get body() {
+      return elements.get('match-json') || new FakeElement('body');
+    },
+  };
+  const Blob = class Blob {
+    constructor(parts, options) {
+      this.parts = parts;
+      this.type = options?.type || '';
+    }
+  };
+  const URL = {
+    createObjectURL(blob) {
+      return `blob:${blob.type || 'unknown'}`;
+    },
+    revokeObjectURL() {},
   };
   const context = vm.createContext({
     console,
@@ -139,9 +155,11 @@ function createHarness({
     Boolean,
     JSON,
     Math,
+    Blob,
+    URL,
   });
   vm.runInContext(SOURCE, context, { filename: 'matcher.js' });
-  return { elements, calls };
+  return { elements, calls, context };
 }
 
 function result(harness) {
@@ -389,6 +407,120 @@ async function testZeroAddressHandling() {
   assert.equal(value.matchingTransferCount, 1);
 }
 
+function assertExportSafety(packet, markdown) {
+  assert.ok(packet.disclaimer, 'packet must include a disclaimer');
+  assert.ok(markdown.includes(packet.disclaimer), 'markdown must repeat disclaimer');
+  assert.ok(packet.disclaimer.includes('not a proof of settlement'), 'disclaimer must reject settlement proof');
+  assert.ok(packet.disclaimer.includes('custody'), 'disclaimer must reject custody proof');
+  assert.ok(packet.disclaimer.includes('mainnet readiness'), 'disclaimer must reject mainnet readiness');
+  assert.ok(!packet.settlementProven, 'packet must not claim settlement proven');
+  assert.ok(!packet.custodyProven, 'packet must not claim custody proven');
+  assert.ok(!packet.mainnetReady, 'packet must not claim mainnet ready');
+}
+
+function assertCanonicalPacketFields(packet) {
+  assert.equal(typeof packet.matcherVersion, 'string');
+  assert.match(packet.matcherVersion, /arc-payment-intent-receipt-matcher/);
+  assert.ok(packet.exportedAt, 'packet must have exportedAt');
+  assert.equal(packet.exportOrigin, 'local_browser_blob_download');
+  assert.equal(packet.networkConstants.network, 'Arc Testnet');
+  assert.equal(packet.networkConstants.chainId, 5042002);
+  assert.equal(packet.networkConstants.chainIdHex, '0x4cef52');
+  assert.equal(packet.networkConstants.rpcLabel, 'Public Arc Testnet RPC');
+  assert.equal(packet.networkConstants.explorerLabel, 'Arc Testnet explorer');
+  assert.ok(packet.paymentIntent, 'packet must include paymentIntent');
+  assert.ok(packet.receiptSummary, 'packet must include receiptSummary');
+  assert.ok(Array.isArray(packet.transferLogSummary), 'packet must include transferLogSummary array');
+  assert.ok(Array.isArray(packet.mismatchReasons), 'packet must include mismatchReasons array');
+  assert.ok(packet.safetyBoundary, 'packet must include safetyBoundary');
+}
+
+async function testExportButtonsDisabledBeforeMatch() {
+  const harness = createHarness();
+  assert.equal(harness.elements.get('download-json-evidence').disabled, true);
+  assert.equal(harness.elements.get('download-markdown-evidence').disabled, true);
+}
+
+async function testJsonExportContainsCanonicalFieldsAndVerdict() {
+  const harness = createHarness();
+  await harness.elements.get('match-receipt').trigger('click');
+  const matchResult = result(harness);
+  assert.equal(matchResult.state, 'match');
+  assert.equal(harness.elements.get('download-json-evidence').disabled, false);
+  assert.equal(harness.elements.get('download-markdown-evidence').disabled, false);
+
+  const packet = harness.context.buildEvidencePacket(matchResult);
+  assertCanonicalPacketFields(packet);
+  assert.equal(packet.verdict, 'match');
+  assert.equal(packet.evidenceVerdict, 'intent_receipt_match_observed');
+  assert.equal(packet.mismatchReasons.length, 0);
+  assert.equal(packet.transferLogSummary.length, 1);
+  assert.equal(packet.transferLogSummary[0].matchesIntent, true);
+
+  const markdown = harness.context.generateMarkdownEvidence(packet);
+  assert.ok(markdown.includes('Payment Intent Receipt Matcher Evidence Packet'));
+  assert.ok(markdown.includes('## Network constants'));
+  assert.ok(markdown.includes('## Payment intent'));
+  assert.ok(markdown.includes('## Receipt summary'));
+  assert.ok(markdown.includes('## Matched USDC Transfer log summary'));
+  assert.ok(markdown.includes('## Verdict'));
+  assert.ok(markdown.includes('State: **match**'));
+  assertExportSafety(packet, markdown);
+}
+
+async function testMismatchExportDoesNotClaimSettlement() {
+  const receipt = baseReceipt({
+    logs: [
+      { address: USDC, topics: [TRANSFER_TOPIC, TOPIC_FROM, `0x${'0'.repeat(24)}3333333333333333333333333333333333333333`], data: TEN_THOUSAND_BASE_UNITS, logIndex: '0x0' },
+    ],
+  });
+  const harness = createHarness({ receipt });
+  await harness.elements.get('match-receipt').trigger('click');
+  const matchResult = result(harness);
+  assert.equal(matchResult.state, 'mismatch');
+
+  const packet = harness.context.buildEvidencePacket(matchResult);
+  assertCanonicalPacketFields(packet);
+  assert.equal(packet.verdict, 'mismatch');
+  assert.ok(packet.mismatchReasons.length > 0);
+  assert.ok(packet.mismatchReasons.some((r) => r.includes('No pinned Arc Testnet USDC Transfer log matched')));
+  const markdown = harness.context.generateMarkdownEvidence(packet);
+  assert.ok(markdown.includes('State: **mismatch**'));
+  assert.ok(markdown.includes('## Mismatch reasons'));
+  assertExportSafety(packet, markdown);
+}
+
+async function testRevertExportDoesNotClaimSettlement() {
+  const harness = createHarness({ receipt: baseReceipt({ status: '0x0', logs: [] }) });
+  await harness.elements.get('match-receipt').trigger('click');
+  const matchResult = result(harness);
+  assert.equal(matchResult.state, 'revert');
+
+  const packet = harness.context.buildEvidencePacket(matchResult);
+  assertCanonicalPacketFields(packet);
+  assert.equal(packet.verdict, 'revert');
+  assert.ok(packet.mismatchReasons.some((r) => r.includes('status is not 0x1')));
+  const markdown = harness.context.generateMarkdownEvidence(packet);
+  assert.ok(markdown.includes('State: **revert**'));
+  assertExportSafety(packet, markdown);
+}
+
+async function testNotFoundExportDoesNotClaimSettlement() {
+  const harness = createHarness({ receipt: null });
+  await harness.elements.get('match-receipt').trigger('click');
+  const matchResult = result(harness);
+  assert.equal(matchResult.state, 'not_found');
+
+  const packet = harness.context.buildEvidencePacket(matchResult);
+  assertCanonicalPacketFields(packet);
+  assert.equal(packet.verdict, 'not_found');
+  assert.equal(packet.receiptSummary.receiptFound, false);
+  assert.ok(packet.mismatchReasons.some((r) => r.includes('No receipt was returned')));
+  const markdown = harness.context.generateMarkdownEvidence(packet);
+  assert.ok(markdown.includes('State: **not_found**'));
+  assertExportSafety(packet, markdown);
+}
+
 await testMatchWhenTransferMatchesIntent();
 await testMismatchWhenRecipientDiffers();
 await testRevertedReceiptAndNullReceipt();
@@ -401,4 +533,9 @@ await testWrongTokenAddressAndTopic();
 await testDuplicateMatchingLogs();
 await testAmountFormattingEdgeCases();
 await testZeroAddressHandling();
-console.log('payment intent receipt matcher behavior harness passed: match/mismatch/revert/not-found, wrong-chain stop, invalid-input no-RPC, malformed receipt, wrong token/topic, duplicate logs, amount formatting, zero-address handling');
+await testExportButtonsDisabledBeforeMatch();
+await testJsonExportContainsCanonicalFieldsAndVerdict();
+await testMismatchExportDoesNotClaimSettlement();
+await testRevertExportDoesNotClaimSettlement();
+await testNotFoundExportDoesNotClaimSettlement();
+console.log('payment intent receipt matcher behavior harness passed: match/mismatch/revert/not-found, wrong-chain stop, invalid-input no-RPC, malformed receipt, wrong token/topic, duplicate logs, amount formatting, zero-address handling, read-only evidence export');
