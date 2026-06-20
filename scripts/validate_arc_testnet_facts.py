@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Validate the canonical offline Arc Testnet facts contract and its consumers."""
+"""Validate the canonical offline Arc Testnet facts contract and its consumers.
+
+In addition to checking the pinned targets for exact canonical markers, this
+script scans README, docs, examples, scripts, and index.html for dangerous
+Arc Testnet fact drift (wrong chain IDs, RPC/explorer URLs, and swapped
+ERC-20/native gas decimals) and fails closed unless the dangerous value sits in
+an explicit "do not use / forbidden" phrase on the same line.
+"""
 
 from __future__ import annotations
 
@@ -24,6 +31,69 @@ REVIEWED_BASELINE = {
     "sources.contracts": "https://docs.arc.io/arc/references/contract-addresses",
     "sources.deploymentModel": "https://docs.arc.io/arc/concepts/deployment-model",
 }
+
+# Values that must not appear in repository surfaces unless inside an explicit
+# negative-test fixture or a documented "do not use / forbidden" context.
+DANGEROUS_VALUES: dict[str, list[str]] = {
+    "network.chainId": ["1244", "1"],
+    "network.chainIdHex": ["0x4d4", "0x1"],
+    "network.rpcUrl": [
+        "https://rpc.arc.network",
+        "https://rpc.mainnet.arc.network",
+        "https://mainnet.arc.network",
+    ],
+    "network.explorerUrl": [
+        "https://arcscan.io",
+        "https://explorer.arc.network",
+        "https://mainnet.arcscan.app",
+    ],
+}
+
+# Explicit negative phrases that allow a dangerous value to appear on the same
+# line. The value must be paired with one of these phrases directly in the
+# matched line; a nearby safe word in an unrelated sentence must not suppress
+# the failure.
+SAFE_CONTEXT_MARKERS = (
+    "do not use",
+    "do not",
+    "must not",
+    "must never",
+    "forbidden",
+    "not allowed",
+    "not supported",
+    "not valid",
+    "do not configure",
+    "do not set",
+)
+
+# Explicit fixture/test markers. A dangerous value may appear inside a test
+# fixture or negative example if the line itself identifies it as such.
+FIXTURE_CONTEXT_MARKERS = (
+    "fixture",
+    "negative test",
+    "negative example",
+    "invalid example",
+    "rejected value",
+)
+
+# File patterns scanned for dangerous value drift. Keep dependency-free.
+SCAN_GLOBS = (
+    "README.md",
+    "docs/**/*.md",
+    "examples/**/*.js",
+    "examples/**/*.html",
+    "examples/**/*.json",
+    "scripts/**/*.py",
+    "scripts/**/*.mjs",
+    "scripts/**/*.js",
+    "index.html",
+)
+
+SCAN_EXCLUDES = (
+    "config/arc_testnet.facts.json",
+    "scripts/validate_arc_testnet_facts.py",
+    "scripts/test_arc_testnet_facts.py",
+)
 
 
 def fail(message: str) -> None:
@@ -240,6 +310,183 @@ def validate_targets(facts: dict[str, Any], root: Path = ROOT) -> int:
     return checked
 
 
+def _collect_scan_files(root: Path = ROOT) -> list[Path]:
+    files: set[Path] = set()
+    for pattern in SCAN_GLOBS:
+        for path in root.glob(pattern):
+            if path.is_file():
+                relative = path.relative_to(root).as_posix()
+                if relative not in SCAN_EXCLUDES:
+                    files.add(path)
+    return sorted(files)
+
+
+def _context_allows_dangerous(
+    line: str, fact_name: str | None = None, dangerous: str | None = None
+) -> bool:
+    """Return True only if the matched line itself negates the dangerous value.
+
+    When fact_name and dangerous are supplied, the negation must be explicitly
+    tied to that specific value on the same line. Generic "do not", "fixture",
+    "negative" or "wrong" text in an unrelated clause is not sufficient.
+    """
+    lower = line.lower()
+
+    # The only broad exception: the specific inline comment used to mark
+    # negative test fixtures in behavior harness files.
+    if "do not use: negative test fixture" in lower:
+        # When a value is supplied, the fixture comment must be on the same line
+        # as the dangerous value it annotates.
+        if dangerous is not None and dangerous in line:
+            return True
+        # Decimal-confusion path calls without a value; keep the marker valid.
+        return fact_name is None and dangerous is None
+
+    if fact_name is None or dangerous is None:
+        # Decimal-confusion path: keep broad same-line markers.
+        return any(marker in lower for marker in SAFE_CONTEXT_MARKERS) or any(
+            marker in lower for marker in FIXTURE_CONTEXT_MARKERS
+        )
+
+    # Strip URL scheme for prose matching ("rpc.arc.network" in "https://...").
+    display_value = dangerous
+    if display_value.startswith(("http://", "https://")):
+        display_value = display_value.split("://", 1)[1]
+
+    value_re = re.escape(display_value)
+
+    # Build an optional chain-id key phrase prefix for chainId facts.
+    if "chainid" in fact_name.lower():
+        key_prefix = r"(?:chainidhex|chainid|chain\s+id\s+hex|chain-id-hex|chain\s+id|chain-id)\s*[:=\s]*"
+        negation_patterns = [
+            # "Do not use chainId 1", "Must never configure chain-id = 1244"
+            rf"(?:do\s+not|must\s+not|must\s+never)\s+(?:use|configure|set)\s+{key_prefix}['\"`]?{value_re}['\"`]?",
+            # "chainId: 1 is forbidden", "Chain ID 1244 is not allowed"
+            rf"{key_prefix}['\"`]?{value_re}['\"`]?\s+is\s+forbidden",
+            rf"{key_prefix}['\"`]?{value_re}['\"`]?\s+is\s+not\s+(?:allowed|supported|valid)",
+        ]
+    else:
+        negation_patterns = [
+            # "Do not configure https://rpc.arc.network"
+            rf"(?:do\s+not|must\s+not|must\s+never)\s+(?:use|configure|set)\s+(?:https?://)?['\"`]?{value_re}['\"`]?",
+            # "https://rpc.arc.network is forbidden"
+            rf"(?:https?://)?['\"`]?{value_re}['\"`]?\s+is\s+forbidden",
+            rf"(?:https?://)?['\"`]?{value_re}['\"`]?\s+is\s+not\s+(?:allowed|supported|valid)",
+        ]
+
+    return any(re.search(pattern, lower) for pattern in negation_patterns)
+
+
+# Chain-id key phrases we treat as equivalent (case-insensitive).
+_CHAIN_ID_KEY_PATTERN = (
+    r"chainidhex|chainid|chain\s+id\s+hex|chain-id-hex|chain\s+id|chain-id"
+)
+
+
+def _dangerous_value_matches(line: str, fact_name: str, dangerous: str) -> bool:
+    """Return True if this line contains the dangerous value in a chainId context.
+
+    This is intentionally strict: a bare "1" in a numbered list, a transaction
+    receipt status "0x1", or the correct Arc Testnet values must not be flagged.
+    """
+    if dangerous.startswith("http://") or dangerous.startswith("https://"):
+        return dangerous in line
+
+    # Hex values: reject transaction/status/log contexts first.
+    if dangerous.startswith("0x"):
+        if re.search(r"\bstatus\b|\breceipt\b|\bsuccess\b|\bfailed\b|\blog\b", line, re.IGNORECASE):
+            return False
+
+    # Match chain-id key phrase, optional separator (:, =, or prose "is"),
+    # optional quotes/backticks, then the dangerous value.
+    quote_group = r"([\"'\`])"
+    if dangerous.startswith("0x"):
+        tail = r"(?![0-9A-Fa-f])"
+    else:
+        tail = r"(?![0-9])"
+
+    # Explicit separator / prose "is" form (chainId: 1244, chain id is 1244).
+    explicit_pattern = (
+        rf"(?i)\b({_CHAIN_ID_KEY_PATTERN})\s*(?:[:=]|\bis\b)\s*"
+        rf"{quote_group}?{re.escape(dangerous)}{quote_group}?{tail}"
+    )
+    if re.search(explicit_pattern, line):
+        return True
+
+    # Whitespace-only form, e.g. "Do not use chainId 1244" or "Chain ID `0x4d4`".
+    whitespace_pattern = (
+        rf"(?i)\b({_CHAIN_ID_KEY_PATTERN})\s+{quote_group}?{re.escape(dangerous)}{quote_group}?{tail}"
+    )
+    return re.search(whitespace_pattern, line) is not None
+
+
+def scan_for_dangerous_values(facts: dict[str, Any], root: Path = ROOT) -> int:
+    """Fail closed if a dangerous value appears without an explicit safe context."""
+    files = _collect_scan_files(root)
+    issues: list[str] = []
+    for path in files:
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        lines = text.splitlines()
+        for fact_name, dangerous_values in DANGEROUS_VALUES.items():
+            for dangerous in dangerous_values:
+                for i, line in enumerate(lines):
+                    if not _dangerous_value_matches(line, fact_name, dangerous):
+                        continue
+                    if _context_allows_dangerous(line, fact_name, dangerous):
+                        continue
+                    issues.append(
+                        f"{path.relative_to(root).as_posix()}:{i + 1}: "
+                        f"dangerous value for {fact_name} ({dangerous!r}) "
+                        f"appears without an explicit negation on the same line"
+                    )
+    if issues:
+        fail("\n".join(["detected dangerous Arc Testnet fact drift:"] + issues))
+    return len(files)
+
+
+def scan_for_decimal_confusion(root: Path = ROOT) -> int:
+    """Fail closed if ERC-20 USDC and native gas decimals are swapped.
+
+    Splits each line into clauses so a single sentence that correctly mentions
+    both native gas (18) and ERC-20 USDC (6) is not misread as drift.
+    """
+    files = _collect_scan_files(root)
+    issues: list[str] = []
+    clause_delimiters = re.compile(r"[,;()—–]|\band\b|\bwhile\b|\bbut\b")
+    for path in files:
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        lines = text.splitlines()
+        for i, line in enumerate(lines):
+            if _context_allows_dangerous(line):
+                continue
+            lower = line.lower()
+            for clause in clause_delimiters.split(lower):
+                if "usdc" in clause and "decimals" in clause and re.search(r"(?<![0-9])18(?![0-9])", clause):
+                    # Only flag USDC decimals = 18 in an ERC-20 context.
+                    if "erc" in clause or "erc-20" in clause or "erc20" in clause:
+                        issues.append(
+                            f"{path.relative_to(root).as_posix()}:{i + 1}: "
+                            f"ERC-20 USDC decimals appears to be 18 (expected 6)"
+                        )
+                if ("native" in clause or "gas" in clause) and "decimals" in clause and re.search(r"(?<![0-9])6(?![0-9])", clause):
+                    # Do not flag if the clause is actually about ERC-20 USDC.
+                    if "erc" in clause or "erc-20" in clause or "erc20" in clause:
+                        continue
+                    issues.append(
+                        f"{path.relative_to(root).as_posix()}:{i + 1}: "
+                        f"native gas decimals appears to be 6 (expected 18)"
+                    )
+    if issues:
+        fail("\n".join(["detected Arc Testnet decimal confusion:"] + issues))
+    return len(files)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--facts", type=Path, default=DEFAULT_FACTS)
@@ -249,9 +496,14 @@ def main() -> int:
         facts = load_facts(args.facts)
         validate_facts(facts)
         target_count = validate_targets(facts, args.root)
+        scanned_count = scan_for_dangerous_values(facts, args.root)
+        scan_for_decimal_confusion(args.root)
     except ValueError as error:
         raise SystemExit(f"Arc Testnet facts invalid: {error}") from error
-    print(f"Arc Testnet facts valid: {len(FACT_TARGETS)} facts across {target_count} pinned targets")
+    print(
+        f"Arc Testnet facts valid: {len(FACT_TARGETS)} facts across {target_count} "
+        f"pinned targets and {scanned_count} scanned files"
+    )
     return 0
 
 

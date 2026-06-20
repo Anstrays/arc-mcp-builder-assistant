@@ -170,7 +170,7 @@ async function testRevertedReceiptAndNullReceipt() {
 }
 
 async function testWrongChainStopsBeforeReceipt() {
-  const harness = createHarness({ chainId: '0x1' });
+  const harness = createHarness({ chainId: '0x1' }); // do not use: negative test fixture
   await harness.elements.get('load-receipt').trigger('click');
   const value = result(harness);
   assert.equal(value.state, 'unknown');

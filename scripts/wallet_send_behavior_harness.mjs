@@ -194,7 +194,7 @@ async function testExactOneShotSend() {
 }
 
 async function testWrongChainAndAccountChangeBlock() {
-  const wrongChain = createHarness({ gated: true, provider: new FakeProvider({ chainId: '0x1' }) });
+  const wrongChain = createHarness({ gated: true, provider: new FakeProvider({ chainId: '0x1' }) }); // do not use: negative test fixture
   wrongChain.elements.get('risk-acknowledgement').checked = true;
   await wrongChain.elements.get('risk-acknowledgement').trigger('change');
   await wrongChain.elements.get('connect-wallet').trigger('click');

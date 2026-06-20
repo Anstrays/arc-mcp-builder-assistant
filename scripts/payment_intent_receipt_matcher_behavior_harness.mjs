@@ -200,7 +200,7 @@ async function testRevertedReceiptAndNullReceipt() {
 }
 
 async function testWrongChainStopsBeforeReceipt() {
-  const harness = createHarness({ chainId: '0x1' });
+  const harness = createHarness({ chainId: '0x1' }); // do not use: negative test fixture
   await harness.elements.get('match-receipt').trigger('click');
   const value = result(harness);
   assert.equal(value.state, 'unknown');
@@ -236,7 +236,7 @@ function invalidIntentHarness(intentPatch) {
 
 async function testInvalidLocalIntentAvoidsRpc() {
   const cases = [
-    { patch: { chainId: 1 }, name: 'wrong chainId' },
+    { patch: { chainId: 1 }, name: 'wrong chainId' }, // do not use: negative test fixture
     { patch: { network: 'Ethereum Mainnet' }, name: 'wrong network' },
     { patch: { asset: 'DAI' }, name: 'wrong asset' },
     { patch: { token: '0x2222222222222222222222222222222222222222' }, name: 'non-USDC token' },

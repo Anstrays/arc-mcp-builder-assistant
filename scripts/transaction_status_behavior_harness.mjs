@@ -148,7 +148,7 @@ async function testMismatchAndWrongChainFailClosed() {
   assert.equal(mismatched.transferReview.state, 'mismatch');
   assert.equal(mismatched.settlementProven, false);
 
-  const wrongChain = createHarness({ chainId: '0x1' });
+  const wrongChain = createHarness({ chainId: '0x1' }); // do not use: negative test fixture
   await wrongChain.elements.get('check-transaction').trigger('click');
   const wrong = result(wrongChain);
   assert.equal(wrong.state, 'unknown');
