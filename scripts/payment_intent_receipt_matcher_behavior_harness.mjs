@@ -289,6 +289,106 @@ async function testRpcEnvelopeAndHashBindingFailClosed() {
   assert.equal(hashMismatch.intentMatched, false);
 }
 
+async function testMalformedReceiptLogs() {
+  const malformed = createHarness({
+    receipt: baseReceipt({
+      logs: [
+        { address: USDC, topics: [TRANSFER_TOPIC], data: TEN_THOUSAND_BASE_UNITS, logIndex: '0x0' },
+        { address: USDC, topics: [TRANSFER_TOPIC, TOPIC_FROM], data: TEN_THOUSAND_BASE_UNITS, logIndex: '0x1' },
+        { address: 'not-an-address', topics: [TRANSFER_TOPIC, TOPIC_FROM, TOPIC_TO], data: TEN_THOUSAND_BASE_UNITS, logIndex: '0x2' },
+        { address: USDC, topics: [TRANSFER_TOPIC, TOPIC_FROM, TOPIC_TO], data: '0xbad', logIndex: '0x3' },
+      ],
+    }),
+  });
+  await malformed.elements.get('match-receipt').trigger('click');
+  const value = result(malformed);
+  assert.equal(value.state, 'mismatch');
+  assert.equal(value.transferEventCount, 1);
+  assert.equal(value.matchingTransferCount, 0);
+  assert.equal(value.transferEvents[0].kind, 'arc_testnet_usdc_transfer_log_parse_error');
+}
+
+async function testWrongTokenAddressAndTopic() {
+  const wrongToken = createHarness({
+    receipt: baseReceipt({
+      logs: [
+        { address: '0x2222222222222222222222222222222222222222', topics: [TRANSFER_TOPIC, TOPIC_FROM, TOPIC_TO], data: TEN_THOUSAND_BASE_UNITS, logIndex: '0x0' },
+      ],
+    }),
+  });
+  await wrongToken.elements.get('match-receipt').trigger('click');
+  const wrongTokenValue = result(wrongToken);
+  assert.equal(wrongTokenValue.state, 'mismatch');
+  assert.equal(wrongTokenValue.transferEventCount, 0);
+
+  const wrongTopic = createHarness({
+    receipt: baseReceipt({
+      logs: [
+        { address: USDC, topics: ['0x1111111111111111111111111111111111111111111111111111111111111111', TOPIC_FROM, TOPIC_TO], data: TEN_THOUSAND_BASE_UNITS, logIndex: '0x0' },
+      ],
+    }),
+  });
+  await wrongTopic.elements.get('match-receipt').trigger('click');
+  const wrongTopicValue = result(wrongTopic);
+  assert.equal(wrongTopicValue.state, 'mismatch');
+  assert.equal(wrongTopicValue.transferEventCount, 0);
+}
+
+async function testDuplicateMatchingLogs() {
+  const receipt = baseReceipt({
+    logs: [
+      { address: USDC, topics: [TRANSFER_TOPIC, TOPIC_FROM, TOPIC_TO], data: TEN_THOUSAND_BASE_UNITS, logIndex: '0x0' },
+      { address: USDC, topics: [TRANSFER_TOPIC, TOPIC_FROM, TOPIC_TO], data: TEN_THOUSAND_BASE_UNITS, logIndex: '0x1' },
+    ],
+  });
+  const harness = createHarness({ receipt });
+  await harness.elements.get('match-receipt').trigger('click');
+  const value = result(harness);
+  assert.equal(value.state, 'match');
+  assert.equal(value.matchingTransferCount, 2);
+  assert.equal(value.transferEventCount, 2);
+}
+
+async function testAmountFormattingEdgeCases() {
+  function baseUnitsToData(baseUnits) {
+    return `0x${BigInt(baseUnits).toString(16).padStart(64, '0')}`;
+  }
+  const cases = [
+    { amount: '1', baseUnits: '1000000', label: 'one USDC' },
+    { amount: '0.1', baseUnits: '100000', label: 'tenth USDC' },
+    { amount: '0.000001', baseUnits: '1', label: 'one micro-USDC' },
+    { amount: '1.000000', baseUnits: '1000000', label: 'trailing zeros decimal' },
+  ];
+  for (const { amount, baseUnits, label } of cases) {
+    const intent = { ...SAMPLE_INTENT, amount, amountBaseUnits: baseUnits };
+    const receipt = baseReceipt({
+      logs: [
+        { address: USDC, topics: [TRANSFER_TOPIC, TOPIC_FROM, TOPIC_TO], data: baseUnitsToData(baseUnits), logIndex: '0x0' },
+      ],
+    });
+    const harness = createHarness({ receipt });
+    harness.elements.get('payment-intent').value = JSON.stringify(intent);
+    await harness.elements.get('match-receipt').trigger('click');
+    const value = result(harness);
+    assert.equal(value.state, 'match', `${label} should match`);
+    assert.equal(value.intent.amountUsdc, amount.replace(/0+$/, '').replace(/\.$/, ''), `${label} formatting`);
+  }
+}
+
+async function testZeroAddressHandling() {
+  const zeroFromTopic = `0x${'0'.repeat(24)}0000000000000000000000000000000000000000`;
+  const receipt = baseReceipt({
+    logs: [
+      { address: USDC, topics: [TRANSFER_TOPIC, zeroFromTopic, TOPIC_TO], data: TEN_THOUSAND_BASE_UNITS, logIndex: '0x0' },
+    ],
+  });
+  const harness = createHarness({ receipt });
+  await harness.elements.get('match-receipt').trigger('click');
+  const value = result(harness);
+  assert.equal(value.state, 'match');
+  assert.equal(value.matchingTransferCount, 1);
+}
+
 await testMatchWhenTransferMatchesIntent();
 await testMismatchWhenRecipientDiffers();
 await testRevertedReceiptAndNullReceipt();
@@ -296,4 +396,9 @@ await testWrongChainStopsBeforeReceipt();
 await testInvalidHashOrIntentAvoidsRpc();
 await testInvalidLocalIntentAvoidsRpc();
 await testRpcEnvelopeAndHashBindingFailClosed();
-console.log('payment intent receipt matcher behavior harness passed: match/mismatch/revert/not-found, wrong-chain stop, invalid-input no-RPC, invalid-local-intent no-RPC, envelope/hash binding');
+await testMalformedReceiptLogs();
+await testWrongTokenAddressAndTopic();
+await testDuplicateMatchingLogs();
+await testAmountFormattingEdgeCases();
+await testZeroAddressHandling();
+console.log('payment intent receipt matcher behavior harness passed: match/mismatch/revert/not-found, wrong-chain stop, invalid-input no-RPC, malformed receipt, wrong token/topic, duplicate logs, amount formatting, zero-address handling');

@@ -100,6 +100,7 @@ REQUIRED_FILES = [
     "prompts/register-agent-notes.md",
     "prompts/deploy-contracts-on-arc.md",
     "prompts/wire-arc-testnet-status.md",
+    "prompts/agentic-maintainer-loop.md",
     "examples/payment-intent-demo/index.html",
     "examples/payment-intent-playground/index.html",
     "examples/payment-intent-playground/playground.js",
@@ -1675,6 +1676,40 @@ def validate_arc_agent_treasury_lab() -> None:
             fail(f"{html_relative}/{js_relative}: forbidden treasury network/wallet marker: {marker}")
 
 
+def validate_agentic_maintainer_loop() -> None:
+    """Keep the maintainer-agent loop discoverable and safety-anchored."""
+    doc_relative = "docs/agentic-maintainer-loop.md"
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    index = (ROOT / "index.html").read_text(encoding="utf-8")
+    viewer = (ROOT / "docs/viewer.js").read_text(encoding="utf-8")
+    doc = (ROOT / doc_relative).read_text(encoding="utf-8")
+
+    for marker in (
+        "Loop 1: task execution",
+        "Loop 2: verification",
+        "Loop 3: event-driven maintenance",
+        "Loop 4: improvement",
+        "Human approval gates",
+        "no custody",
+        "no mainnet",
+        "no private keys",
+        "no signing",
+        "no broadcast",
+    ):
+        if marker not in doc:
+            fail(f"{doc_relative}: missing maintainer loop marker: {marker}")
+    for surface, text in (
+        ("README.md", readme),
+        ("index.html", index),
+        ("docs/viewer.js", viewer),
+    ):
+        if "agentic-maintainer-loop.md" not in text:
+            fail(f"{surface}: missing agentic maintainer loop link")
+    for marker in ("ethereum.request", "eth_sendTransaction", "wallet_switchEthereumChain", "sendTransaction", "signTransaction", "PRIVATE_KEY"):
+        if marker in index:
+            fail(f"index.html: forbidden maintainer loop live-wallet marker: {marker}")
+
+
 def validate_arc_testnet_send_readiness_gate() -> None:
     """Keep the Arc Testnet send handoff narrow, explicit, and guard-first."""
     doc_relative = "docs/arc-testnet-send-readiness-gate.md"
@@ -1961,6 +1996,7 @@ def main() -> None:
     validate_guarded_wallet_send_gate()
     validate_job_escrow_simulator()
     validate_arc_agent_treasury_lab()
+    validate_agentic_maintainer_loop()
     validate_arc_testnet_send_readiness_gate()
     validate_arc_testnet_operator_runbook()
     validate_arc_testnet_operator_evidence()

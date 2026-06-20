@@ -200,6 +200,11 @@ def test_payment_intent_receipt_matcher_harness_tests_invalid_intent_cases() -> 
         "negative amount",
         "hex amountBaseUnits",
         "mismatched amount/baseUnits",
+        "testMalformedReceiptLogs",
+        "testWrongTokenAddressAndTopic",
+        "testDuplicateMatchingLogs",
+        "testAmountFormattingEdgeCases",
+        "testZeroAddressHandling",
     ]
     for fragment in required:
         assert fragment in harness, f"Missing behavior harness invalid-intent case: {fragment}"

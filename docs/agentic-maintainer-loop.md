@@ -138,11 +138,13 @@ They must stop before:
 - real wallet connection;
 - message signing;
 - transaction signing;
+- no signing of any blockchain message or transaction;
 - transaction broadcast;
-- private-key or seed-phrase handling;
-- custody or account-abstraction provider setup;
+- no broadcast of any transaction to a chain;
+- no private keys or seed phrases;
+- no custody or account-abstraction provider setup;
 - production verifier credentials;
-- mainnet configuration;
+- no mainnet configuration;
 - destructive filesystem or Git operations;
 - merge, release, or deployment without explicit maintainer approval.
 

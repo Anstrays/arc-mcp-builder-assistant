@@ -195,3 +195,23 @@ Focus on:
 
 Return blockers first, then non-blocking polish.
 ```
+
+## Agentic maintainer loop prompt
+
+Standalone file: [`prompts/agentic-maintainer-loop.md`](../prompts/agentic-maintainer-loop.md).
+
+```text
+Work as an autonomous maintainer agent for Anstrays/arc-mcp-builder-assistant.
+
+Goal: <one focused Arc builder task>
+
+Constraints:
+- Arc Testnet only; no mainnet.
+- No custody, private keys, seed phrases, or real wallet connection.
+- No signing, broadcast, or autonomous spending.
+- Static-site-first and wallet-free for demos.
+
+Loop: inspect state, make the smallest scoped change, run targeted checks, then run the canonical verification suite. Stop before any action that requires secrets, wallets, signing, broadcast, or maintainer approval.
+
+Report: branch/PR, what changed, checks run, security boundaries, risks, PR recommendation, and explicit actions not performed.
+```
