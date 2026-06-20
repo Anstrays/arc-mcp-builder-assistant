@@ -432,6 +432,19 @@ def validate_workflow_security() -> None:
                 f"{sorted(expected)}; observed {sorted(observed)}"
             )
 
+    validate = (ROOT / WORKFLOW_FILES[0]).read_text(encoding="utf-8")
+    validate_active_lines = [
+        line.strip().removeprefix("- ").lstrip()
+        for line in validate.splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    ]
+    for marker in (
+        "python3 scripts/arc_builder_doctor.py --markdown",
+        '>> "$GITHUB_STEP_SUMMARY"',
+    ):
+        if not any(marker in line for line in validate_active_lines):
+            fail(f"{WORKFLOW_FILES[0]}: missing active Doctor summary marker: {marker}")
+
     monitor = (ROOT / WORKFLOW_FILES[2]).read_text(encoding="utf-8")
     monitor_active_lines = [
         line.strip().removeprefix("- ").lstrip()

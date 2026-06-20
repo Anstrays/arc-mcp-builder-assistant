@@ -63,6 +63,7 @@ Expected safe result:
   before a local protected response is returned.
 - Fail-closed operator evidence validation, create-only ignored draft generation, and read-only readiness reporting.
 - [Arc Builder Doctor](./arc-builder-doctor.md): one dependency-free command that orchestrates the existing local checks into a single structured `pass/warn/fail` report, with zero network calls by default and opt-in read-only Arc Testnet RPC / public-site checks that never connect a wallet, sign, or broadcast.
+- Arc Builder Doctor can emit a Markdown report for PR/release review and CI summaries.
 - [Agentic maintainer loop](./agentic-maintainer-loop.md): a scoped operating model for coding agents that ties edits to deterministic checks, event-driven maintenance, regression-test feedback, and human approval gates for sensitive actions.
 - `config/arc_testnet.facts.json` plus `scripts/validate_arc_testnet_facts.py`:
   offline consistency proof for critical Arc Testnet implementation, policy,
