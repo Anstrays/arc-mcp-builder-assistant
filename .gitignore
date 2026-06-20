@@ -10,6 +10,7 @@ __pycache__/
 .vscode/
 .idea/
 .hermes/
+.arc-release-packet/
 *.log
 *.operator-evidence.local.json
 .arc-test-*/

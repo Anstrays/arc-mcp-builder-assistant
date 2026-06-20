@@ -117,6 +117,21 @@ broadcasts a transaction. See
 [`docs/arc-builder-doctor.md`](./docs/arc-builder-doctor.md) for the report
 contract and check list.
 
+### Release packet
+
+Generate a local, read-only maintainer-facing packet for PR/release review. The
+command is dependency-free, makes no network calls, and writes to
+`.arc-release-packet/` (which is ignored by git):
+
+```bash
+python3 scripts/generate_arc_release_packet.py --force
+```
+
+The packet includes the Arc Builder Doctor Markdown report, Arc Testnet facts,
+a readiness checklist, an examples index, and a machine-readable
+`release-packet.json`. No wallet, signing, broadcast, custody, mainnet,
+secrets, or storage are involved.
+
 Useful one-shot checks:
 
 ```bash

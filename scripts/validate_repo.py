@@ -147,6 +147,8 @@ REQUIRED_FILES = [
     "scripts/test_docs_viewer_behavior.py",
     "scripts/docs_viewer_behavior_harness.mjs",
     "scripts/test_workflow_security.py",
+    "scripts/generate_arc_release_packet.py",
+    "scripts/test_arc_release_packet.py",
     "scripts/test_payment_intent_playground.py",
     "scripts/test_x402_boundary.py",
     "scripts/test_transaction_status_playground.py",
@@ -863,6 +865,24 @@ def validate_public_launch_packet() -> None:
         fail(f"{viewer_relative}: missing public launch packet route")
     if "./docs/view.html#public-launch-packet.md" not in index:
         fail(f"{index_relative}: missing public launch packet link")
+
+
+def validate_arc_release_packet() -> None:
+    """Keep the local release packet generator and its test discoverable."""
+    for relative in (
+        "scripts/generate_arc_release_packet.py",
+        "scripts/test_arc_release_packet.py",
+    ):
+        if not (ROOT / relative).is_file():
+            fail(f"{relative}: missing release packet surface")
+
+    test_all = (ROOT / "scripts/test_all.py").read_text(encoding="utf-8")
+    if "scripts/test_arc_release_packet.py" not in test_all:
+        fail("scripts/test_all.py: missing release packet regression entry for scripts/test_arc_release_packet.py")
+
+    gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
+    if ".arc-release-packet/" not in gitignore:
+        fail(".gitignore: missing ignored output directory for release packet")
 
 
 def validate_x402_boundary_demo() -> None:
@@ -1998,6 +2018,7 @@ def main() -> None:
     validate_completion_contract()
     validate_demo_safety_copy()
     validate_public_launch_packet()
+    validate_arc_release_packet()
     validate_x402_boundary_demo()
     validate_arc_production_deployment_assets()
     validate_arc_testnet_status_helper()
