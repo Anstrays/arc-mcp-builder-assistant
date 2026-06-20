@@ -65,6 +65,8 @@ REQUIRED_FILES = [
     "docs/public-launch-packet.md",
     "docs/arc-discord-introduction.md",
     "docs/receipt-verifier-playground.md",
+    "docs/receipt-viewer.md",
+    "docs/payment-intent-receipt-matcher.md",
     "docs/transaction-status-playground.md",
     "docs/x402-mcp-manifest.md",
     "docs/x402-demo-transcript.md",
@@ -87,6 +89,7 @@ REQUIRED_FILES = [
     "docs/agent-commerce-review-packet.md",
     "docs/job-escrow-demo.md",
     "docs/arc-agent-treasury-lab.md",
+    "docs/agentic-maintainer-loop.md",
     "docs/mcp-query-examples.md",
     "docs/arc-house-submission.md",
     "docs/build-log.md",
@@ -97,11 +100,16 @@ REQUIRED_FILES = [
     "prompts/register-agent-notes.md",
     "prompts/deploy-contracts-on-arc.md",
     "prompts/wire-arc-testnet-status.md",
+    "prompts/agentic-maintainer-loop.md",
     "examples/payment-intent-demo/index.html",
     "examples/payment-intent-playground/index.html",
     "examples/payment-intent-playground/playground.js",
     "examples/receipt-verifier-playground/index.html",
     "examples/receipt-verifier-playground/verifier.js",
+    "examples/receipt-viewer/index.html",
+    "examples/receipt-viewer/receipt-viewer.js",
+    "examples/payment-intent-receipt-matcher/index.html",
+    "examples/payment-intent-receipt-matcher/matcher.js",
     "examples/transaction-status-playground/index.html",
     "examples/transaction-status-playground/status.js",
     "examples/arc-testnet-wallet-send-gate/index.html",
@@ -144,6 +152,10 @@ REQUIRED_FILES = [
     "scripts/test_transaction_status_playground.py",
     "scripts/test_transaction_status_behavior.py",
     "scripts/transaction_status_behavior_harness.mjs",
+    "scripts/test_receipt_viewer.py",
+    "scripts/receipt_viewer_behavior_harness.mjs",
+    "scripts/test_payment_intent_receipt_matcher.py",
+    "scripts/payment_intent_receipt_matcher_behavior_harness.mjs",
     "scripts/test_arc_testnet_wallet_send_gate.py",
     "scripts/test_arc_testnet_wallet_send_behavior.py",
     "scripts/wallet_send_behavior_harness.mjs",
@@ -176,6 +188,8 @@ HTML_FILES_TO_VALIDATE = [
     "examples/payment-intent-demo/index.html",
     "examples/payment-intent-playground/index.html",
     "examples/receipt-verifier-playground/index.html",
+    "examples/receipt-viewer/index.html",
+    "examples/payment-intent-receipt-matcher/index.html",
     "examples/transaction-status-playground/index.html",
     "examples/arc-testnet-wallet-send-gate/index.html",
     "examples/agent-commerce-components/index.html",
@@ -194,6 +208,8 @@ SITEMAP_REQUIRED_LOCATIONS = (
     CANONICAL_BASE_URL + "examples/payment-intent-demo/",
     CANONICAL_BASE_URL + "examples/payment-intent-playground/",
     CANONICAL_BASE_URL + "examples/receipt-verifier-playground/",
+    CANONICAL_BASE_URL + "examples/receipt-viewer/",
+    CANONICAL_BASE_URL + "examples/payment-intent-receipt-matcher/",
     CANONICAL_BASE_URL + "examples/transaction-status-playground/",
     CANONICAL_BASE_URL + "examples/arc-testnet-wallet-send-gate/",
     CANONICAL_BASE_URL + "examples/agent-commerce-components/",
@@ -611,6 +627,10 @@ def validate_responsive_layout_guards() -> None:
         ),
         "examples/transaction-status-playground/index.html": (
             "main > *, .grid > * { min-width:0; }",
+        ),
+        "examples/receipt-viewer/index.html": (
+            "main > *, .grid > * { min-width:0; }",
+            "overflow-wrap:anywhere",
         ),
         "examples/agent-commerce-components/index.html": (
             ".wrap > *, .grid > *, .cards > * { min-width: 0; }",
@@ -1048,6 +1068,254 @@ def validate_receipt_verifier_playground() -> None:
             fail(f"{js_relative}: forbidden network/wallet marker: {marker}")
 
 
+def validate_payment_intent_receipt_matcher() -> None:
+    """Keep the payment-intent receipt matcher pinned to Arc Testnet USDC and read-only."""
+    html_relative = "examples/payment-intent-receipt-matcher/index.html"
+    js_relative = "examples/payment-intent-receipt-matcher/matcher.js"
+    test_relative = "scripts/test_payment_intent_receipt_matcher.py"
+    harness_relative = "scripts/payment_intent_receipt_matcher_behavior_harness.mjs"
+    html = (ROOT / html_relative).read_text(encoding="utf-8")
+    js = (ROOT / js_relative).read_text(encoding="utf-8")
+    tests = (ROOT / test_relative).read_text(encoding="utf-8")
+    harness = (ROOT / harness_relative).read_text(encoding="utf-8")
+
+    # HTML structure and policy
+    for marker in (
+        "Payment Intent Receipt Matcher",
+        'id="payment-intent"',
+        'id="transaction-hash"',
+        'id="match-receipt"',
+        'id="reset-matcher"',
+        'id="status-pill"',
+        'id="match-summary-list"',
+        'id="transfer-log-list"',
+        'id="match-json"',
+        "Read-only Arc Testnet RPC",
+        "USDC Transfer logs",
+        "No wallet connection",
+        "No signing",
+        "No transaction broadcast",
+        "connect-src 'self' https://rpc.testnet.arc.network",
+        'crossorigin="anonymous"',
+    ):
+        if marker not in html:
+            fail(f"{html_relative}: missing payment-intent receipt matcher marker: {marker}")
+
+    # JS pinning and read-only scope
+    for marker in (
+        "const ARC_MATCHER = Object.freeze",
+        "expectedChainId: 5042002",
+        "expectedChainIdHex: '0x4cef52'",
+        "rpcUrl: 'https://rpc.testnet.arc.network'",
+        "explorerUrl: 'https://testnet.arcscan.app'",
+        "usdcAddress: '0x3600000000000000000000000000000000000000'",
+        "usdcDecimals: 6",
+        "const ZERO_ADDRESS",
+        "function isNonZeroAddress",
+        "function parseAmountBaseUnits",
+        "function usdcBaseUnitsFromDecimal",
+        "network !== 'Arc Testnet'",
+        "'arc-testnet'",
+        "chainId !== ARC_MATCHER.expectedChainId",
+        "asset !== 'USDC'",
+        "token !== ARC_MATCHER.usdcAddress.toLowerCase()",
+        "decimals !== ARC_MATCHER.usdcDecimals",
+        "recipient must include a valid non-zero 20-byte recipient address",
+        "recipient must not be the USDC token contract",
+        "amount and amountBaseUnits do not match",
+        "fractionPart.length > ARC_MATCHER.usdcDecimals",
+        "const RPC_TIMEOUT_MS = 15_000",
+        "const MAX_RPC_RESPONSE_BYTES = 1_000_000",
+        "const RPC_REQUEST_ID = 'arc-payment-intent-receipt-matcher-read-only'",
+        "const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'",
+        "method: 'eth_chainId'",
+        "method: 'eth_getTransactionReceipt'",
+        "new AbortController()",
+        "new TextEncoder().encode(responseText).byteLength",
+        "window.clearTimeout(timeout)",
+        "Request timed out after 15 seconds.",
+        "RPC response must be a JSON object",
+        "RPC response envelope did not match the request",
+        "RPC response must contain exactly one result or error field",
+        "function decodeUsdcTransferLog(log)",
+        "function extractUsdcTransferLogs(receipt)",
+        "function classifyMatch",
+        "function parseIntent",
+        "invalid_local_input",
+        "intent_receipt_match_observed",
+        "intent_receipt_mismatch",
+        "reverted_receipt_observed",
+        "receipt_not_found",
+        "unknown_wrong_chain",
+        "unknown_hash_mismatch",
+        "settlementProven: false",
+        "businessAcceptanceProven: false",
+    ):
+        if marker not in js:
+            fail(f"{js_relative}: missing payment-intent receipt matcher marker: {marker}")
+
+    if "eth_getTransactionByHash" in js:
+        fail(f"{js_relative}: matcher must not fetch full transactions")
+
+    for marker in (
+        "window.ethereum",
+        "ethereum.request",
+        "personal_sign",
+        "eth_sendTransaction",
+        "eth_sendRawTransaction",
+        "wallet_switchEthereumChain",
+        "sendTransaction",
+        "signTransaction",
+        "PRIVATE_KEY",
+        "localStorage",
+        "sessionStorage",
+    ):
+        if marker in html or marker in js:
+            fail(f"{html_relative}/{js_relative}: forbidden payment-intent receipt matcher marker: {marker}")
+
+    # Regression tests cover the hardening
+    for marker in (
+        "test_payment_intent_receipt_matcher_script_tag_has_matching_sri",
+        "test_payment_intent_receipt_matcher_js_pins_arc_testnet_chain",
+        "test_payment_intent_receipt_matcher_js_pins_usdc_token",
+        "test_payment_intent_receipt_matcher_js_enforces_six_decimals",
+        "test_payment_intent_receipt_matcher_js_rejects_amount_precision_errors",
+        "test_payment_intent_receipt_matcher_js_rejects_zero_address",
+        "test_payment_intent_receipt_matcher_js_rejects_mismatched_amount_fields",
+        "test_payment_intent_receipt_matcher_js_rejects_recipient_equal_to_usdc_contract",
+        "test_payment_intent_receipt_matcher_harness_tests_invalid_intent_cases",
+        "payment_intent_receipt_matcher_behavior_harness.mjs",
+    ):
+        if marker not in tests:
+            fail(f"{test_relative}: missing payment-intent matcher regression marker: {marker}")
+
+    # Behavior harness exercises invalid local intent cases without RPC
+    for marker in (
+        "testInvalidLocalIntentAvoidsRpc",
+        "wrong chainId",
+        "wrong network",
+        "wrong asset",
+        "non-USDC token",
+        "wrong decimals",
+        "zero recipient",
+        "recipient is USDC contract",
+        "too many fractional digits",
+        "zero amount",
+        "negative amount",
+        "hex amountBaseUnits",
+        "mismatched amount/baseUnits",
+        "invalid_local_input",
+    ):
+        if marker not in harness:
+            fail(f"{harness_relative}: missing payment-intent matcher behavior marker: {marker}")
+
+
+
+def validate_receipt_viewer() -> None:
+    """Keep the receipt viewer read-only, receipt-scoped, and wallet-free."""
+    html_relative = "examples/receipt-viewer/index.html"
+    js_relative = "examples/receipt-viewer/receipt-viewer.js"
+    test_relative = "scripts/test_receipt_viewer.py"
+    harness_relative = "scripts/receipt_viewer_behavior_harness.mjs"
+    html = (ROOT / html_relative).read_text(encoding="utf-8")
+    js = (ROOT / js_relative).read_text(encoding="utf-8")
+    tests = (ROOT / test_relative).read_text(encoding="utf-8")
+    harness = (ROOT / harness_relative).read_text(encoding="utf-8")
+    for marker in (
+        "Agent Payment Receipt Viewer",
+        'id="transaction-hash"',
+        'id="load-receipt"',
+        'id="reset-receipt"',
+        'id="status-pill"',
+        'id="receipt-summary-list"',
+        'id="transfer-log-list"',
+        'id="receipt-json"',
+        "Read-only Arc Testnet RPC",
+        "USDC Transfer logs",
+        "No wallet connection",
+        "No transaction broadcast",
+        "connect-src 'self' https://rpc.testnet.arc.network",
+        'crossorigin="anonymous"',
+    ):
+        if marker not in html:
+            fail(f"{html_relative}: missing receipt viewer marker: {marker}")
+    for marker in (
+        "const ARC_RECEIPT_VIEWER = Object.freeze",
+        "expectedChainId: 5042002",
+        "expectedChainIdHex: '0x4cef52'",
+        "rpcUrl: 'https://rpc.testnet.arc.network'",
+        "explorerUrl: 'https://testnet.arcscan.app'",
+        "usdcAddress: '0x3600000000000000000000000000000000000000'",
+        "usdcDecimals: 6",
+        "const RPC_TIMEOUT_MS = 15_000",
+        "const MAX_RPC_RESPONSE_BYTES = 1_000_000",
+        "const RPC_REQUEST_ID = 'arc-receipt-viewer-read-only'",
+        "const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'",
+        "method: 'eth_chainId'",
+        "method: 'eth_getTransactionReceipt'",
+        "new AbortController()",
+        "new TextEncoder().encode(responseText).byteLength",
+        "window.clearTimeout(timeout)",
+        "Request timed out after 15 seconds.",
+        "RPC response must be a JSON object",
+        "RPC response envelope did not match the request",
+        "RPC response must contain exactly one result or error field",
+        "function decodeUsdcTransferLog(log)",
+        "function extractUsdcTransferLogs(receipt)",
+        "function classifyReceiptStatus(chainIdHex, receipt, expectedTransactionHash)",
+        "success_receipt_observed",
+        "reverted_receipt_observed",
+        "receipt_not_found",
+        "unknown_wrong_chain",
+        "unknown_hash_mismatch",
+        "settlementProven: false",
+        "businessAcceptanceProven: false",
+    ):
+        if marker not in js:
+            fail(f"{js_relative}: missing receipt viewer marker: {marker}")
+    if "eth_getTransactionByHash" in js:
+        fail(f"{js_relative}: receipt viewer must not fetch full transactions")
+    for marker in (
+        "window.ethereum",
+        "ethereum.request",
+        "personal_sign",
+        "eth_sendTransaction",
+        "eth_sendRawTransaction",
+        "wallet_switchEthereumChain",
+        "sendTransaction",
+        "signTransaction",
+        "PRIVATE_KEY",
+        "localStorage",
+        "sessionStorage",
+    ):
+        if marker in html or marker in js:
+            fail(f"{html_relative}/{js_relative}: forbidden receipt viewer marker: {marker}")
+    for marker in (
+        "test_receipt_viewer_page_has_read_only_receipt_ui",
+        "test_receipt_viewer_script_tag_has_matching_sri",
+        "test_receipt_viewer_js_uses_receipt_only_read_only_rpc",
+        "test_receipt_viewer_forbids_wallet_signing_storage_or_broadcast_surface",
+        "test_actual_receipt_viewer_javascript_behavior",
+        "receipt_viewer_behavior_harness.mjs",
+    ):
+        if marker not in tests:
+            fail(f"{test_relative}: missing receipt viewer regression marker: {marker}")
+    for marker in (
+        "testSuccessfulReceiptHighlightsUsdcTransfer",
+        "testRevertedReceiptAndNullReceipt",
+        "testWrongChainStopsBeforeReceipt",
+        "testInvalidHashAvoidsRpc",
+        "testRpcEnvelopeAndHashBindingFailClosed",
+        "testTimeoutFailsClosed",
+        "success_receipt_observed",
+        "reverted_receipt_observed",
+        "unknown_wrong_chain",
+        "unknown_hash_mismatch",
+    ):
+        if marker not in harness:
+            fail(f"{harness_relative}: missing receipt viewer behavior marker: {marker}")
+
+
 
 def validate_transaction_status_playground() -> None:
     """Keep the transaction status playground read-only and wallet-free."""
@@ -1408,6 +1676,40 @@ def validate_arc_agent_treasury_lab() -> None:
             fail(f"{html_relative}/{js_relative}: forbidden treasury network/wallet marker: {marker}")
 
 
+def validate_agentic_maintainer_loop() -> None:
+    """Keep the maintainer-agent loop discoverable and safety-anchored."""
+    doc_relative = "docs/agentic-maintainer-loop.md"
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    index = (ROOT / "index.html").read_text(encoding="utf-8")
+    viewer = (ROOT / "docs/viewer.js").read_text(encoding="utf-8")
+    doc = (ROOT / doc_relative).read_text(encoding="utf-8")
+
+    for marker in (
+        "Loop 1: task execution",
+        "Loop 2: verification",
+        "Loop 3: event-driven maintenance",
+        "Loop 4: improvement",
+        "Human approval gates",
+        "no custody",
+        "no mainnet",
+        "no private keys",
+        "no signing",
+        "no broadcast",
+    ):
+        if marker not in doc:
+            fail(f"{doc_relative}: missing maintainer loop marker: {marker}")
+    for surface, text in (
+        ("README.md", readme),
+        ("index.html", index),
+        ("docs/viewer.js", viewer),
+    ):
+        if "agentic-maintainer-loop.md" not in text:
+            fail(f"{surface}: missing agentic maintainer loop link")
+    for marker in ("ethereum.request", "eth_sendTransaction", "wallet_switchEthereumChain", "sendTransaction", "signTransaction", "PRIVATE_KEY"):
+        if marker in index:
+            fail(f"index.html: forbidden maintainer loop live-wallet marker: {marker}")
+
+
 def validate_arc_testnet_send_readiness_gate() -> None:
     """Keep the Arc Testnet send handoff narrow, explicit, and guard-first."""
     doc_relative = "docs/arc-testnet-send-readiness-gate.md"
@@ -1688,10 +1990,13 @@ def main() -> None:
     validate_arc_testnet_status_helper()
     validate_payment_intent_playground_status_panel()
     validate_receipt_verifier_playground()
+    validate_receipt_viewer()
+    validate_payment_intent_receipt_matcher()
     validate_transaction_status_playground()
     validate_guarded_wallet_send_gate()
     validate_job_escrow_simulator()
     validate_arc_agent_treasury_lab()
+    validate_agentic_maintainer_loop()
     validate_arc_testnet_send_readiness_gate()
     validate_arc_testnet_operator_runbook()
     validate_arc_testnet_operator_evidence()

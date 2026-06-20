@@ -35,6 +35,24 @@ REQUIRED_MARKERS = {
         "A separate disabled-by-default Arc Testnet lab implements the narrow reviewed send slice",
         "Custody, mainnet, autonomous spending, and live settlement remain future work",
     ),
+    "docs/agentic-maintainer-loop.md": (
+        "Arc Testnet only",
+        "no private keys",
+        "no signing",
+        "no broadcast",
+        "no custody",
+        "no mainnet",
+        "Human approval gates",
+    ),
+    "prompts/agentic-maintainer-loop.md": (
+        "Arc Testnet only",
+        "no private keys",
+        "no signing",
+        "no broadcast",
+        "no custody",
+        "no mainnet",
+        "human approval",
+    ),
 }
 
 # Assertive readiness/custody claims that must never appear in the public README.
@@ -56,6 +74,7 @@ README_FORBIDDEN_CLAIMS = (
     "custodial wallet",
     "we hold your keys",
     "we hold your private keys",
+    "guaranteed settlement",
 )
 
 FORBIDDEN_STALE_CLAIMS = (

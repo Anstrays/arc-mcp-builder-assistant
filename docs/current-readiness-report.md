@@ -33,6 +33,14 @@ Expected safe result:
 - Arc MCP setup, docs map, prompt library, builder workflows, and deployment/runbook docs.
 - Local payment-intent playground with reviewable JSON, frozen intent fields, explicit local approval states, USDC unit preview, unsigned ERC-20 transaction draft, calldata consistency check, final local confirmation, and blocked wallet handoff manifest.
 - Read-only transaction-status playground for Arc Testnet transaction hashes.
+- Read-only receipt viewer for Arc Testnet payment evidence, including receipt
+  status, block number, gas used, raw logs, pinned USDC Transfer log decoding,
+  chain-first stopping, JSON-RPC envelope checks, and settlement claims always
+  false.
+- Read-only payment-intent receipt matcher that compares a local intent JSON
+  with an Arc Testnet receipt's pinned USDC Transfer logs and emits a
+  match/mismatch/revert/not-found/unknown verdict plus machine-readable evidence,
+  without signing, broadcasting, or claiming settlement.
 - Expected-transfer evidence comparison for pinned Arc Testnet USDC target,
   zero native value, decoded recipient, and decoded amount, with chain-first
   stopping, JSON-RPC envelope/exact-hash binding, and settlement claims always
@@ -55,6 +63,7 @@ Expected safe result:
   before a local protected response is returned.
 - Fail-closed operator evidence validation, create-only ignored draft generation, and read-only readiness reporting.
 - [Arc Builder Doctor](./arc-builder-doctor.md): one dependency-free command that orchestrates the existing local checks into a single structured `pass/warn/fail` report, with zero network calls by default and opt-in read-only Arc Testnet RPC / public-site checks that never connect a wallet, sign, or broadcast.
+- [Agentic maintainer loop](./agentic-maintainer-loop.md): a scoped operating model for coding agents that ties edits to deterministic checks, event-driven maintenance, regression-test feedback, and human approval gates for sensitive actions.
 - `config/arc_testnet.facts.json` plus `scripts/validate_arc_testnet_facts.py`:
   offline consistency proof for critical Arc Testnet implementation, policy,
   and demo surfaces; official-source re-check remains required before release.
