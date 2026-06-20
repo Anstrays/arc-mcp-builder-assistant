@@ -6,6 +6,12 @@ const statusPill = document.querySelector('#status-pill');
 const matchSummaryList = document.querySelector('#match-summary-list');
 const transferLogList = document.querySelector('#transfer-log-list');
 const matchJson = document.querySelector('#match-json');
+const downloadJsonButton = document.querySelector('#download-json-evidence');
+const downloadMarkdownButton = document.querySelector('#download-markdown-evidence');
+
+const EVIDENCE_DISCLAIMER = 'This evidence packet contains observed receipt and event-log data only. It is not a proof of settlement, custody, business acceptance, offchain fulfillment, or mainnet readiness. The Arc Testnet RPC and pinned USDC contract are public read-only references; always verify independently before taking any action.';
+
+let lastMatchResult = null;
 
 const ARC_MATCHER = Object.freeze({
   network: 'Arc Testnet',
@@ -573,11 +579,171 @@ function renderTransferLogs(transfers, intent) {
 }
 
 function renderStatus(result, hash, intent) {
+  lastMatchResult = result;
   statusPill.textContent = result.state;
   statusPill.className = `status ${result.state}`;
   renderList(matchSummaryList, checksForResult(result, hash, intent));
   renderTransferLogs(result.transferEvents || [], intent);
   matchJson.textContent = JSON.stringify(result, null, 2);
+  updateExportButtons(result);
+}
+
+function buildEvidencePacket(result) {
+  const now = new Date().toISOString();
+  const intent = result && result.intent ? result.intent : null;
+  const receiptFound = result && result.receiptFound === true;
+  const receiptSummary = receiptFound ? {
+    transactionHash: result.transactionHash || null,
+    blockNumberHex: result.blockNumberHex || null,
+    blockNumberDecimal: result.blockNumberDecimal || null,
+    gasUsedHex: result.gasUsedHex || null,
+    gasUsedDecimal: result.gasUsedDecimal || null,
+    status: result.receipt && result.receipt.status ? result.receipt.status : null,
+    logsCount: typeof result.logsCount === 'number' ? result.logsCount : 0,
+    receiptFound: true,
+  } : {
+    receiptFound: false,
+  };
+
+  const transferLogSummary = (result && Array.isArray(result.matchingTransfers) ? result.matchingTransfers : []).map((transfer) => ({
+    kind: transfer.kind || 'arc_testnet_usdc_transfer_log',
+    token: transfer.token || null,
+    tokenDecimals: transfer.tokenDecimals || null,
+    from: transfer.from || null,
+    to: transfer.to || null,
+    amountBaseUnits: transfer.amountBaseUnits || null,
+    amountUsdc: transfer.amountUsdc || null,
+    logIndexHex: transfer.logIndexHex || null,
+    matchesIntent: transfer.amountBaseUnits
+      && transfer.to
+      && intent
+      && transfer.to === intent.recipient
+      && (transfer.token || '').toLowerCase() === (intent.token || '').toLowerCase()
+      && BigInt(transfer.amountBaseUnits) === BigInt(intent.amountBaseUnits || 0),
+  }));
+
+  const mismatchReasons = [];
+  if (!result || result.state === 'not_checked') {
+    mismatchReasons.push('No payment-intent receipt match has run yet.');
+  } else if (result.state !== 'match') {
+    if (result.reason) mismatchReasons.push(result.reason);
+    if (result.state === 'mismatch') mismatchReasons.push('No pinned Arc Testnet USDC Transfer log matched the expected recipient, token, and amount.');
+    if (result.state === 'revert') mismatchReasons.push('Transaction receipt status is not 0x1.');
+    if (result.state === 'not_found') mismatchReasons.push('No receipt was returned for the supplied transaction hash.');
+    if (result.state === 'unknown') mismatchReasons.push('The matcher could not reach a deterministic conclusion.');
+  }
+
+  return {
+    matcherVersion: '2025-06-arc-payment-intent-receipt-matcher-v1',
+    exportedAt: now,
+    exportOrigin: 'local_browser_blob_download',
+    networkConstants: {
+      network: ARC_MATCHER.network,
+      chainId: ARC_MATCHER.expectedChainId,
+      chainIdHex: ARC_MATCHER.expectedChainIdHex,
+      rpcLabel: 'Public Arc Testnet RPC',
+      explorerLabel: 'Arc Testnet explorer',
+    },
+    paymentIntent: intent,
+    receiptSummary,
+    transferLogSummary,
+    verdict: result && result.state ? result.state : 'unknown',
+    evidenceVerdict: result && result.evidenceVerdict ? result.evidenceVerdict : 'not_checked',
+    mismatchReasons,
+    safetyBoundary: result && result.safety ? result.safety : safetyBoundary(),
+    disclaimer: EVIDENCE_DISCLAIMER,
+  };
+}
+
+function generateMarkdownEvidence(packet) {
+  const sections = [
+    '# Payment Intent Receipt Matcher Evidence Packet',
+    '',
+    `- **Matcher version:** ${packet.matcherVersion}`,
+    `- **Exported at:** ${packet.exportedAt}`,
+    `- **Export origin:** ${packet.exportOrigin}`,
+    '',
+    '## Network constants',
+    '',
+    `- Network: ${packet.networkConstants.network}`,
+    `- Chain ID: ${packet.networkConstants.chainId} (${packet.networkConstants.chainIdHex})`,
+    `- RPC label: ${packet.networkConstants.rpcLabel}`,
+    `- Explorer label: ${packet.networkConstants.explorerLabel}`,
+    '',
+    '## Payment intent',
+    '',
+    '```json',
+    JSON.stringify(packet.paymentIntent, null, 2),
+    '```',
+    '',
+    '## Receipt summary',
+    '',
+    packet.receiptSummary.receiptFound
+      ? [
+          `- Transaction hash: ${packet.receiptSummary.transactionHash}`,
+          `- Block number: ${packet.receiptSummary.blockNumberDecimal || packet.receiptSummary.blockNumberHex || 'unavailable'}`,
+          `- Gas used: ${packet.receiptSummary.gasUsedDecimal || packet.receiptSummary.gasUsedHex || 'unavailable'}`,
+          `- Status: ${packet.receiptSummary.status || 'unavailable'}`,
+          `- Logs count: ${packet.receiptSummary.logsCount}`,
+        ].join('\n')
+      : '- No receipt was returned for the supplied transaction hash.',
+    '',
+    '## Matched USDC Transfer log summary',
+    '',
+  ];
+
+  if (packet.transferLogSummary.length === 0) {
+    sections.push('No matching Transfer logs were found.');
+  } else {
+    sections.push('| # | Token | From | To | Amount (USDC) | Amount (base units) |');
+    sections.push('|---|-------|------|----|---------------|---------------------|');
+    packet.transferLogSummary.forEach((log, index) => {
+      sections.push(`| ${index + 1} | ${log.token || '—'} | ${log.from || '—'} | ${log.to || '—'} | ${log.amountUsdc || '—'} | ${log.amountBaseUnits || '—'} |`);
+    });
+  }
+
+  sections.push('');
+  sections.push('## Verdict');
+  sections.push('');
+  sections.push(`- State: **${packet.verdict}**`);
+  sections.push(`- Evidence verdict: ${packet.evidenceVerdict}`);
+  sections.push('');
+
+  if (packet.mismatchReasons.length > 0) {
+    sections.push('## Mismatch reasons');
+    sections.push('');
+    packet.mismatchReasons.forEach((reason) => sections.push(`- ${reason}`));
+    sections.push('');
+  }
+
+  sections.push('## Disclaimer');
+  sections.push('');
+  sections.push(packet.disclaimer);
+  sections.push('');
+
+  return sections.join('\n');
+}
+
+function downloadEvidenceFile(content, filename, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.style.display = 'none';
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(url);
+}
+
+function updateExportButtons(result) {
+  const exportable = result
+    && result.state
+    && result.state !== 'not_checked'
+    && result.state !== 'checking_arc_receipt_match';
+  downloadJsonButton.disabled = !exportable;
+  downloadMarkdownButton.disabled = !exportable;
 }
 
 function renderInitialState() {
@@ -688,6 +854,24 @@ function resetSample() {
   renderInitialState();
 }
 
+function downloadJsonEvidence() {
+  if (!lastMatchResult) return;
+  const packet = buildEvidencePacket(lastMatchResult);
+  const content = JSON.stringify(packet, null, 2);
+  const filename = `arc-receipt-matcher-evidence-${packet.verdict}-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+  downloadEvidenceFile(content, filename, 'application/json');
+}
+
+function downloadMarkdownEvidence() {
+  if (!lastMatchResult) return;
+  const packet = buildEvidencePacket(lastMatchResult);
+  const content = generateMarkdownEvidence(packet);
+  const filename = `arc-receipt-matcher-evidence-${packet.verdict}-${new Date().toISOString().replace(/[:.]/g, '-')}.md`;
+  downloadEvidenceFile(content, filename, 'text/markdown');
+}
+
 matchButton.addEventListener('click', runMatch);
 resetButton.addEventListener('click', resetSample);
+downloadJsonButton.addEventListener('click', downloadJsonEvidence);
+downloadMarkdownButton.addEventListener('click', downloadMarkdownEvidence);
 renderInitialState();

@@ -65,7 +65,7 @@
     @media (max-width: 860px) { body { padding:18px 0; } .grid, .metric-grid { grid-template-columns:1fr; } }
     @media (prefers-reduced-motion: reduce) { * { animation-duration: 0s !important; transition: none !important; } }
   </style>
-  <script src="./matcher.js" integrity="sha384-b4DRt+szu/oXv2LWhpFJX66K2Slh+zWhGkUR0wrkIR0BMqiNQ8kaZT5lyQskJPFC" crossorigin="anonymous" defer></script>
+  <script src="./matcher.js" integrity="sha384-b+l47wwp114M/vXgjWojdiy76c4WFIwxpJFIr5OU3npT/9gvdn7AX1yFcjsc1g0c" crossorigin="anonymous" defer></script>
 </head>
 <body>
   <main>
@@ -116,6 +116,10 @@
         <ul id="match-summary-list" class="mini-list" aria-live="polite"></ul>
         <h3>USDC Transfer logs</h3>
         <ul id="transfer-log-list" class="mini-list" aria-live="polite"></ul>
+        <div class="actions" aria-label="Evidence export controls">
+          <button type="button" id="download-json-evidence" class="secondary" disabled>Download JSON evidence</button>
+          <button type="button" id="download-markdown-evidence" class="secondary" disabled>Download Markdown evidence</button>
+        </div>
       </article>
     </section>
 

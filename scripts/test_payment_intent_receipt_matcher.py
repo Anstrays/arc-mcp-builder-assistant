@@ -39,6 +39,10 @@ def test_payment_intent_receipt_matcher_html_has_required_elements() -> None:
         'id="match-summary-list"',
         'id="transfer-log-list"',
         'id="match-json"',
+        'id="download-json-evidence"',
+        'id="download-markdown-evidence"',
+        'disabled>Download JSON evidence',
+        'disabled>Download Markdown evidence',
         "Read-only Arc Testnet RPC",
         "No wallet connection",
         "No signing",
@@ -70,6 +74,10 @@ def test_payment_intent_receipt_matcher_js_has_required_functions() -> None:
         "function classifyMatch",
         "function runMatch",
         "function safetyBoundary",
+        "function buildEvidencePacket",
+        "function generateMarkdownEvidence",
+        "function downloadEvidenceFile",
+        "function updateExportButtons",
         "ARC_MATCHER",
         "eth_chainId",
         "eth_getTransactionReceipt",
@@ -184,6 +192,48 @@ def test_payment_intent_receipt_matcher_js_rejects_recipient_equal_to_usdc_contr
         assert fragment in content, f"Missing recipient-equals-USDC rejection marker: {fragment}"
 
 
+def test_payment_intent_receipt_matcher_js_export_uses_local_blob_only() -> None:
+    content = JS.read_text(encoding="utf-8")
+    required = [
+        "new Blob",
+        "URL.createObjectURL",
+        "anchor.download",
+        "URL.revokeObjectURL",
+    ]
+    for fragment in required:
+        assert fragment in content, f"Missing local-download marker: {fragment}"
+    forbidden = [
+        "fetch('/upload",
+        "fetch(\"http",
+        "XMLHttpRequest",
+        "navigator.sendBeacon",
+        "localStorage",
+        "sessionStorage",
+    ]
+    for fragment in forbidden:
+        assert fragment not in content, f"Forbidden upload/storage pattern in export: {fragment}"
+
+
+def test_payment_intent_receipt_matcher_js_export_disclaimer_rejects_settlement_custody_mainnet() -> None:
+    content = JS.read_text(encoding="utf-8")
+    required = [
+        "not a proof of settlement",
+        "custody",
+        "mainnet readiness",
+        "EVIDENCE_DISCLAIMER",
+    ]
+    for fragment in required:
+        assert fragment in content, f"Missing export disclaimer marker: {fragment}"
+
+
+def test_payment_intent_receipt_matcher_html_export_buttons_disabled_before_match() -> None:
+    content = HTML.read_text(encoding="utf-8")
+    assert 'id="download-json-evidence"' in content
+    assert 'id="download-markdown-evidence"' in content
+    assert 'disabled>Download JSON evidence</button>' in content
+    assert 'disabled>Download Markdown evidence</button>' in content
+
+
 def test_payment_intent_receipt_matcher_harness_tests_invalid_intent_cases() -> None:
     harness = HARNESS.read_text(encoding="utf-8")
     required = [
@@ -205,6 +255,11 @@ def test_payment_intent_receipt_matcher_harness_tests_invalid_intent_cases() -> 
         "testDuplicateMatchingLogs",
         "testAmountFormattingEdgeCases",
         "testZeroAddressHandling",
+        "testExportButtonsDisabledBeforeMatch",
+        "testJsonExportContainsCanonicalFieldsAndVerdict",
+        "testMismatchExportDoesNotClaimSettlement",
+        "testRevertExportDoesNotClaimSettlement",
+        "testNotFoundExportDoesNotClaimSettlement",
     ]
     for fragment in required:
         assert fragment in harness, f"Missing behavior harness invalid-intent case: {fragment}"
@@ -237,6 +292,9 @@ def main() -> int:
         test_payment_intent_receipt_matcher_js_rejects_zero_address,
         test_payment_intent_receipt_matcher_js_rejects_mismatched_amount_fields,
         test_payment_intent_receipt_matcher_js_rejects_recipient_equal_to_usdc_contract,
+        test_payment_intent_receipt_matcher_js_export_uses_local_blob_only,
+        test_payment_intent_receipt_matcher_js_export_disclaimer_rejects_settlement_custody_mainnet,
+        test_payment_intent_receipt_matcher_html_export_buttons_disabled_before_match,
         test_payment_intent_receipt_matcher_harness_tests_invalid_intent_cases,
         test_payment_intent_receipt_matcher_harness_runs,
     ]

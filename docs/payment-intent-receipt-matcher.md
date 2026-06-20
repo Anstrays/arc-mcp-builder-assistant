@@ -19,8 +19,11 @@ Open `examples/payment-intent-receipt-matcher/index.html` locally or via the Git
 5. Decodes only the pinned Arc Testnet USDC `Transfer` logs (`0x3600000000000000000000000000000000000000`).
 6. Reports `match`, `mismatch`, `revert`, `not_found`, or `unknown`.
 7. Emits a machine-readable evidence JSON object.
+8. Lets you download the review evidence as local JSON or Markdown after a match run.
 
 ## Input format
+
+The matcher accepts a JSON payment intent with the following fields. All fields are validated before any RPC call is made.
 
 ```json
 {
@@ -47,6 +50,15 @@ Either `amount` (decimal string) or `amountBaseUnits` (integer string) is requir
 - Only `eth_chainId` and `eth_getTransactionReceipt` RPC calls.
 - Read-only, Arc Testnet only.
 - A `match` verdict does **not** prove settlement, business acceptance, or offchain fulfillment.
+
+## Evidence export
+
+After you run a match, two read-only export buttons become active:
+
+- **Download JSON evidence** — machine-readable packet with matcher version, export timestamp, Arc Testnet chain constants, normalized intent/receipt fields, matched USDC Transfer log summary, verdict, mismatch reasons, and a disclaimer.
+- **Download Markdown evidence** — human-readable version of the same packet.
+
+The export is local-only: it uses a browser `Blob` and `URL.createObjectURL`, so no file leaves your machine. There is no wallet, signing, broadcast, telemetry, `localStorage`, `sessionStorage`, or auto-upload. The exported evidence is an observed receipt/log summary, not a settlement proof, custody proof, or mainnet readiness claim.
 
 ## Verdicts
 
