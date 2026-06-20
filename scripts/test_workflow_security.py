@@ -57,7 +57,17 @@ class WorkflowSecurityTests(unittest.TestCase):
         path.write_text(text, encoding="utf-8")
 
     def write_workflows(self) -> None:
-        self.write(".github/workflows/validate.yml", workflow("  contents: read"))
+        self.write(
+            ".github/workflows/validate.yml",
+            workflow("  contents: read")
+            + """
+      - name: Publish Arc Builder Doctor summary
+        if: always()
+        run: |
+          python3 scripts/arc_builder_doctor.py --markdown > arc-builder-doctor-report.md
+          cat arc-builder-doctor-report.md >> "$GITHUB_STEP_SUMMARY"
+""",
+        )
         self.write(
             ".github/workflows/pages.yml",
             workflow("  contents: read\n  pages: write\n  id-token: write"),
@@ -191,6 +201,26 @@ class WorkflowSecurityTests(unittest.TestCase):
         )
         self.write(path, changed)
         with self.assertRaisesRegex(SystemExit, "missing active readiness-monitor safety marker"):
+            self.validator.validate_workflow_security()
+
+    def test_validate_workflow_requires_doctor_summary_marker(self) -> None:
+        path = ".github/workflows/validate.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace(
+            "python3 scripts/arc_builder_doctor.py --markdown",
+            "",
+        )
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "missing active Doctor summary marker"):
+            self.validator.validate_workflow_security()
+
+    def test_validate_workflow_requires_github_step_summary_output(self) -> None:
+        path = ".github/workflows/validate.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace(
+            'cat arc-builder-doctor-report.md >> "$GITHUB_STEP_SUMMARY"',
+            'cat arc-builder-doctor-report.md',
+        )
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "missing active Doctor summary marker"):
             self.validator.validate_workflow_security()
 
 

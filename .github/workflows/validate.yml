@@ -34,3 +34,9 @@ jobs:
 
       - name: Run local regression suite
         run: python scripts/test_all.py
+
+      - name: Publish Arc Builder Doctor summary
+        if: always()
+        run: |
+          python3 scripts/arc_builder_doctor.py --markdown > arc-builder-doctor-report.md
+          cat arc-builder-doctor-report.md >> "$GITHUB_STEP_SUMMARY"

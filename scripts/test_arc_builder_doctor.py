@@ -297,6 +297,20 @@ class MarkdownOutputTests(unittest.TestCase):
         self.assertTrue(stdout.getvalue().startswith("# Arc Builder Doctor\n"))
         self.assertNotIn('"kind":', stdout.getvalue())
 
+    def test_markdown_report_is_safe_for_github_step_summary(self) -> None:
+        """Markdown output contains no HTML/JS and no raw JSON object markers."""
+        with mock.patch.object(doctor, "run_child", side_effect=canned_run_child):
+            report = doctor.build_report(doctor.Options())
+        rendered = doctor.render_markdown(report)
+        self.assertTrue(rendered.startswith("# Arc Builder Doctor"))
+        self.assertIn("## Checks", rendered)
+        self.assertIn("## Safety Boundaries", rendered)
+        self.assertIn("| transactionBroadcast | false |", rendered)
+        self.assertNotIn("<script", rendered.lower())
+        self.assertNotIn("javascript:", rendered.lower())
+        self.assertNotIn('"kind":', rendered)
+        self.assertNotIn('"overallStatus":', rendered)
+
 
 class ArcRpcCheckTests(unittest.TestCase):
     def test_skipped_unless_requested(self) -> None:

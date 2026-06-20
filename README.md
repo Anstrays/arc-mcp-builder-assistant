@@ -108,6 +108,8 @@ python3 scripts/arc_builder_doctor.py --include-arc-rpc
 python3 scripts/arc_builder_doctor.py --include-public-site
 ```
 
+Arc Builder Doctor can emit a Markdown report for PR/release review and CI summaries.
+
 The optional `--include-arc-rpc` and `--include-public-site` checks are the only
 ones that touch the network. The Arc RPC check uses read-only JSON-RPC `POST`;
 the public-site check uses `GET`. Neither connects a wallet, signs, or
