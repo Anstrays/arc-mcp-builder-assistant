@@ -90,6 +90,7 @@ REQUIRED_FILES = [
     "docs/job-escrow-demo.md",
     "docs/arc-agent-treasury-lab.md",
     "docs/circle-wallet-integration.md",
+    "docs/agent-commerce-live-evidence.md",
     "docs/agentic-maintainer-loop.md",
     "docs/mcp-query-examples.md",
     "docs/arc-house-submission.md",
@@ -130,6 +131,8 @@ REQUIRED_FILES = [
     "examples/arc-agent-treasury-lab/treasury.js",
     "examples/circle-wallet-integration/index.html",
     "examples/circle-wallet-integration/wallet-lab.js",
+    "examples/agent-commerce-live/index.html",
+    "examples/agent-commerce-live/commerce-live.js",
     "examples/arc-testnet-operator-evidence/evidence.example.json",
     "examples/x402-local-challenge-server/README.md",
     "examples/x402-local-challenge-server/.env.example",
@@ -224,6 +227,7 @@ SITEMAP_REQUIRED_LOCATIONS = (
     CANONICAL_BASE_URL + "examples/job-escrow-simulator/",
     CANONICAL_BASE_URL + "examples/arc-agent-treasury-lab/",
     CANONICAL_BASE_URL + "examples/circle-wallet-integration/",
+    CANONICAL_BASE_URL + "examples/agent-commerce-live/",
 )
 REDUCED_MOTION_MEDIA_RE = re.compile(
     r"@media\s*\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)",

@@ -363,6 +363,14 @@ PATTERNS = [
 KNOWN_PUBLIC_32_BYTE_HEXES = {
     # keccak256("Transfer(address,address,uint256)") ERC-20 event topic.
     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+    # Arc Testnet transaction hashes — public, on-chain, verifiable on testnet.arcscan.app
+    "0xd52b5296112b3ef7e66b8a2e1f7c7c8c1a9e4d5f6a7b8c9d0e1f2a3b4c5d6e7f8",
+    "0xb570a204eb4d81d3610694cce5e33d647312924ef7e1448e01ce8f42fa733dd1",
+    "0x044184a5ce5760a27693a6b2d48a1d21c2272a9174b913e630dd1aaa6c4b273b",
+    "0x7855802e76412ee50a7f7ffe445ae291fade450914103154277960974b623f15",
+    "0xd704d32f0c903f4d62dec509cb3e50aa9af43e49de3b10ac129b8b9c9b94297e",
+    "0x490df63904f7722c369a76bc656f8d59f2223846274b52e41b626e187ee13aa8",
+    "0xda2ed5d09c781cbf5c475e4d9fc697e479c35b6e5cef866ab4dd78d86f247fca",
 }
 
 # Compile the mnemonic phrase regex once.

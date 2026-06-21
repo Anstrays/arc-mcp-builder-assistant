@@ -39,6 +39,7 @@ const PAGES = [
   { id: 'agent-commerce-review-packet.md', path: './agent-commerce-review-packet.md', githubPath: 'docs/agent-commerce-review-packet.md', label: 'Agent commerce review packet', group: 'Playbooks' },
   { id: 'job-escrow-demo.md', path: './job-escrow-demo.md', githubPath: 'docs/job-escrow-demo.md', label: 'Job escrow demo', group: 'Playbooks' },
   { id: 'arc-agent-treasury-lab.md', path: './arc-agent-treasury-lab.md', githubPath: 'docs/arc-agent-treasury-lab.md', label: 'Arc Agent Treasury Lab', group: 'Playbooks' },
+  { id: 'agent-commerce-live-evidence.md', path: './agent-commerce-live-evidence.md', githubPath: 'docs/agent-commerce-live-evidence.md', label: 'Agent Commerce Live Evidence', group: 'Playbooks' },
   { id: 'circle-wallet-integration.md', path: './circle-wallet-integration.md', githubPath: 'docs/circle-wallet-integration.md', label: 'Circle Wallet Integration', group: 'Playbooks' },
   { id: 'agentic-maintainer-loop.md', path: './agentic-maintainer-loop.md', githubPath: 'docs/agentic-maintainer-loop.md', label: 'Agentic maintainer loop', group: 'Playbooks' },
   { id: 'mcp-query-examples.md', path: './mcp-query-examples.md', githubPath: 'docs/mcp-query-examples.md', label: 'MCP query examples', group: 'Playbooks' },

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Live agent commerce evidence on Arc Testnet — real USDC transactions via Circle agent wallet." />
+  <title>Agent Commerce Live · Arc MCP Builder Assistant</title>
+  <style>
+    :root { color-scheme: dark; --bg: #070916; --panel: rgba(255,255,255,.075); --line: rgba(255,255,255,.16); --text: #fbf9ff; --muted: #c6bedc; --accent: #7cf7d4; --circle: #00d4ff; --good: #89ffb8; --warn: #ffd166; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; min-height: 100vh; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text); line-height: 1.64; background: radial-gradient(circle at 12% 2%, rgba(0,212,255,.18), transparent 34rem), radial-gradient(circle at 90% 6%, rgba(124,247,212,.24), transparent 38rem), linear-gradient(180deg, #070916 0%, #121832 70%, #070916 100%); }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    .wrap { width: min(1160px, calc(100% - 32px)); margin: 0 auto; }
+    header { padding: 26px 0 12px; }
+    .topbar, nav { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .topbar { justify-content: space-between; }
+    .brand { color: var(--text); font-weight: 950; letter-spacing: -.02em; }
+    nav a, .badge { border: 1px solid var(--line); border-radius: 999px; padding: 10px 14px; background: rgba(255,255,255,.055); color: var(--text); font-weight: 850; }
+    .badge { display: inline-flex; width: fit-content; }
+    .badge.good { color: var(--good); border-color: rgba(137,255,184,.36); background: rgba(137,255,184,.08); }
+    .badge.circle { color: var(--circle); border-color: rgba(0,212,255,.36); background: rgba(0,212,255,.08); }
+    .hero { padding: 34px 0 22px; }
+    .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; padding-bottom: 72px; align-items: start; }
+    .panel { border: 1px solid var(--line); border-radius: 28px; padding: clamp(20px, 4vw, 32px); background: linear-gradient(180deg, rgba(255,255,255,.1), var(--panel)); box-shadow: 0 22px 80px rgba(0,0,0,.34); }
+    .warning { border-color: rgba(255,209,102,.36); background: rgba(255,209,102,.08); }
+    .eyebrow { color: var(--circle); font-size: .78rem; letter-spacing: .16em; text-transform: uppercase; font-weight: 950; }
+    h1, h2, h3 { letter-spacing: -.035em; line-height: 1.08; }
+    h1 { margin: 12px 0 14px; font-size: clamp(2.15rem, 7vw, 4.6rem); }
+    h2 { margin-top: 0; font-size: clamp(1.35rem, 3vw, 2rem); }
+    p, li, label { color: var(--muted); }
+    .info-grid { display: grid; gap: 10px; }
+    .info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border: 1px solid var(--line); border-radius: 14px; background: rgba(0,0,0,.2); gap: 12px; }
+    .info-label { color: var(--muted); font-size: .85rem; white-space: nowrap; }
+    .info-value { color: var(--text); font-weight: 800; font-family: ui-monospace, "SF Mono", monospace; font-size: .82rem; text-align: right; word-break: break-all; }
+    .tx-list { display: grid; gap: 12px; }
+    .tx-card { border: 1px solid var(--line); border-radius: 18px; padding: 16px; background: rgba(0,0,0,.2); }
+    .tx-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .tx-op { font-weight: 900; font-size: .85rem; }
+    .tx-status { font-size: .75rem; padding: 3px 10px; border-radius: 999px; }
+    .tx-status.complete { background: rgba(137,255,184,.12); color: var(--good); }
+    .tx-detail { font-size: .8rem; color: var(--muted); font-family: ui-monospace, monospace; word-break: break-all; }
+    .tx-hash { color: var(--accent); font-size: .78rem; }
+    code { font-family: ui-monospace, "SF Mono", monospace; font-size: .85rem; background: rgba(0,0,0,.3); padding: 2px 6px; border-radius: 6px; }
+    @media (max-width: 920px) { .layout { grid-template-columns: 1fr; } nav { display: none; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#agent-commerce-live" style="position:absolute;top:12px;left:-9999px;z-index:10;padding:10px 14px;border-radius:999px;background:var(--accent);color:#06110f;font-weight:950;">Skip to content</a>
+  <header class="wrap">
+    <div class="topbar">
+      <a class="brand" href="../../">Arc MCP Builder Assistant</a>
+      <nav aria-label="Agent commerce live navigation">
+        <a href="../../">Home</a>
+        <a href="../../docs/view.html#agent-commerce-live-evidence.md">Docs</a>
+        <a href="../circle-wallet-integration/">Circle wallet lab</a>
+        <a href="../arc-agent-treasury-lab/">Treasury lab</a>
+      </nav>
+    </div>
+  </header>
+  <main id="agent-commerce-live" class="wrap">
+    <section class="hero">
+      <p class="eyebrow">Live on-chain evidence · Arc Testnet</p>
+      <h1>Agent commerce live</h1>
+      <p>Real USDC transactions on Arc Testnet via Circle agent wallet. First agent-to-service payments on Arc, verified on-chain.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+        <span class="badge circle">Circle agent wallet</span>
+        <span class="badge good">6 transactions · all COMPLETE</span>
+        <span class="badge good">Arc Testnet · 5042002</span>
+      </div>
+    </section>
+    <section class="layout">
+      <div class="panel">
+        <h2>Wallet state</h2>
+        <div class="info-grid" id="wallet-state"></div>
+      </div>
+      <div class="panel">
+        <h2>Transaction log</h2>
+        <div class="tx-list" id="tx-log"></div>
+      </div>
+    </section>
+    <section class="layout">
+      <div class="panel">
+        <h2>Unit economics</h2>
+        <div class="info-grid" id="unit-economics"></div>
+      </div>
+      <div class="panel warning">
+        <h2>Safety boundaries</h2>
+        <ul>
+          <li>Testnet only — faucet USDC has no real value.</li>
+          <li>No private keys in repo — Circle CLI manages keys internally.</li>
+          <li>No custody, no mainnet, no autonomous spending.</li>
+          <li>Every transaction was human-approved via Circle CLI.</li>
+          <li>Burn address (0xdEaD) simulates service provider without real counterparty.</li>
+          <li>No secrets committed — wallet address is public information.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+  <script src="./commerce-live.js" defer></script>
+</body>
+</html>
