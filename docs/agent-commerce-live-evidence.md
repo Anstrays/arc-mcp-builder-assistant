@@ -98,11 +98,44 @@ Arc is Gateway domain 26. The Gateway supports sub-500ms batched payments for x4
 
 ```bash
 # Check Gateway balance
-circle gateway balance --address 0x0cd9b933302d90bfe295471deac7f4eafd9ea401 --chain "Arc Testnet"
+circle gateway balance --address 0x0cd9b933302d90bfe295471deac7f4eafd9ea401 --chain ARC-TESTNET
 
-# Deposit USDC into Gateway (direct, same-chain)
-circle gateway deposit --amount 5 --address 0x0cd9b933302d90bfe295471deac7f4eafd9ea401 --chain "Arc Testnet" --method direct
+# Deposit USDC into Gateway (direct, same-chain on Arc Testnet)
+circle gateway deposit --amount 5 --address 0x0cd9b933302d90bfe295471deac7f4eafd9ea401 --chain ARC-TESTNET --method direct
+
+# Withdraw from Gateway back to wallet
+circle gateway withdraw --amount 1 --address 0x0cd9b933302d90bfe295471deac7f4eafd9ea401 --chain ARC-TESTNET
 ```
+
+### 6. Gateway deposit — 5 USDC into Arc domain 26
+
+| Field | Value |
+|---|---|
+| Approve tx | `0x3387de0e7ebae09a29b9390e56d0284bbe055c20f03f875e2022ed8a7ec487df` |
+| Deposit tx | `0x2f458c54c4d6586817034dd28b649f219b5f33ad7f1acaa7330b9966a52e3f53` |
+| Amount | 5 USDC |
+| Gateway domain | 26 (Arc) |
+| Block | 48028452 |
+| Status | COMPLETE |
+
+### 7. Gateway withdraw — 1 USDC back to wallet
+
+| Field | Value |
+|---|---|
+| Mint tx | `0x3ffb115ba2c453f5c07ae9d79f7a11e7e75132dc92e14b0a5bdeac455d53931e` |
+| Amount | 1 USDC |
+| Gateway fee | 0.0035 USDC |
+| Status | COMPLETE |
+
+### On-chain contract queries
+
+| Query | Contract | Result |
+|---|---|---|
+| `balanceOf(address)` | USDC `0x3600…0000` | Verified wallet balance on-chain |
+| `decimals()` | USDC `0x3600…0000` | 6 (ERC-20) |
+| `name()` | USDC `0x3600…0000` | USDC |
+| `symbol()` | USDC `0x3600…0000` | USDC |
+| `totalSupply()` | USDC `0x3600…0000` | Verified circulating supply |
 
 ## Unit economics
 
@@ -110,11 +143,14 @@ circle gateway deposit --amount 5 --address 0x0cd9b933302d90bfe295471deac7f4eafd
 |---|---|
 | Starting balance | 20.00 USDC (ERC-20) |
 | Total payments sent | 1.75 USDC (1 self + 0.5 API + 0.25 micro) |
-| Total network fees | ~0.06 USDC (native) |
+| Gateway deposit | 5.00 USDC |
+| Gateway withdraw | 1.00 USDC (fee: 0.0035) |
+| Gateway balance | 3.9965 USDC (domain 26) |
+| Total network fees | ~0.09 USDC (native) |
 | Bridge amount | 1.00 USDC (to Base Sepolia) |
-| Current balance | ~18.04 USDC (ERC-20) |
+| On-chain balance | ~14.05 USDC (ERC-20) |
 | Cost per payment | ~0.004 USDC network fee |
-| Payments possible | ~4500+ (at current fee rate) |
+| Total transactions | 10 (all COMPLETE) |
 
 ## Safety boundaries
 

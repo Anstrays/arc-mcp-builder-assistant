@@ -17,7 +17,8 @@ const walletState = [
   ["Gateway domain", "26 (Arc)"],
   ["Session", "testnet (OTP)"],
   ["Starting balance", "20.00 USDC"],
-  ["Current balance", "~18.04 USDC"],
+  ["On-chain balance", "~14.05 USDC"],
+  ["Gateway balance", "3.9965 USDC (Arc)"],
 ];
 
 const transactions = [
@@ -69,16 +70,35 @@ const transactions = [
     txHash: "0xda2ed5d09c781cbf5c…",
     detail: "Agent pays 0.25 USDC for micro-service call → 0xdEaD",
   },
+  {
+    op: "GATEWAY DEPOSIT",
+    status: "COMPLETE",
+    amount: "5 USDC",
+    block: "48028452",
+    txHash: "0x2f458c54c4d65868170…",
+    detail: "Deposit 5 USDC into Circle Gateway on Arc (domain 26) via direct",
+  },
+  {
+    op: "GATEWAY WITHDRAW",
+    status: "COMPLETE",
+    amount: "1 USDC",
+    block: "—",
+    txHash: "0x3ffb115ba2c453f5c07…",
+    detail: "Withdraw 1 USDC from Gateway back to wallet (fee: 0.0035)",
+  },
 ];
 
 const unitEconomics = [
   ["Starting balance", "20.00 USDC"],
   ["Total payments sent", "1.75 USDC"],
-  ["Total network fees", "~0.06 USDC"],
+  ["Gateway deposit", "5.00 USDC"],
+  ["Gateway withdraw", "1.00 USDC (fee: 0.0035)"],
+  ["Gateway balance", "3.9965 USDC (domain 26)"],
+  ["Total network fees", "~0.09 USDC"],
   ["Bridge amount", "1.00 USDC"],
-  ["Current balance", "~18.04 USDC"],
+  ["On-chain balance", "~14.05 USDC"],
   ["Cost per payment", "~0.004 USDC"],
-  ["Payments possible", "~4500+"],
+  ["Total transactions", "10 (all COMPLETE)"],
 ];
 
 function renderWalletState() {
