@@ -46,6 +46,7 @@ CHECKS = [
     "scripts/test_agent_identity_profile_preview.py",
     "scripts/test_job_escrow_simulator.py",
     "scripts/test_arc_agent_treasury_lab.py",
+    "scripts/test_circle_wallet_integration.py",
     "scripts/test_operator_evidence.py",
     "scripts/test_operator_evidence_draft.py",
     "scripts/test_operator_evidence_report.py",
