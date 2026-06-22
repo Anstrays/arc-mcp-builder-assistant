@@ -43,6 +43,7 @@ const PAGES = [
   { id: 'circle-wallet-integration.md', path: './circle-wallet-integration.md', githubPath: 'docs/circle-wallet-integration.md', label: 'Circle Wallet Integration', group: 'Playbooks' },
   { id: 'agentic-maintainer-loop.md', path: './agentic-maintainer-loop.md', githubPath: 'docs/agentic-maintainer-loop.md', label: 'Agentic maintainer loop', group: 'Playbooks' },
   { id: 'mcp-query-examples.md', path: './mcp-query-examples.md', githubPath: 'docs/mcp-query-examples.md', label: 'MCP query examples', group: 'Playbooks' },
+  { id: 'builder-tooling.md', path: './builder-tooling.md', githubPath: 'docs/builder-tooling.md', label: 'Builder tooling', group: 'Playbooks' },
   { id: 'arc-house-submission.md', path: './arc-house-submission.md', githubPath: 'docs/arc-house-submission.md', label: 'Arc House submission draft', group: 'Playbooks' },
   { id: 'build-log.md', path: './build-log.md', githubPath: 'docs/build-log.md', label: 'Build log', group: 'Playbooks' },
   { id: 'security.md', path: '../SECURITY.md', githubPath: 'SECURITY.md', label: 'Security policy', group: 'Community' },
