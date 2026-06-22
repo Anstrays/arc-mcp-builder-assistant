@@ -6,7 +6,7 @@ This report is the short checkpoint for deciding whether the Arc MCP Builder Ass
 
 The repository is **complete for the current public-ready static builder-kit scope**.
 
-That scope includes docs-grounded Arc/MCP workflows, local-only playgrounds, review packets, screenshots, CI validation, read-only Arc Testnet status checks, and a separate disabled-by-default Arc Testnet browser-wallet send lab. It intentionally stops before private-key handling, custody, mainnet, autonomous spending, live settlement, or real paid-agent verification.
+That scope includes docs-grounded Arc/MCP workflows, local-only playgrounds, review packets, screenshots, CI validation, read-only Arc Testnet status checks, a separate disabled-by-default Arc Testnet browser-wallet send lab, and Phase 4 builder tooling (CLI, MCP server, starter templates). It intentionally stops before private-key handling, custody, mainnet, autonomous spending, live settlement, or real paid-agent verification.
 
 ## Latest local evidence
 
@@ -63,6 +63,7 @@ Expected safe result:
   before a local protected response is returned.
 - Fail-closed operator evidence validation, create-only ignored draft generation, and read-only readiness reporting.
 - [Arc Builder Doctor](./arc-builder-doctor.md): one dependency-free command that orchestrates the existing local checks into a single structured `pass/warn/fail` report, with zero network calls by default and opt-in read-only Arc Testnet RPC / public-site checks that never connect a wallet, sign, or broadcast.
+- Phase 4 builder tooling: unified CLI (`scripts/arc_builder_cli.py`), stdio MCP server (`scripts/arc_builder_mcp_server.py`) with 8 JSON-RPC tools, and dependency-free starter templates (`templates/payment-intent-starter/`, `templates/x402-agent-starter/`, `templates/job-escrow-starter/`) for scaffolding review-first Arc agent surfaces.
 - Arc Builder Doctor can emit a Markdown report for PR/release review and CI summaries.
 - [Release packet generator](../scripts/generate_arc_release_packet.py): one dependency-free command that builds a local maintainer-facing packet (`arc-builder-doctor.md`, `arc-testnet-facts.md`, `readiness-checklist.md`, `examples-index.md`, `release-packet.json`) in `.arc-release-packet/`. Zero network calls, no wallet/signing/broadcast/custody/mainnet/secrets/storage.
 - [Agentic maintainer loop](./agentic-maintainer-loop.md): a scoped operating model for coding agents that ties edits to deterministic checks, event-driven maintenance, regression-test feedback, and human approval gates for sensitive actions.

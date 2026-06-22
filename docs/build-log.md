@@ -22,6 +22,7 @@ This repo now ships a GitHub Pages site, docs, prompts, and local demos that sho
 - Safe-scope completion contract with a dependency-free completion check and canonical-suite coverage enforcement.
 - Arc Testnet operator evidence packet, fail-closed validator, create-only ignored draft generator, and read-only readiness report.
 - Separate disabled-by-default Arc Testnet browser-wallet send lab with frozen USDC payload parity, explicit confirmation, and a one-attempt lock.
+- Phase 4 builder tooling: unified CLI (`scripts/arc_builder_cli.py`), stdio MCP server (`scripts/arc_builder_mcp_server.py`), and dependency-free starter templates under `templates/` for payment-intent, x402-agent, and job-escrow scaffolds.
 
 ## Safety boundaries
 
