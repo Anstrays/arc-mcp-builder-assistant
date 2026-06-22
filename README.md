@@ -243,10 +243,11 @@ Guarded Arc Testnet wallet-send lab (`examples/arc-testnet-wallet-send-gate/`):
 - [`docs/job-escrow-demo.md`](./docs/job-escrow-demo.md) — ERC-8183-style flow for posting jobs, funding escrow, reviewing agent output, and releasing stablecoin payouts.
 - [`docs/arc-agent-treasury-lab.md`](./docs/arc-agent-treasury-lab.md) — local product runbook for x402 earnings, bounded compute budgets, replay protection, and verified agentic loops.
 - [`docs/circle-wallet-integration.md`](./docs/circle-wallet-integration.md) — Circle agent wallet bootstrap on Arc Testnet: login, faucet, transfer, CCTP bridge, Gateway, and x402 marketplace boundaries.
-- [`docs/agent-commerce-live-evidence.md`](./docs/agent-commerce-live-evidence.md) — real on-chain agent commerce evidence: 6 verified USDC transactions on Arc Testnet via Circle agent wallet, with tx hashes, block numbers, and unit economics. — Circle agent wallet bootstrap on Arc Testnet: login, faucet, transfer, CCTP bridge, Gateway, and x402 marketplace boundaries.
+- [`docs/agent-commerce-live-evidence.md`](./docs/agent-commerce-live-evidence.md) — real on-chain agent commerce evidence: verified USDC transactions on Arc Testnet via Circle agent wallet, with tx hashes, block numbers, and unit economics.
 - [`docs/agentic-maintainer-loop.md`](./docs/agentic-maintainer-loop.md) — maintainer-agent operating loop for scoped edits, deterministic verification, event-driven maintenance, and human approval gates.
 - [`docs/x402-mcp-manifest.md`](./docs/x402-mcp-manifest.md) — machine-readable paid-agent manifest and JSON-RPC tool surface for the local x402 boundary.
 - [`docs/x402-demo-transcript.md`](./docs/x402-demo-transcript.md) — copy-paste local `402 -> proof -> protected response` transcript with explicit no-wallet/no-settlement guardrails.
+- [`docs/builder-tooling.md`](./docs/builder-tooling.md) — Phase 4 CLI, MCP server, and starter templates; unified local-only builder surface for scaffolding, validation, and AI-agent integration.
 - [`docs/arc-production-deployment.md`](./docs/arc-production-deployment.md) — secret-free production deployment runbook, live-smoke checklist, and Circle Gateway/x402 verifier handoff.
 - [`docs/mcp-query-examples.md`](./docs/mcp-query-examples.md) — prompts that force AI tools to separate retrieved Arc facts, implementation suggestions, and unknowns.
 - [`docs/arc-house-submission.md`](./docs/arc-house-submission.md) — ready-to-edit builder update for Arc community or Arc House-style submissions.
@@ -266,6 +267,9 @@ Guarded Arc Testnet wallet-send lab (`examples/arc-testnet-wallet-send-gate/`):
 - [`examples/agent-commerce-live/`](./examples/agent-commerce-live/) — live agent commerce evidence page with real Arc Testnet transaction log, wallet state, unit economics, and safety boundaries.
 - [`examples/circle-wallet-integration/`](./examples/circle-wallet-integration/) — Circle agent wallet integration lab for Arc Testnet: bootstrap flow preview, CLI commands, contract addresses, and safety boundaries.
 - [`examples/x402-local-challenge-server/`](./examples/x402-local-challenge-server/) — dependency-free local HTTP 402 challenge server with MCP-style manifest, strict schema/envelope validation, bounded unambiguous proof input, fail-closed verifier results/direct-helper config, JSON CLI helpers, and a swappable verifier boundary for future Circle/x402 settlement work.
+- [`scripts/arc_builder_cli.py`](./scripts/arc_builder_cli.py) — unified CLI for listing templates, scaffolding projects, running validation, printing Arc Testnet facts, and launching the MCP server.
+- [`scripts/arc_builder_mcp_server.py`](./scripts/arc_builder_mcp_server.py) — stdio MCP server that exposes the CLI operations as JSON-RPC tools for AI coding agents.
+- [`templates/`](./templates/) — dependency-free project starters (`payment-intent-starter`, `x402-agent-starter`, `job-escrow-starter`).
 - [`examples/payment-intent-demo/`](./examples/payment-intent-demo/) — tiny static mockup for the first payment-intent flow, including trust-boundary and review-state UI copy.
 
 ## Screenshots
@@ -297,6 +301,7 @@ For the shortest reviewer-facing checkpoint, see [`docs/current-readiness-report
 - x402 local challenge boundary with machine-readable manifest, JSON-RPC/MCP-style stdio helpers, `.env.example`, local transcript, and production deployment runbook.
 - Agent commerce starter-kit examples: components, flows, identity profile preview, and review packet exporter.
 - Committed screenshots for the landing page, docs viewer, payment-intent playground, and job escrow simulator.
+- Phase 4 builder tooling: unified CLI (`scripts/arc_builder_cli.py`), stdio MCP server (`scripts/arc_builder_mcp_server.py`), and dependency-free project starter templates under `templates/`.
 
 ### Safe default
 

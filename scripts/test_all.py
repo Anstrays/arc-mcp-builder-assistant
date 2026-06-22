@@ -51,6 +51,9 @@ CHECKS = [
     "scripts/test_operator_evidence.py",
     "scripts/test_operator_evidence_draft.py",
     "scripts/test_operator_evidence_report.py",
+    "scripts/test_arc_builder_cli.py",
+    "scripts/test_arc_builder_mcp_server.py",
+    "scripts/test_templates.py",
     "scripts/validate_repo.py",
 ]
 

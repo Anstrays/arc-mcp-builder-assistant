@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests" />
+  <title>Arc Payment Intent Starter</title>
+  <meta name="description" content="Minimal Arc Testnet USDC payment-intent starter." />
+  <style>
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: radial-gradient(circle at top, #1b2d7a 0, #080914 40%, #05060a 100%); color: #f7f7ff; }
+    main { width: min(520px, calc(100vw - 32px)); border: 1px solid rgba(255,255,255,.14); border-radius: 24px; padding: 28px; background: rgba(10,12,24,.82); box-shadow: 0 24px 80px rgba(0,0,0,.35); }
+    h1 { margin: 0 0 6px; font-size: 28px; }
+    p { color: #cbd2ff; margin: 0 0 18px; }
+    .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,.1); }
+    .label { color: #8e95bc; }
+    .value { font-weight: 700; }
+    .actions { display: flex; gap: 12px; margin-top: 20px; }
+    button { border: 0; border-radius: 999px; padding: 14px 20px; font-weight: 800; cursor: pointer; background: #f7f7ff; color: #080914; }
+    .secondary { background: rgba(255,255,255,.12); color: #f7f7ff; }
+    .muted { font-size: 12px; color: #8e95bc; margin-top: 14px; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Payment intent</h1>
+    <p>Agent-prepared USDC request on Arc Testnet. Review before any wallet action.</p>
+    <div class="row"><span class="label">Network</span><span class="value">Arc Testnet</span></div>
+    <div class="row"><span class="label">Asset</span><span class="value">USDC</span></div>
+    <div class="row"><span class="label">Amount</span><span class="value">0.10 USDC</span></div>
+    <div class="row"><span class="label">Recipient</span><span class="value">0xA11CE0...0000</span></div>
+    <div class="row"><span class="label">Memo</span><span class="value">Demo starter</span></div>
+    <div class="actions">
+      <button id="reject" class="secondary">Reject</button>
+      <button id="approve">Approve</button>
+    </div>
+    <p class="muted">This starter does not sign or broadcast transactions.</p>
+  </main>
+  <script src="./index.js" defer></script>
+</body>
+</html>
