@@ -25,6 +25,7 @@ Commands:
 | `scaffold <template> <output>` | Copy a template to a new directory. |
 | `facts` | Print reviewed Arc Testnet facts. |
 | `manifest` | Print the local x402 paid-agent manifest. |
+| `release-packet [--output <dir>] [--force]` | Generate a maintainer release packet. |
 | `mcp` | Start the Arc Builder MCP server. |
 
 Examples:
@@ -33,6 +34,7 @@ Examples:
 python3 scripts/arc_builder_cli.py templates
 python3 scripts/arc_builder_cli.py scaffold payment-intent-starter ./my-demo
 python3 scripts/arc_builder_cli.py doctor --full
+python3 scripts/arc_builder_cli.py release-packet --force
 ```
 
 ## MCP server
@@ -68,6 +70,8 @@ python3 scripts/arc_builder_cli.py mcp
 | `validate_repo` | Run repository validation. |
 | `get_arc_testnet_facts` | Return reviewed Arc Testnet facts. |
 | `x402_manifest` | Return the local x402 paid-agent manifest. |
+| `generate_release_packet` | Generate a local maintainer release packet. |
+| `list_examples` | List available browser-facing examples. |
 
 All tools return `content` (human-readable) and `structuredContent` (JSON). The server advertises safety flags at initialization: local-only default, no wallet, no signing, no broadcast, testnet-only, no secrets.
 
