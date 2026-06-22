@@ -86,6 +86,30 @@ const transactions = [
     txHash: "0x3ffb115ba2c453f5c07…",
     detail: "Withdraw 1 USDC from Gateway back to wallet (fee: 0.0035)",
   },
+  {
+    op: "ESCROW: approve(spender, 1M)",
+    status: "COMPLETE",
+    amount: "1 USDC approved",
+    block: "48029256",
+    txHash: "0x61751274d823349308…",
+    detail: "approve(0xdEaD, 1000000) — escrow agent can spend 1 USDC",
+  },
+  {
+    op: "ESCROW: fund (job posting)",
+    status: "COMPLETE",
+    amount: "0.75 USDC",
+    block: "48029281",
+    txHash: "0x95584de37f93d4233a…",
+    detail: "Job poster funds escrow with 0.75 USDC for data analysis task",
+  },
+  {
+    op: "ESCROW: worker payout",
+    status: "COMPLETE",
+    amount: "0.5 USDC",
+    block: "48029312",
+    txHash: "0xbe8651d059314d2993…",
+    detail: "Escrow releases 0.5 USDC to worker after human review",
+  },
 ];
 
 const unitEconomics = [

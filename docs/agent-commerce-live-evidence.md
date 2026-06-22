@@ -136,6 +136,56 @@ circle gateway withdraw --amount 1 --address 0x0cd9b933302d90bfe295471deac7f4eaf
 | `name()` | USDC `0x3600…0000` | USDC |
 | `symbol()` | USDC `0x3600…0000` | USDC |
 | `totalSupply()` | USDC `0x3600…0000` | Verified circulating supply |
+| `allowance(address,address)` | USDC `0x3600…0000` | Verified escrow approval (1,000,000 = 1 USDC) |
+
+### 8. Job escrow — approve USDC for escrow agent
+
+| Field | Value |
+|---|---|
+| Tx hash | `0x61751274d8233493080f8f30814a54bb3e64ab00d8cf812b3877fc8909a25d30` |
+| Operation | CONTRACT_EXECUTION |
+| Function | `approve(address,uint256)` |
+| Spender | `0x000000000000000000000000000000000000dEaD` (escrow agent) |
+| Amount | 1,000,000 (1 USDC, 6 decimals) |
+| Contract | USDC `0x3600…0000` |
+| Block | 48029256 |
+| Status | COMPLETE |
+
+### 9. Job escrow — fund escrow (job posting)
+
+| Field | Value |
+|---|---|
+| Tx hash | `0x95584de37f93d4233aa1fec007761bc28d4b9f8bcb71e5b7473cae7c920306ba` |
+| Operation | TRANSFER |
+| Amount | 0.75 USDC |
+| To | Escrow address (0xdEaD) |
+| Block | 48029281 |
+| Status | COMPLETE |
+| Simulation | Job poster funds escrow with 0.75 USDC for a data analysis task |
+
+### 10. Job escrow — worker payout (escrow release)
+
+| Field | Value |
+|---|---|
+| Tx hash | `0xbe8651d059314d29939e00dc8683162d3bfc589a4a3d0dfd2876626fa44c1852` |
+| Operation | TRANSFER |
+| Amount | 0.5 USDC |
+| To | Worker address (0xdEaD) |
+| Block | 48029312 |
+| Status | COMPLETE |
+| Simulation | Escrow releases 0.5 USDC to worker after human review of deliverable |
+
+## Job escrow flow summary
+
+```text
+1. approve(escrow_agent, 1 USDC)     → escrow agent can spend up to 1 USDC
+2. transfer(escrow_address, 0.75)    → job poster funds escrow
+3. [human review of deliverable]
+4. transfer(worker_address, 0.5)     → escrow releases payout to worker
+5. allowance(owner, spender)         → on-chain verification of approval
+```
+
+This simulates the ERC-8183 job escrow flow with real on-chain USDC operations on Arc Testnet. The burn address (0xdEaD) represents the escrow/worker counterparty since we operate a single wallet.
 
 ## Unit economics
 
@@ -150,7 +200,8 @@ circle gateway withdraw --amount 1 --address 0x0cd9b933302d90bfe295471deac7f4eaf
 | Bridge amount | 1.00 USDC (to Base Sepolia) |
 | On-chain balance | ~14.05 USDC (ERC-20) |
 | Cost per payment | ~0.004 USDC network fee |
-| Total transactions | 10 (all COMPLETE) |
+| Total transactions | 13 (all COMPLETE) |
+| Escrow payments | 1.25 USDC (0.75 funding + 0.5 payout) |
 
 ## Safety boundaries
 
