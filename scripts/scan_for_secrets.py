@@ -374,6 +374,10 @@ KNOWN_PUBLIC_32_BYTE_HEXES = {
     "0x3387de0e7ebae09a29b9390e56d0284bbe055c20f03f875e2022ed8a7ec487df",
     "0x2f458c54c4d6586817034dd28b649f219b5f33ad7f1acaa7330b9966a52e3f53",
     "0x3ffb115ba2c453f5c07ae9d79f7a11e7e75132dc92e14b0a5bdeac455d53931e",
+    # Job escrow transactions on Arc Testnet (public, on-chain evidence).
+    "0x61751274d8233493080f8f30814a54bb3e64ab00d8cf812b3877fc8909a25d30",
+    "0x95584de37f93d4233aa1fec007761bc28d4b9f8bcb71e5b7473cae7c920306ba",
+    "0xbe8651d059314d29939e00dc8683162d3bfc589a4a3d0dfd2876626fa44c1852",
 }
 
 # Compile the mnemonic phrase regex once.
