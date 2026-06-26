@@ -1,0 +1,34 @@
+# Graphify ignores — keep these out of codebase summaries / vector indexing
+
+# Secrets / env
+.env
+.env.*
+!.env.example
+
+# Dependencies / virtual envs
+node_modules/
+.venv/
+venv/
+.venv-build/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+__pycache__/
+*.py[cod]
+
+# Cache / test artifacts
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.DS_Store
+
+# Runtime / local evidence
+.hermes/
+.arc-release-packet/
+*.log
+*.operator-evidence.local.json
+.arc-test-*/
+.graphify-out/
