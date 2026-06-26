@@ -35,10 +35,12 @@ cli = load_cli()
 
 class ParserTests(unittest.TestCase):
     def test_all_subcommands_parse(self) -> None:
-        for command in ("doctor", "validate", "templates", "scaffold", "facts", "manifest", "mcp"):
+        for command in ("doctor", "validate", "templates", "scaffold", "facts", "manifest", "release-packet", "mcp"):
             with self.subTest(command=command):
                 if command == "scaffold":
                     cli.build_parser().parse_args([command, "payment-intent-starter", "./out"])
+                elif command == "release-packet":
+                    cli.build_parser().parse_args([command, "--output", "./out"])
                 else:
                     cli.build_parser().parse_args([command])
 
@@ -146,6 +148,15 @@ class OrchestratorTests(unittest.TestCase):
         mocked.assert_called_once()
         self.assertIn("server.py", str(mocked.call_args[0][0][1]))
         self.assertIn("--print-manifest", mocked.call_args[0][0])
+
+    def test_release_packet_runs_generator(self) -> None:
+        completed = mock.Mock(returncode=0, stdout="generated", stderr="")
+        with mock.patch.object(subprocess, "run", return_value=completed) as mocked:
+            rc = cli.cmd_release_packet(cli.build_parser().parse_args(["release-packet", "--output", "./out"]))
+        self.assertEqual(rc, 0)
+        mocked.assert_called_once()
+        self.assertIn("generate_arc_release_packet.py", str(mocked.call_args[0][0][1]))
+        self.assertIn("--out", mocked.call_args[0][0])
 
 
 if __name__ == "__main__":

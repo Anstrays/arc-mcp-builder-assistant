@@ -127,6 +127,12 @@ command is dependency-free, makes no network calls, and writes to
 python3 scripts/generate_arc_release_packet.py --force
 ```
 
+Or through the unified CLI:
+
+```bash
+python3 scripts/arc_builder_cli.py release-packet --force
+```
+
 The packet includes the Arc Builder Doctor Markdown report, Arc Testnet facts,
 a readiness checklist, an examples index, and a machine-readable
 `release-packet.json`. No wallet, signing, broadcast, custody, mainnet,
@@ -267,7 +273,7 @@ Guarded Arc Testnet wallet-send lab (`examples/arc-testnet-wallet-send-gate/`):
 - [`examples/agent-commerce-live/`](./examples/agent-commerce-live/) — live agent commerce evidence page with real Arc Testnet transaction log, wallet state, unit economics, and safety boundaries.
 - [`examples/circle-wallet-integration/`](./examples/circle-wallet-integration/) — Circle agent wallet integration lab for Arc Testnet: bootstrap flow preview, CLI commands, contract addresses, and safety boundaries.
 - [`examples/x402-local-challenge-server/`](./examples/x402-local-challenge-server/) — dependency-free local HTTP 402 challenge server with MCP-style manifest, strict schema/envelope validation, bounded unambiguous proof input, fail-closed verifier results/direct-helper config, JSON CLI helpers, and a swappable verifier boundary for future Circle/x402 settlement work.
-- [`scripts/arc_builder_cli.py`](./scripts/arc_builder_cli.py) — unified CLI for listing templates, scaffolding projects, running validation, printing Arc Testnet facts, and launching the MCP server.
+- [`scripts/arc_builder_cli.py`](./scripts/arc_builder_cli.py) — unified CLI for listing templates, scaffolding projects, running validation, printing Arc Testnet facts, generating release packets, and launching the MCP server.
 - [`scripts/arc_builder_mcp_server.py`](./scripts/arc_builder_mcp_server.py) — stdio MCP server that exposes the CLI operations as JSON-RPC tools for AI coding agents.
 - [`templates/`](./templates/) — dependency-free project starters (`payment-intent-starter`, `x402-agent-starter`, `job-escrow-starter`).
 - [`examples/payment-intent-demo/`](./examples/payment-intent-demo/) — tiny static mockup for the first payment-intent flow, including trust-boundary and review-state UI copy.
@@ -301,7 +307,7 @@ For the shortest reviewer-facing checkpoint, see [`docs/current-readiness-report
 - x402 local challenge boundary with machine-readable manifest, JSON-RPC/MCP-style stdio helpers, `.env.example`, local transcript, and production deployment runbook.
 - Agent commerce starter-kit examples: components, flows, identity profile preview, and review packet exporter.
 - Committed screenshots for the landing page, docs viewer, payment-intent playground, and job escrow simulator.
-- Phase 4 builder tooling: unified CLI (`scripts/arc_builder_cli.py`), stdio MCP server (`scripts/arc_builder_mcp_server.py`), and dependency-free project starter templates under `templates/`.
+- Phase 4 builder tooling: unified CLI (`scripts/arc_builder_cli.py`), stdio MCP server (`scripts/arc_builder_mcp_server.py`) with 8 JSON-RPC tools (including release-packet and example-listing), and dependency-free project starter templates under `templates/`.
 
 ### Safe default
 

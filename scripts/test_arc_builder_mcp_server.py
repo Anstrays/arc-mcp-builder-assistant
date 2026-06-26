@@ -57,8 +57,11 @@ class ToolsListTests(unittest.TestCase):
             "validate_repo",
             "get_arc_testnet_facts",
             "x402_manifest",
+            "generate_release_packet",
+            "list_examples",
         }
-        self.assertTrue(expected.issubset(names), f"missing: {expected - names}")
+        self.assertEqual(names, expected)
+        self.assertEqual(len(names), 8)
 
 
 class ToolCallTests(unittest.TestCase):
@@ -100,6 +103,23 @@ class ToolCallTests(unittest.TestCase):
         self.assertNotIn("error", resp)
         self.assertEqual(resp["result"]["structuredContent"]["report"]["status"], "pass")
         self.assertIn("--json", mocked.call_args[0][0])
+
+    def test_generate_release_packet(self) -> None:
+        completed = mock.Mock(returncode=0, stdout="generated", stderr="")
+        with mock.patch.object(subprocess, "run", return_value=completed) as mocked:
+            req = rpc_request("tools/call", {"name": "generate_release_packet", "arguments": {"force": True}})
+            resp = server.handle_request(req)
+        self.assertNotIn("error", resp)
+        self.assertTrue(resp["result"]["structuredContent"]["ok"])
+        self.assertIn("generate_arc_release_packet.py", str(mocked.call_args[0][0][1]))
+        self.assertIn("--out", mocked.call_args[0][0])
+
+    def test_list_examples(self) -> None:
+        req = rpc_request("tools/call", {"name": "list_examples", "arguments": {}})
+        resp = server.handle_request(req)
+        self.assertNotIn("error", resp)
+        self.assertFalse(resp["result"]["isError"])
+        self.assertGreater(resp["result"]["structuredContent"]["count"], 0)
 
     def test_unknown_tool(self) -> None:
         req = rpc_request("tools/call", {"name": "no_such_tool", "arguments": {}})

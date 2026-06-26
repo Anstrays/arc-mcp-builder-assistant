@@ -11,6 +11,16 @@ Supported JSON-RPC methods:
 - tools/list
 - tools/call
 
+Supported tools:
+- arc_builder_doctor
+- list_templates
+- scaffold_project
+- validate_repo
+- get_arc_testnet_facts
+- x402_manifest
+- generate_release_packet
+- list_examples
+
 Each tool result contains both human-readable `content` and `structuredContent`
 so MCP clients can render text or consume JSON.
 """
@@ -26,9 +36,11 @@ from typing import Any, Callable
 
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATES_DIR = ROOT / "templates"
+EXAMPLES_DIR = ROOT / "examples"
 CONFIG_DIR = ROOT / "config"
 SCRIPTS_DIR = ROOT / "scripts"
 X402_SERVER = ROOT / "examples" / "x402-local-challenge-server" / "server.py"
+RELEASE_PACKET_SCRIPT = SCRIPTS_DIR / "generate_arc_release_packet.py"
 
 PROTOCOL_VERSION = "2024-11-05"
 SERVER_NAME = "arc-builder-mcp"
@@ -220,6 +232,42 @@ def tool_x402_manifest(_params: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+def tool_generate_release_packet(params: dict[str, Any]) -> dict[str, Any]:
+    output = params.get("output")
+    force = bool(params.get("force", False))
+    out = Path(output).expanduser().resolve() if isinstance(output, str) and output else ROOT / ".arc-release-packet"
+    script_args = ["--out", str(out)]
+    if force and out.exists():
+        shutil.rmtree(out)
+    result = _run_script(RELEASE_PACKET_SCRIPT, script_args, timeout=240)
+    ok = result.returncode == 0
+    structured: dict[str, Any] = {"ok": ok, "output": str(out), "force": force, "stderr": result.stderr}
+    if ok:
+        files = sorted(p.name for p in out.iterdir()) if out.exists() else []
+        structured["files"] = files
+        return _tool_text(
+            f"Generated release packet in {out} ({len(files)} files).",
+            structured,
+        )
+    structured["stdout"] = result.stdout
+    return _tool_error(f"Release packet generation failed: {result.stdout}", structured)
+
+
+def tool_list_examples(_params: dict[str, Any]) -> dict[str, Any]:
+    if not EXAMPLES_DIR.exists():
+        return _tool_text("No examples directory found.", {"examples": [], "count": 0})
+    examples: list[dict[str, str]] = []
+    for path in sorted(EXAMPLES_DIR.iterdir()):
+        if path.is_dir() and (path / "index.html").exists():
+            readme = path / "README.md"
+            title = readme.read_text(encoding="utf-8").splitlines()[0].lstrip("# ").strip() if readme.exists() else path.name
+            examples.append({"id": path.name, "title": title})
+    return _tool_text(
+        f"Available examples: {', '.join(e['id'] for e in examples) if examples else '(none)'}",
+        {"examples": examples, "count": len(examples)},
+    )
+
+
 TOOLS: dict[str, dict[str, Any]] = {
     "arc_builder_doctor": {
         "description": "Run Arc Builder Doctor and return a structured report.",
@@ -268,6 +316,21 @@ TOOLS: dict[str, dict[str, Any]] = {
         "description": "Return the local x402 paid-agent manifest.",
         "inputSchema": {"type": "object", "additionalProperties": False},
     },
+    "generate_release_packet": {
+        "description": "Generate a local maintainer release packet for PR/release review.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "output": {"type": "string", "description": "Output directory (default: .arc-release-packet/)."},
+                "force": {"type": "boolean", "description": "Overwrite existing packet directory."},
+            },
+            "additionalProperties": False,
+        },
+    },
+    "list_examples": {
+        "description": "List available browser-facing examples in the kit.",
+        "inputSchema": {"type": "object", "additionalProperties": False},
+    },
 }
 
 TOOL_HANDLERS: dict[str, Callable[[dict[str, Any]], dict[str, Any]]] = {
@@ -277,6 +340,8 @@ TOOL_HANDLERS: dict[str, Callable[[dict[str, Any]], dict[str, Any]]] = {
     "validate_repo": tool_validate_repo,
     "get_arc_testnet_facts": tool_get_arc_testnet_facts,
     "x402_manifest": tool_x402_manifest,
+    "generate_release_packet": tool_generate_release_packet,
+    "list_examples": tool_list_examples,
 }
 
 

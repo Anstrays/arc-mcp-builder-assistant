@@ -7,13 +7,14 @@ broadcasts transactions. Network calls happen only through explicit opt-in flags
 passed to underlying scripts.
 
 Subcommands:
-  doctor        Run Arc Builder Doctor and print a structured verdict.
-  validate      Run repository validation.
-  templates     List available project starter templates.
-  scaffold      Copy a starter template into a new project directory.
-  facts         Print the reviewed Arc Testnet facts object.
-  manifest      Print the local x402 paid-agent manifest.
-  mcp           Start the local Arc Builder MCP server (stdio).
+  doctor          Run Arc Builder Doctor and print a structured verdict.
+  validate        Run repository validation.
+  templates       List available project starter templates.
+  scaffold        Copy a starter template into a new project directory.
+  facts           Print the reviewed Arc Testnet facts object.
+  manifest        Print the local x402 paid-agent manifest.
+  release-packet  Generate a local maintainer release packet.
+  mcp             Start the local Arc Builder MCP server (stdio).
 """
 
 from __future__ import annotations
@@ -32,6 +33,7 @@ CONFIG_DIR = ROOT / "config"
 SCRIPTS_DIR = ROOT / "scripts"
 X402_SERVER = ROOT / "examples" / "x402-local-challenge-server" / "server.py"
 MCP_SERVER = SCRIPTS_DIR / "arc_builder_mcp_server.py"
+RELEASE_PACKET_SCRIPT = SCRIPTS_DIR / "generate_arc_release_packet.py"
 
 
 class CliError(Exception):
@@ -176,6 +178,25 @@ def cmd_mcp(args: argparse.Namespace) -> int:
     return result.returncode if result.returncode else 0
 
 
+def cmd_release_packet(args: argparse.Namespace) -> int:
+    out = (
+        Path(args.output).expanduser().resolve()
+        if args.output
+        else ROOT / ".arc-release-packet"
+    )
+    script_args: list[str] = []
+    if out:
+        script_args.extend(["--out", str(out)])
+    if args.force and out.exists():
+        shutil.rmtree(out)
+    result = _run_script(RELEASE_PACKET_SCRIPT, script_args, timeout=300)
+    if result.stdout:
+        sys.stdout.write(result.stdout)
+    if result.stderr:
+        sys.stderr.write(result.stderr)
+    return result.returncode if result.returncode else 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="arc-builder",
@@ -217,6 +238,20 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("manifest", help="Print the local x402 paid-agent manifest.")
     sub.add_parser("mcp", help="Start the local Arc Builder MCP server (stdio).")
 
+    release_packet = sub.add_parser(
+        "release-packet", help="Generate a local maintainer release packet."
+    )
+    release_packet.add_argument(
+        "--output",
+        default="",
+        help="Output directory (default: .arc-release-packet/).",
+    )
+    release_packet.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite existing packet directory.",
+    )
+
     return parser
 
 
@@ -228,6 +263,7 @@ COMMANDS = {
     "facts": cmd_facts,
     "manifest": cmd_manifest,
     "mcp": cmd_mcp,
+    "release-packet": cmd_release_packet,
 }
 
 
