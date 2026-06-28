@@ -6,6 +6,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -70,12 +71,12 @@ class ResourceBuildTests(unittest.TestCase):
             self.assertFalse((PACKAGE_SOURCE / name).exists(), f"stale package symlink: {name}")
 
     def test_source_and_package_entry_points_share_release_version(self) -> None:
-        package_version = (PACKAGE_SOURCE / "__init__.py").read_text(encoding="utf-8")
+        _version = re.search(r'__version__\s*=\s*"([^"]+)"', (PACKAGE_SOURCE / "__init__.py").read_text()).group(1)
         source_cli = (ROOT / "scripts/arc_builder_cli.py").read_text(encoding="utf-8")
         source_mcp = (ROOT / "scripts/arc_builder_mcp_server.py").read_text(encoding="utf-8")
         pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-        for text in (package_version, source_cli, source_mcp, pyproject):
-            self.assertIn("0.2.0", text)
+        for text in (source_cli, source_mcp, pyproject):
+            self.assertIn(_version, text)
         self.assertIn('requires-python = ">=3.10"', pyproject)
         self.assertNotIn('"Programming Language :: Python :: 3.9"', pyproject)
 
@@ -118,7 +119,8 @@ class InstalledLayoutTests(unittest.TestCase):
     def test_version_templates_facts_and_manifest_work(self) -> None:
         version = self.run_cli("--version")
         self.assertEqual(version.returncode, 0, version.stderr)
-        self.assertIn("0.2.0", version.stdout)
+        _version = re.search(r'__version__\s*=\s*"([^"]+)"', (PACKAGE_SOURCE / "__init__.py").read_text()).group(1)
+        self.assertIn(_version, version.stdout)
 
         templates = self.run_cli("templates", "--json")
         self.assertEqual(templates.returncode, 0, templates.stderr)
@@ -183,7 +185,8 @@ class InstalledLayoutTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         responses = [json.loads(line) for line in result.stdout.splitlines()]
-        self.assertEqual(responses[0]["result"]["serverInfo"]["version"], "0.2.0")
+        _version = re.search(r'__version__\s*=\s*"([^"]+)"', (PACKAGE_SOURCE / "__init__.py").read_text()).group(1)
+        self.assertEqual(responses[0]["result"]["serverInfo"]["version"], _version)
         self.assertEqual(len(responses[1]["result"]["tools"]), 8)
 
     def test_mainnet_override_remains_blocked(self) -> None:

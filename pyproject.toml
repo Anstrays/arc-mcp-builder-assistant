@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arc-builder-kit"
-version = "0.2.0"
+version = "0.2.1"
 description = "Arc MCP Builder Assistant — installable CLI and MCP server for Arc builder tooling."
 readme = "README.md"
 license = "MIT"
@@ -13,18 +13,27 @@ requires-python = ">=3.10"
 authors = [
     {name = "Anstrays"},
 ]
-keywords = ["arc", "mcp", "builder", "stablecoin", "agent", "x402"]
+keywords = ["arc", "mcp", "builder", "stablecoin", "agent", "x402", "usdc", "circle"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Build Tools",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Office/Business :: Financial",
 ]
+
+[project.urls]
+Homepage = "https://anstrays.github.io/arc-mcp-builder-assistant/"
+Documentation = "https://anstrays.github.io/arc-mcp-builder-assistant/"
+Repository = "https://github.com/Anstrays/arc-mcp-builder-assistant"
+Issues = "https://github.com/Anstrays/arc-mcp-builder-assistant/issues"
+Changelog = "https://github.com/Anstrays/arc-mcp-builder-assistant/releases"
 
 [project.scripts]
 arc-builder = "arc_builder_kit.cli:main"
