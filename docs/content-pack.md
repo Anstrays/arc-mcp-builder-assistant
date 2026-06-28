@@ -65,7 +65,7 @@ Guarded Arc Testnet send: one manual attempt only.
 ## X post
 
 ```text
-Built an Arc MCP kit with local-only agent-commerce demos, read-only checks, and a separate guarded Arc Testnet wallet-send lab. No keys, custody, mainnet, autonomous spending, or live settlement.
+Shipped arc-builder-kit on PyPI: local-only Arc agent-commerce demos, read-only testnet checks, CLI + MCP server, 3 starter templates. No keys, custody, mainnet, or autonomous spending. pip install arc-builder-kit
 ```
 
 ## Discord or Arc House update

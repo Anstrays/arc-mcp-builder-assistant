@@ -8,6 +8,7 @@ Use this page as a ready-to-edit submission note for Arc community posts, Arc Ho
 
 ## What I built
 
+- **Installable PyPI package** `arc-builder-kit` (`pip install arc-builder-kit`): CLI (`arc-builder`), MCP server (`arc-builder-mcp-server`), 3 starter templates, doctor, validate, release-packet commands. Trusted PyPI Publishing via OIDC.
 - GitHub Pages landing page and styled docs viewer.
 - Arc MCP setup checklist, docs map, and prompt library for AI coding tools.
 - Local-only payment-intent playground with editable fields, reviewable JSON, frozen money fields, and approval/submission status transitions.
@@ -46,8 +47,10 @@ Arc docs/MCP → grounded AI prompts → reviewable payment/job object → human
 
 ## Current links
 
+- **PyPI package:** https://pypi.org/project/arc-builder-kit/
 - Live site: https://anstrays.github.io/arc-mcp-builder-assistant/
 - Repository: https://github.com/Anstrays/arc-mcp-builder-assistant
+- Install: `pip install arc-builder-kit`
 - Payment-intent playground: https://anstrays.github.io/arc-mcp-builder-assistant/examples/payment-intent-playground/
 - Job escrow simulator: https://anstrays.github.io/arc-mcp-builder-assistant/examples/job-escrow-simulator/
 - Build log: https://anstrays.github.io/arc-mcp-builder-assistant/docs/view.html#build-log.md

@@ -38,11 +38,12 @@ Independent Arc agent-commerce builder kit: local-only playgrounds, read-only te
 ## Russian Telegram draft
 
 ```text
-Запаковал Arc MCP Builder Assistant в public-ready build.
+Запаковал Arc MCP Builder Assistant в public-ready build + опубликовал на PyPI.
 
 Что это: local-only kit для agent-commerce демо на Arc. Агент готовит payment intent / escrow context / x402 boundary, а человек видит JSON, safety states и review checklist до любого wallet action.
 
 Что уже есть:
+• pip install arc-builder-kit (CLI + MCP server, 3 starter templates)
 • GitHub Pages + styled docs viewer
 • Arc docs map + MCP prompts
 • payment-intent playground
@@ -53,21 +54,23 @@ Independent Arc agent-commerce builder kit: local-only playgrounds, read-only te
 
 Главное: local-only demos не запрашивают wallet и не отправляют транзакции; отдельная guarded Arc Testnet lab разрешает только одну ручную testnet попытку. No private keys, no custody, no mainnet, no autonomous spending.
 
-Следующий optional slice — только отдельным review: disposable-wallet smoke по runbook или live x402/Circle verifier handoff без расширения custody/mainnet scope.
+PyPI: https://pypi.org/project/arc-builder-kit/
+GitHub: https://github.com/Anstrays/arc-mcp-builder-assistant
 ```
 
 ## X draft under 280 chars
 
 ```text
-Shipped an Arc builder kit with local-only agent-commerce demos, read-only testnet checks, and a separate disabled-by-default human-operated Arc Testnet wallet-send lab. No keys, custody, mainnet, or autonomous spending.
+Shipped arc-builder-kit on PyPI: local-only Arc agent-commerce demos, read-only testnet checks, CLI + MCP server, 3 starter templates. No keys, custody, mainnet, or autonomous spending. pip install arc-builder-kit
 ```
 
 ## Discord / Arc House update
 
 ```text
-I shipped the current public-ready version of Arc MCP Builder Assistant.
+I shipped the current public-ready version of Arc MCP Builder Assistant, now on PyPI as arc-builder-kit.
 
 It is an independent local-only builder kit for safer agent-commerce demos on Arc:
+- pip install arc-builder-kit: CLI (arc-builder), MCP server (arc-builder-mcp-server), 3 starter templates
 - styled docs viewer and Arc docs map;
 - MCP prompt library;
 - payment-intent playground with reviewable JSON;
@@ -79,6 +82,7 @@ It is an independent local-only builder kit for safer agent-commerce demos on Ar
 The important boundary: the project does not pretend to be a production payment app. No wallet request occurs on page load, and there are no private keys, custody, mainnet, autonomous spending, or live settlement claims. The separate guarded lab can request one manually confirmed Arc Testnet transaction only after every visible guard passes.
 
 Useful links:
+- PyPI: https://pypi.org/project/arc-builder-kit/
 - Live site: https://anstrays.github.io/arc-mcp-builder-assistant/
 - Readiness report: https://anstrays.github.io/arc-mcp-builder-assistant/docs/view.html#current-readiness-report.md
 - Payment playground: https://anstrays.github.io/arc-mcp-builder-assistant/examples/payment-intent-playground/
@@ -105,6 +109,7 @@ Run this checklist before sharing the project in Telegram, X, Discord, Arc House
 
 ## Links to include
 
+- PyPI: https://pypi.org/project/arc-builder-kit/
 - Live site: https://anstrays.github.io/arc-mcp-builder-assistant/
 - Repository: https://github.com/Anstrays/arc-mcp-builder-assistant
 - Current readiness report: https://anstrays.github.io/arc-mcp-builder-assistant/docs/view.html#current-readiness-report.md
