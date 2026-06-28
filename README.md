@@ -80,6 +80,10 @@ python3 -m http.server 8080
 # 3. Run the local x402-style paid-agent boundary.
 python3 examples/x402-local-challenge-server/server.py --port 8087
 # in another terminal: curl -i http://127.0.0.1:8087/protected
+
+# 4. Run the Arc Testnet paid API endpoint prototype.
+python3 examples/arc-paid-api-endpoint/server.py --port 8098
+# in another terminal: curl -i http://127.0.0.1:8098/protected
 ```
 
 ### Installable CLI and MCP server
@@ -228,6 +232,7 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 - **`ARC_PAID_AGENT_URL` is missing:** either skip live smoke or set it to a deployed `/protected` endpoint. The local x402 demo does not need it.
 - **Local x402 proof is rejected:** run `python3 examples/x402-local-challenge-server/server.py --print-challenge` and copy the exact `localDemoProof` value into the `X-Payment` header.
 - **Local x402 server rejects `--host`:** HTTP mode intentionally accepts only `127.0.0.1` or `localhost`; use a separate reviewed deployment for remote access.
+- **Paid API endpoint rejects a proof:** `X-Payment` must be one Arc Testnet transaction hash, and the receipt must contain a matching pinned-USDC transfer to the reviewed `payTo` address. The endpoint never accepts private keys or broadcasts.
 - **Live smoke rejects a URL:** use a valid HTTP/HTTPS URL without embedded credentials. A live `ARC_LIVE_X_PAYMENT` proof requires HTTPS.
 - **Config exits with `Invalid x402 demo configuration`:** keep `X402_DEMO_NETWORK=arc-testnet`, `X402_DEMO_ASSET=USDC`, `X402_DEMO_MAINNET_ENABLED=false`, a positive 6-decimal-or-less amount, and a non-zero 42-character EVM `X402_DEMO_PAY_TO`.
 - **A secret was pasted by mistake:** remove it from `.env` or shell history as needed, rotate the secret, and do not commit it. The repo scans common credential shapes during validation.
@@ -282,6 +287,7 @@ Guarded Arc Testnet wallet-send lab (`examples/arc-testnet-wallet-send-gate/`):
 - [`docs/agentic-maintainer-loop.md`](./docs/agentic-maintainer-loop.md) — maintainer-agent operating loop for scoped edits, deterministic verification, event-driven maintenance, and human approval gates.
 - [`docs/x402-mcp-manifest.md`](./docs/x402-mcp-manifest.md) — machine-readable paid-agent manifest and JSON-RPC tool surface for the local x402 boundary.
 - [`docs/x402-demo-transcript.md`](./docs/x402-demo-transcript.md) — copy-paste local `402 -> proof -> protected response` transcript with explicit no-wallet/no-settlement guardrails.
+- [`docs/arc-paid-api-endpoint.md`](./docs/arc-paid-api-endpoint.md) — Arc Testnet paid API prototype: `402` challenge, human-approved tx-hash proof, and read-only receipt verification before protected JSON unlock.
 - [`docs/builder-tooling.md`](./docs/builder-tooling.md) — Phase 4 CLI, MCP server, and starter templates; unified local-only builder surface for scaffolding, validation, and AI-agent integration.
 - [`docs/arc-production-deployment.md`](./docs/arc-production-deployment.md) — secret-free production deployment runbook, live-smoke checklist, and Circle Gateway/x402 verifier handoff.
 - [`docs/mcp-query-examples.md`](./docs/mcp-query-examples.md) — prompts that force AI tools to separate retrieved Arc facts, implementation suggestions, and unknowns.
