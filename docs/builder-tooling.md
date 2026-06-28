@@ -20,6 +20,7 @@ arc-builder --version
 arc-builder templates
 arc-builder validate
 arc-builder x402 challenge http://127.0.0.1:8087/protected
+arc-builder wallet sdk-plan --json
 ```
 
 The installed integrity check is intentionally narrower than the clone-level
@@ -36,6 +37,14 @@ arc-builder x402 challenge http://127.0.0.1:8087/protected
 # Verify an Arc Testnet transaction hash against receipt evidence before retrying
 # the protected resource. No private keys, signing, or broadcast are accepted.
 arc-builder x402 verify http://127.0.0.1:8087/protected 0x...
+```
+
+The `arc-builder wallet` helper is a Circle Developer-Controlled Wallet SDK guard, not a live wallet runner. It builds a reviewed Arc Testnet plan, checks environment variable presence with values redacted, and prints a manual SDK snippet while keeping SDK execution, secrets, signing, and broadcast outside the repo command:
+
+```bash
+arc-builder wallet sdk-plan --json --account-type SCA --count 1
+arc-builder wallet env-check --json
+arc-builder wallet sdk-snippet --account-type EOA --count 1
 ```
 
 ### Maintainer release flow
@@ -76,6 +85,7 @@ Commands:
 | `facts` | Print reviewed Arc Testnet facts. |
 | `manifest` | Print the local x402 paid-agent manifest. |
 | `release-packet [--output <dir>] [--force]` | Generate a maintainer release packet. |
+| `wallet sdk-plan/env-check/sdk-snippet` | Build Circle Wallet SDK guard plans for Arc Testnet without live SDK execution. |
 | `mcp` | Start the Arc Builder MCP server. |
 
 Examples:
@@ -85,6 +95,7 @@ python3 scripts/arc_builder_cli.py templates
 python3 scripts/arc_builder_cli.py scaffold payment-intent-starter ./my-demo
 python3 scripts/arc_builder_cli.py doctor --full
 python3 scripts/arc_builder_cli.py release-packet --force
+python3 scripts/arc_builder_cli.py wallet sdk-plan --json
 ```
 
 ## MCP server
@@ -169,6 +180,7 @@ Each template is intentionally minimal and dependency-free. They are not product
 python3 scripts/test_arc_builder_cli.py
 python3 scripts/test_arc_builder_mcp_server.py
 python3 scripts/test_templates.py
+python3 scripts/test_circle_wallet_sdk.py
 python3 scripts/test_package_distribution.py
 ```
 

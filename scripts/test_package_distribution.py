@@ -136,6 +136,23 @@ class InstalledLayoutTests(unittest.TestCase):
         self.assertEqual(manifest_payload["network"]["chainId"], 5042002)
         self.assertFalse(manifest_payload["safety"]["mainnetEnabled"])
 
+    def test_installed_wallet_sdk_plan_is_secret_safe(self) -> None:
+        plan = self.run_cli("wallet", "sdk-plan", "--json", "--account-type", "SCA", "--count", "2")
+        self.assertEqual(plan.returncode, 0, plan.stderr)
+        payload = json.loads(plan.stdout)
+        self.assertEqual(payload["manifest"]["blockchain"], "ARC-TESTNET")
+        self.assertEqual(payload["plan"]["wallets"]["accountType"], "SCA")
+        self.assertFalse(payload["manifest"]["safety"]["liveSdkExecution"])
+
+        env = self.env.copy()
+        env["CIRCLE_API_KEY"] = "secret-value"
+        env["CIRCLE_ENTITY_SECRET"] = "secret-entity"
+        check = self.run_cli("wallet", "env-check", "--json", env=env)
+        self.assertEqual(check.returncode, 0, check.stderr)
+        self.assertIn("[REDACTED]", check.stdout)
+        self.assertNotIn("secret-value", check.stdout)
+        self.assertNotIn("secret-entity", check.stdout)
+
     def test_installed_validate_and_doctor_pass(self) -> None:
         validation = self.run_cli("validate")
         self.assertEqual(validation.returncode, 0, validation.stderr)

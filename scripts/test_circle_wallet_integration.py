@@ -37,6 +37,7 @@ def test_doc_contains_bootstrap_and_safety_sections() -> None:
     text = read(DOC)
     for section in (
         "## Bootstrap flow",
+        "## Developer-Controlled Wallet SDK guard",
         "## On-chain operations on Arc Testnet",
         "## Gateway (Nanopayments)",
         "## x402 marketplace",
@@ -59,6 +60,11 @@ def test_doc_contains_cli_commands() -> None:
         "circle gateway deposit",
         "circle transaction list",
         "circle services search",
+        "arc-builder wallet sdk-plan",
+        "arc-builder wallet env-check",
+        "arc-builder wallet sdk-snippet",
+        "circle-developer-controlled-wallets",
+        "ARC-TESTNET",
     ):
         assert cmd in text, f"Missing CLI command in doc: {cmd}"
 

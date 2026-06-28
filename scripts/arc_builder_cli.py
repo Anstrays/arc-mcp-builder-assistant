@@ -14,6 +14,7 @@ Subcommands:
   facts           Print the reviewed Arc Testnet facts object.
   manifest        Print the local x402 paid-agent manifest.
   release-packet  Generate a local maintainer release packet.
+  wallet          Build Circle Wallet SDK guard plans for Arc Testnet.
   mcp             Start the local Arc Builder MCP server (stdio).
 """
 
@@ -21,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -28,12 +30,16 @@ from pathlib import Path
 from typing import Any, Sequence
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 TEMPLATES_DIR = ROOT / "templates"
 CONFIG_DIR = ROOT / "config"
 SCRIPTS_DIR = ROOT / "scripts"
 X402_SERVER = ROOT / "examples" / "x402-local-challenge-server" / "server.py"
 MCP_SERVER = SCRIPTS_DIR / "arc_builder_mcp_server.py"
 RELEASE_PACKET_SCRIPT = SCRIPTS_DIR / "generate_arc_release_packet.py"
+
+from arc_builder_kit import circle_wallet_sdk
 
 
 class CliError(Exception):
@@ -197,6 +203,41 @@ def cmd_release_packet(args: argparse.Namespace) -> int:
     return result.returncode if result.returncode else 0
 
 
+def _print_json_or_human(payload: dict[str, Any], *, as_json: bool) -> None:
+    if as_json:
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        return
+    print(json.dumps(payload, indent=2, sort_keys=True))
+
+
+def cmd_wallet(args: argparse.Namespace) -> int:
+    if args.wallet_command == "sdk-plan":
+        payload = {
+            "manifest": circle_wallet_sdk.build_sdk_guard_manifest(),
+            "plan": circle_wallet_sdk.build_wallet_creation_plan(
+                account_type=args.account_type,
+                count=args.count,
+                wallet_set_name=args.wallet_set_name,
+            ),
+        }
+        _print_json_or_human(payload, as_json=args.json)
+        return 0
+    if args.wallet_command == "env-check":
+        payload = circle_wallet_sdk.summarize_environment(os.environ)
+        _print_json_or_human(payload, as_json=args.json)
+        return 0
+    if args.wallet_command == "sdk-snippet":
+        print(
+            circle_wallet_sdk.generate_python_sdk_snippet(
+                account_type=args.account_type,
+                count=args.count,
+                wallet_set_name=args.wallet_set_name,
+            )
+        )
+        return 0
+    return 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="arc-builder",
@@ -252,6 +293,23 @@ def build_parser() -> argparse.ArgumentParser:
         help="Overwrite existing packet directory.",
     )
 
+    wallet = sub.add_parser(
+        "wallet",
+        help="Build Circle Wallet SDK guard plans for Arc Testnet (no live SDK execution).",
+    )
+    wallet_sub = wallet.add_subparsers(dest="wallet_command", required=True)
+    sdk_plan = wallet_sub.add_parser("sdk-plan", help="Print a Circle Wallet SDK integration plan.")
+    sdk_plan.add_argument("--json", action="store_true", help="Output machine-readable JSON.")
+    sdk_plan.add_argument("--account-type", choices=circle_wallet_sdk.ACCOUNT_TYPES, default="SCA")
+    sdk_plan.add_argument("--count", type=int, default=1)
+    sdk_plan.add_argument("--wallet-set-name", default=circle_wallet_sdk.DEFAULT_WALLET_SET_NAME)
+    env_check = wallet_sub.add_parser("env-check", help="Check Circle SDK env var presence with redacted values.")
+    env_check.add_argument("--json", action="store_true", help="Output machine-readable JSON.")
+    snippet = wallet_sub.add_parser("sdk-snippet", help="Print a secret-safe manual Python SDK snippet.")
+    snippet.add_argument("--account-type", choices=circle_wallet_sdk.ACCOUNT_TYPES, default="SCA")
+    snippet.add_argument("--count", type=int, default=1)
+    snippet.add_argument("--wallet-set-name", default=circle_wallet_sdk.DEFAULT_WALLET_SET_NAME)
+
     return parser
 
 
@@ -264,6 +322,7 @@ COMMANDS = {
     "manifest": cmd_manifest,
     "mcp": cmd_mcp,
     "release-packet": cmd_release_packet,
+    "wallet": cmd_wallet,
 }
 
 

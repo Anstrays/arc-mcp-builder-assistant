@@ -98,6 +98,7 @@ arc-builder --version
 arc-builder templates
 arc-builder validate
 arc-builder x402 challenge http://127.0.0.1:8087/protected
+arc-builder wallet sdk-plan --json
 arc-builder-mcp-server
 ```
 
@@ -109,6 +110,10 @@ The `arc-builder x402` helper is also read-only: `challenge` fetches a 402
 payment challenge for human review, and `verify` checks a supplied Arc Testnet
 transaction hash against receipt evidence before retrying the protected
 resource. It never accepts private keys and never signs or broadcasts.
+The `arc-builder wallet` helper is also guard-only: it builds a Circle
+Developer-Controlled Wallet SDK plan pinned to `ARC-TESTNET`, checks required
+environment variables with values redacted, and prints a manual SDK snippet
+without running the SDK, signing, or broadcasting.
 
 Maintainers publish through the release-only Trusted Publishing workflow in
 `.github/workflows/publish-pypi.yml`; no long-lived PyPI token is stored in the
@@ -223,6 +228,9 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 | `ARC_LIVE_X_PAYMENT` | Live smoke script | empty | Optional externally created proof; never commit it. |
 | `CIRCLE_GATEWAY_API_KEY` | Future verifier handoff | empty | Placeholder only. Store real values in a secret manager. |
 | `X402_GATEWAY_VERIFIER_URL` | Future verifier handoff | empty | Placeholder only. |
+| `CIRCLE_API_KEY` | Circle Wallet SDK guard | empty | Optional manual SDK-run secret. Keep in a private shell/secret manager. |
+| `CIRCLE_ENTITY_SECRET` | Circle Wallet SDK guard | empty | Optional manual SDK-run secret. Never commit or print it. |
+| `CIRCLE_WALLET_SET_ID` | Circle Wallet SDK guard | empty | Optional existing wallet-set identifier for local operator notes. |
 
 ## Troubleshooting
 
@@ -282,7 +290,7 @@ Guarded Arc Testnet wallet-send lab (`examples/arc-testnet-wallet-send-gate/`):
 - [`docs/agent-commerce-review-packet.md`](./docs/agent-commerce-review-packet.md) — local-only final review packet schema before any live wallet, settlement, or registration handoff.
 - [`docs/job-escrow-demo.md`](./docs/job-escrow-demo.md) — ERC-8183-style flow for posting jobs, funding escrow, reviewing agent output, and releasing stablecoin payouts.
 - [`docs/arc-agent-treasury-lab.md`](./docs/arc-agent-treasury-lab.md) — local product runbook for x402 earnings, bounded compute budgets, replay protection, and verified agentic loops.
-- [`docs/circle-wallet-integration.md`](./docs/circle-wallet-integration.md) — Circle agent wallet bootstrap on Arc Testnet: login, faucet, transfer, CCTP bridge, Gateway, and x402 marketplace boundaries.
+- [`docs/circle-wallet-integration.md`](./docs/circle-wallet-integration.md) — Circle agent wallet bootstrap and Developer-Controlled Wallet SDK guard on Arc Testnet: CLI login/faucet/transfer/CCTP/Gateway, `arc-builder wallet` plan/env/snippet helpers, and x402 marketplace boundaries.
 - [`docs/agent-commerce-live-evidence.md`](./docs/agent-commerce-live-evidence.md) — real on-chain agent commerce evidence: verified USDC transactions on Arc Testnet via Circle agent wallet, with tx hashes, block numbers, and unit economics.
 - [`docs/agentic-maintainer-loop.md`](./docs/agentic-maintainer-loop.md) — maintainer-agent operating loop for scoped edits, deterministic verification, event-driven maintenance, and human approval gates.
 - [`docs/x402-mcp-manifest.md`](./docs/x402-mcp-manifest.md) — machine-readable paid-agent manifest and JSON-RPC tool surface for the local x402 boundary.
@@ -308,7 +316,7 @@ Guarded Arc Testnet wallet-send lab (`examples/arc-testnet-wallet-send-gate/`):
 - [`examples/agent-commerce-live/`](./examples/agent-commerce-live/) — live agent commerce evidence page with real Arc Testnet transaction log, wallet state, unit economics, and safety boundaries.
 - [`examples/circle-wallet-integration/`](./examples/circle-wallet-integration/) — Circle agent wallet integration lab for Arc Testnet: bootstrap flow preview, CLI commands, contract addresses, and safety boundaries.
 - [`examples/x402-local-challenge-server/`](./examples/x402-local-challenge-server/) — dependency-free local HTTP 402 challenge server with MCP-style manifest, strict schema/envelope validation, bounded unambiguous proof input, fail-closed verifier results/direct-helper config, JSON CLI helpers, and a swappable verifier boundary for future Circle/x402 settlement work.
-- [`scripts/arc_builder_cli.py`](./scripts/arc_builder_cli.py) — unified CLI for listing templates, scaffolding projects, running validation, printing Arc Testnet facts, generating release packets, and launching the MCP server.
+- [`scripts/arc_builder_cli.py`](./scripts/arc_builder_cli.py) — unified CLI for listing templates, scaffolding projects, running validation, printing Arc Testnet facts, building Circle Wallet SDK guard plans, generating release packets, and launching the MCP server.
 - [`scripts/arc_builder_mcp_server.py`](./scripts/arc_builder_mcp_server.py) — stdio MCP server that exposes the CLI operations as JSON-RPC tools for AI coding agents.
 - [`templates/`](./templates/) — dependency-free project starters (`payment-intent-starter`, `x402-agent-starter`, `job-escrow-starter`).
 - [`examples/payment-intent-demo/`](./examples/payment-intent-demo/) — tiny static mockup for the first payment-intent flow, including trust-boundary and review-state UI copy.
@@ -342,7 +350,7 @@ For the shortest reviewer-facing checkpoint, see [`docs/current-readiness-report
 - x402 local challenge boundary with machine-readable manifest, JSON-RPC/MCP-style stdio helpers, `.env.example`, local transcript, and production deployment runbook.
 - Agent commerce starter-kit examples: components, flows, identity profile preview, and review packet exporter.
 - Committed screenshots for the landing page, docs viewer, payment-intent playground, and job escrow simulator.
-- Phase 4 builder tooling: unified CLI (`scripts/arc_builder_cli.py`), stdio MCP server (`scripts/arc_builder_mcp_server.py`) with 8 JSON-RPC tools (including release-packet and example-listing), and dependency-free project starter templates under `templates/`.
+- Phase 4 builder tooling plus wallet guards: unified CLI (`scripts/arc_builder_cli.py`) with `wallet sdk-plan/env-check/sdk-snippet`, stdio MCP server (`scripts/arc_builder_mcp_server.py`) with 8 JSON-RPC tools (including release-packet and example-listing), and dependency-free project starter templates under `templates/`.
 
 ### Safe default
 
@@ -355,7 +363,7 @@ For the shortest reviewer-facing checkpoint, see [`docs/current-readiness-report
 ### Optional future extensions
 
 - Custody or account-abstraction integration only as a separate backend/provider security review.
-- Optional Circle Wallets or Circle Contracts notes for teams that want a live integration path.
+- Live Circle Wallet SDK execution or Circle Contracts work only as a separate human-approved integration path with secrets kept outside the repo.
 - Public community sharing of the build log as a distribution step, not a missing product feature.
 
 ## Safe-scope completion contract
