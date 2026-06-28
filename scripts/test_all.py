@@ -54,6 +54,9 @@ CHECKS = [
     "scripts/test_arc_builder_cli.py",
     "scripts/test_arc_builder_mcp_server.py",
     "scripts/test_templates.py",
+    "scripts/test_package_distribution.py",
+    "scripts/test_pre_commit_guard.py",
+    "scripts/test_release_version.py",
     "scripts/validate_repo.py",
 ]
 

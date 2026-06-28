@@ -31,11 +31,18 @@ import json
 import shutil
 import subprocess
 import sys
+from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
 from pathlib import Path
 from typing import Any, Callable
 
-from arc_builder_kit._paths import CONFIG_DIR, EXAMPLES_DIR, REPO_ROOT, TEMPLATES_DIR
+from arc_builder_kit import __version__
+from arc_builder_kit._paths import (
+    CONFIG_DIR,
+    DEFAULT_OUTPUT_ROOT,
+    EXAMPLES_DIR,
+    TEMPLATES_DIR,
+)
 from arc_builder_kit.doctor import main as doctor_main
 from arc_builder_kit.release_packet import main as release_packet_main
 from arc_builder_kit.validate_repo import main as validate_main
@@ -44,7 +51,7 @@ X402_SERVER = EXAMPLES_DIR / "x402-local-challenge-server" / "server.py"
 
 PROTOCOL_VERSION = "2024-11-05"
 SERVER_NAME = "arc-builder-mcp"
-SERVER_VERSION = "0.1.0"
+SERVER_VERSION = __version__
 MAX_REQUEST_BYTES = 1_000_000
 
 
@@ -243,17 +250,23 @@ def tool_x402_manifest(_params: dict[str, Any]) -> dict[str, Any]:
 def tool_generate_release_packet(params: dict[str, Any]) -> dict[str, Any]:
     output = params.get("output")
     force = bool(params.get("force", False))
-    out = Path(output).expanduser().resolve() if isinstance(output, str) and output else REPO_ROOT / ".arc-release-packet"
-    if force and out.exists():
-        shutil.rmtree(out)
+    out = (
+        Path(output).expanduser().resolve()
+        if isinstance(output, str) and output
+        else DEFAULT_OUTPUT_ROOT / ".arc-release-packet"
+    )
     argv = ["--out", str(out)]
-    old_stdout = sys.stdout
-    try:
-        sys.stdout = StringIO()
-        rc = release_packet_main(argv)
-        stdout = sys.stdout.getvalue()
-    finally:
-        sys.stdout = old_stdout
+    if force:
+        argv.append("--force")
+    stdout_buffer = StringIO()
+    stderr_buffer = StringIO()
+    with redirect_stdout(stdout_buffer), redirect_stderr(stderr_buffer):
+        try:
+            rc = release_packet_main(argv)
+        except SystemExit as exc:
+            rc = int(exc.code) if isinstance(exc.code, int) else 1
+    stdout = stdout_buffer.getvalue()
+    stderr = stderr_buffer.getvalue()
     ok = rc == 0
     structured: dict[str, Any] = {"ok": ok, "output": str(out), "force": force}
     if ok:
@@ -264,7 +277,9 @@ def tool_generate_release_packet(params: dict[str, Any]) -> dict[str, Any]:
             structured,
         )
     structured["stdout"] = stdout
-    return _tool_error(f"Release packet generation failed: {stdout}", structured)
+    structured["stderr"] = stderr
+    detail = stderr.strip() or stdout.strip() or f"exit {rc}"
+    return _tool_error(f"Release packet generation failed: {detail}", structured)
 
 
 def tool_list_examples(_params: dict[str, Any]) -> dict[str, Any]:

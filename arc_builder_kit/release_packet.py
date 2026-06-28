@@ -21,9 +21,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, NoReturn
 
-from arc_builder_kit._paths import CONFIG_DIR, REPO_ROOT as ROOT
+from arc_builder_kit._paths import CONFIG_DIR, DEFAULT_OUTPUT_ROOT, REPO_ROOT as ROOT
 
-DEFAULT_OUT = ROOT / ".arc-release-packet"
+DEFAULT_OUT = DEFAULT_OUTPUT_ROOT / ".arc-release-packet"
 
 KIND = "arc_builder_release_packet"
 SCHEMA_VERSION = 1
@@ -378,20 +378,20 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def validate_output_dir(out_dir: Path) -> Path:
-    """Resolve and confirm the output directory stays inside the repo root."""
+    """Resolve and confirm output stays inside the reviewed output root."""
     try:
         resolved = out_dir.resolve(strict=False)
     except (OSError, RuntimeError) as exc:
         fail(f"cannot resolve output path: {exc}")
 
-    # Must be under ROOT; resolve() follows symlinks, so symlink escapes fail.
+    # resolve() follows symlinks, so symlink escapes fail.
     try:
-        resolved.relative_to(ROOT.resolve())
+        resolved.relative_to(DEFAULT_OUTPUT_ROOT.resolve())
     except ValueError:
-        fail(f"output path must be inside repo root: {resolved}")
+        fail(f"output path must be inside output root: {resolved}")
 
-    if resolved == ROOT.resolve():
-        fail("refusing to use the repository root as the output directory")
+    if resolved == DEFAULT_OUTPUT_ROOT.resolve():
+        fail("refusing to use the output root as the output directory")
 
     return resolved
 

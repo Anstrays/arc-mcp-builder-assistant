@@ -9,6 +9,44 @@ Phase 4 of the Arc MCP Builder Assistant ships unified command-line and MCP inte
 - `templates/` — dependency-free project starters.
 - Tests and validation for all of the above.
 
+## Install from PyPI
+
+Release `0.2.0` requires Python 3.10+ and packages the CLI, MCP server, reviewed Arc Testnet facts,
+starter templates, and local examples into one self-contained wheel:
+
+```bash
+python3 -m pip install arc-builder-kit==0.2.0
+arc-builder --version
+arc-builder templates
+arc-builder validate
+```
+
+The installed integrity check is intentionally narrower than the clone-level
+repository validator. It verifies package resources, pinned Arc Testnet facts,
+and fail-closed mainnet/custody policy without requiring git, docs, CI files, or
+network access.
+
+### Maintainer release flow
+
+PyPI publication uses Trusted Publishing, not a stored API token. Before the
+first release, configure a pending GitHub publisher in the PyPI account:
+
+- PyPI project: `arc-builder-kit`
+- GitHub owner: `Anstrays`
+- Repository: `arc-mcp-builder-assistant`
+- Workflow: `publish-pypi.yml`
+- Environment: `pypi`
+
+Create the GitHub environment `pypi` and require maintainer approval before
+deployment. After the release-fix PR is merged, publish a non-prerelease GitHub
+Release from the exact `v0.2.0` tag on `main`. The release event runs the full
+suite, verifies all version surfaces, builds wheel/sdist, runs `twine check`,
+and publishes through a short-lived OIDC credential.
+
+The workflow deliberately has no manual publish trigger, no token secret, and
+no `skip-existing` fallback. PyPI versions are immutable; a failed or partially
+published release must be diagnosed, not silently overwritten.
+
 ## CLI
 
 ```bash
@@ -49,6 +87,19 @@ Add it to an MCP client that supports stdio transport:
     "arc-builder": {
       "command": "python3",
       "args": ["/path/to/repo/scripts/arc_builder_mcp_server.py"]
+    }
+  }
+}
+```
+
+For a PyPI installation, the MCP entry point is shorter:
+
+```json
+{
+  "mcpServers": {
+    "arc-builder": {
+      "command": "arc-builder-mcp-server",
+      "args": []
     }
   }
 }
@@ -105,6 +156,7 @@ Each template is intentionally minimal and dependency-free. They are not product
 python3 scripts/test_arc_builder_cli.py
 python3 scripts/test_arc_builder_mcp_server.py
 python3 scripts/test_templates.py
+python3 scripts/test_package_distribution.py
 ```
 
 These are also included in the canonical suite:
@@ -112,3 +164,34 @@ These are also included in the canonical suite:
 ```bash
 python3 scripts/test_all.py
 ```
+
+## Graphify and repository hooks
+
+Graphify is optional and is not a runtime or build dependency. Its official
+PyPI package is `graphifyy`; the command remains `graphify`. This repository
+does not auto-install or execute third-party hooks.
+
+For local AST indexing, install it in an isolated tool environment and keep the
+generated graph local:
+
+```bash
+uv tool install graphifyy
+graphify . --no-viz
+```
+
+`graphify hook install` installs Graphify's official `post-commit` and
+`post-checkout` refresh hooks. It is not a pre-commit security control. Before
+using it, review the installed package and generated hook files. Do not enable
+remote LLM backends or URL ingestion with repository credentials present.
+
+The repository-owned pre-commit hook only checks staged path policy and runs
+the existing local secret scanner. It makes no network calls and never invokes
+Graphify:
+
+```bash
+python3 scripts/install_repo_hooks.py
+```
+
+The installer refuses to overwrite an unknown existing pre-commit hook.
+Generated `graphify-out/` data is intentionally ignored for this project to
+avoid committing machine-local indexes or large review-noise artifacts.

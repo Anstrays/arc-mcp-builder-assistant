@@ -1,4 +1,15 @@
+include build_support.py
+include setup.py
+include config/arc_testnet.facts.json
+recursive-include templates *.html *.js *.md *.py
+recursive-include examples *.html *.js *.json *.md *.py
+include examples/x402-local-challenge-server/.env.example
 global-exclude __pycache__
 global-exclude *.py[cod]
 global-exclude .DS_Store
 global-exclude *.log
+global-exclude .env
+global-exclude *.key
+global-exclude *.p12
+global-exclude *.pem
+global-exclude *.pfx

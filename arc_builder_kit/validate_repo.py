@@ -17,12 +17,33 @@ It is intentionally dependency-free so it can run in CI without setup.
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 from html.parser import HTMLParser
 from pathlib import Path
 
-from arc_builder_kit._paths import REPO_ROOT as ROOT
+from arc_builder_kit._paths import IS_SOURCE_CHECKOUT, REPO_ROOT as ROOT
+
+INSTALLED_REQUIRED_FILES = (
+    "__init__.py",
+    "__main__.py",
+    "_paths.py",
+    "cli.py",
+    "doctor.py",
+    "mcp_server.py",
+    "release_packet.py",
+    "validate_repo.py",
+    "config/arc_testnet.facts.json",
+    "templates/payment-intent-starter/README.md",
+    "templates/payment-intent-starter/index.html",
+    "templates/x402-agent-starter/server.py",
+    "templates/job-escrow-starter/index.html",
+    "examples/payment-intent-receipt-matcher/index.html",
+    "examples/arc-testnet-wallet-send-gate/live-infrastructure-policy.example.json",
+    "examples/x402-local-challenge-server/.env.example",
+    "examples/x402-local-challenge-server/server.py",
+)
 
 WORKFLOW_FILES = (
     ".github/workflows/validate.yml",
@@ -43,9 +64,18 @@ REQUIRED_FILES = [
     ".gitattributes",
     ".gitignore",
     ".env.example",
+    "pyproject.toml",
+    "MANIFEST.in",
+    "setup.py",
+    "build_support.py",
+    "arc_builder_kit/__init__.py",
+    "arc_builder_kit/_paths.py",
+    "arc_builder_kit/cli.py",
+    "arc_builder_kit/mcp_server.py",
     "config/arc_testnet.facts.json",
     ".github/workflows/validate.yml",
     ".github/workflows/pages.yml",
+    ".github/workflows/publish-pypi.yml",
     ".github/dependabot.yml",
     ".github/CODEOWNERS",
     ".github/PULL_REQUEST_TEMPLATE.md",
@@ -189,6 +219,13 @@ REQUIRED_FILES = [
     "scripts/arc_builder_mcp_server.py",
     "scripts/test_arc_builder_mcp_server.py",
     "scripts/test_templates.py",
+    "scripts/test_package_distribution.py",
+    "scripts/pre_commit_guard.py",
+    "scripts/install_repo_hooks.py",
+    "scripts/hooks/pre-commit",
+    "scripts/test_pre_commit_guard.py",
+    "scripts/check_release_version.py",
+    "scripts/test_release_version.py",
     "templates/README.md",
     "templates/payment-intent-starter/README.md",
     "templates/payment-intent-starter/index.html",
@@ -496,6 +533,65 @@ def validate_workflow_security() -> None:
     ):
         if not any(marker in line for line in monitor_active_lines):
             fail(f"{WORKFLOW_FILES[2]}: missing active readiness-monitor safety marker: {marker}")
+
+    validate_pypi_publish_workflow()
+
+
+def validate_pypi_publish_workflow() -> None:
+    """Keep package publication release-only, keyless, and least-privilege."""
+    relative = ".github/workflows/publish-pypi.yml"
+    text = (ROOT / relative).read_text(encoding="utf-8")
+    active_lines = [
+        line.strip().removeprefix("- ").lstrip()
+        for line in text.splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    ]
+
+    if "pull_request_target:" in text or "workflow_run:" in text or "workflow_dispatch:" in text:
+        fail(f"{relative}: publishing must only be triggered by a published GitHub release")
+    for marker in (
+        "release:",
+        "types: [published]",
+        "if: github.event.release.prerelease == false",
+        "name: pypi",
+        'python scripts/check_release_version.py --tag "${GITHUB_REF_NAME}"',
+        "python scripts/test_all.py",
+        "build==1.5.0",
+        "twine==6.2.0",
+        "python -m build",
+        "python -m twine check dist/*",
+        "pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b",
+    ):
+        if not any(marker in line for line in active_lines):
+            fail(f"{relative}: missing active trusted-publishing marker: {marker}")
+
+    action_pin = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}$")
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("- "):
+            stripped = stripped[2:].lstrip()
+        if stripped.startswith("uses:"):
+            ref = stripped.split(":", 1)[1].strip().split()[0]
+            if not action_pin.fullmatch(ref):
+                fail(f"{relative}: action must be pinned to a full commit SHA: {ref}")
+
+    permission_headers = [line for line in text.splitlines() if line.strip() == "permissions:"]
+    if len(permission_headers) != 2:
+        fail(f"{relative}: expected top-level and publish-job permissions only")
+    top_permissions = re.search(r"(?m)^permissions:\n((?:  [a-z][a-z0-9-]*: (?:read|write)\n)+)", text)
+    job_permissions = re.search(r"(?m)^    permissions:\n((?:      [a-z][a-z0-9-]*: (?:read|write)\n)+)", text)
+    if top_permissions is None or set(top_permissions.group(1).splitlines()) != {"  contents: read"}:
+        fail(f"{relative}: top-level permissions must be exactly contents: read")
+    if job_permissions is None or set(job_permissions.group(1).splitlines()) != {
+        "      contents: read",
+        "      id-token: write",
+    }:
+        fail(f"{relative}: publish job permissions must be exactly contents: read and id-token: write")
+
+    lowered = text.lower()
+    for forbidden in ("secrets.", "pypi_api_token", "password:", "username: __token__", "skip-existing"):
+        if forbidden in lowered:
+            fail(f"{relative}: forbidden token-based or fail-open publishing marker: {forbidden}")
 
 
 def validate_no_secrets() -> None:
@@ -2026,7 +2122,54 @@ def validate_sitemap_xml() -> None:
             fail(f"{relative}: missing <loc>{location}</loc>")
 
 
+def validate_installed_package() -> None:
+    """Validate the self-contained wheel without requiring a git checkout."""
+    missing = [relative for relative in INSTALLED_REQUIRED_FILES if not (ROOT / relative).is_file()]
+    if missing:
+        fail("installed package is missing required files: " + ", ".join(missing))
+
+    try:
+        facts = json.loads((ROOT / "config/arc_testnet.facts.json").read_text(encoding="utf-8"))
+        policy = json.loads(
+            (
+                ROOT
+                / "examples/arc-testnet-wallet-send-gate/live-infrastructure-policy.example.json"
+            ).read_text(encoding="utf-8")
+        )
+    except (OSError, ValueError) as exc:
+        fail(f"installed package contains invalid reviewed JSON: {exc}")
+
+    expected_facts = {
+        ("network", "chainId"): 5042002,
+        ("network", "chainIdHex"): "0x4cef52",
+        ("network", "rpcUrl"): "https://rpc.testnet.arc.network",
+        ("network", "explorerUrl"): "https://testnet.arcscan.app",
+        ("erc20Usdc", "address"): "0x3600000000000000000000000000000000000000",
+        ("erc20Usdc", "decimals"): 6,
+        ("nativeGas", "decimals"): 18,
+    }
+    for (section, key), expected in expected_facts.items():
+        actual = facts.get(section, {}).get(key)
+        if actual != expected:
+            fail(
+                f"installed Arc Testnet fact drift at {section}.{key}: "
+                f"expected {expected!r}, got {actual!r}"
+            )
+
+    if facts.get("policy", {}).get("mainnetSupported") is not False:
+        fail("installed package must keep Arc mainnet disabled")
+    if policy.get("profiles", {}).get("arcMainnet", {}).get("enabled") is not False:
+        fail("installed wallet policy must keep Arc mainnet disabled")
+    if policy.get("custody", {}).get("implemented") is not False:
+        fail("installed wallet policy must keep custody disabled")
+
+    print("installed package validation passed", file=sys.stdout)
+
+
 def main() -> None:
+    if not IS_SOURCE_CHECKOUT:
+        validate_installed_package()
+        return
     validate_required_files()
     validate_workflow_security()
     validate_no_secrets()

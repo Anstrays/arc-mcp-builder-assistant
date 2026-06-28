@@ -32,3 +32,4 @@ venv/
 *.operator-evidence.local.json
 .arc-test-*/
 .graphify-out/
+graphify-out/
