@@ -18,6 +18,7 @@ Supported tools:
 - validate_repo
 - get_arc_testnet_facts
 - x402_manifest
+- x402_paid_request
 - generate_release_packet
 - list_examples
 
@@ -247,6 +248,27 @@ def tool_x402_manifest(_params: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+def tool_x402_paid_request(params: dict[str, Any]) -> dict[str, Any]:
+    """Fetch a 402 challenge or verify a paid resource on Arc Testnet."""
+    from arc_builder_kit.x402_client import paid_request
+    url = params.get("url", "")
+    payment_proof = params.get("payment_proof", "")
+    if not isinstance(url, str) or not url:
+        return _tool_error("missing or invalid 'url' argument")
+    if not isinstance(payment_proof, str):
+        return _tool_error("'payment_proof' must be a string")
+    try:
+        result = paid_request(url, payment_proof or None)
+        payload = result.to_dict()
+        stage = "challenge" if result.receipt_verification is None else "verification"
+        return _tool_text(
+            f"x402 flow stage: {stage}",
+            payload,
+        )
+    except Exception as exc:
+        return _tool_error(f"x402 flow failed: {exc}")
+
+
 def tool_generate_release_packet(params: dict[str, Any]) -> dict[str, Any]:
     output = params.get("output")
     force = bool(params.get("force", False))
@@ -360,6 +382,18 @@ TOOLS: dict[str, dict[str, Any]] = {
         "description": "List available browser-facing examples in the kit.",
         "inputSchema": {"type": "object", "additionalProperties": False},
     },
+    "x402_paid_request": {
+        "description": "Fetch a 402 payment challenge from a URL, or verify a paid resource with a transaction hash proof on Arc Testnet. Read-only, no keys, no broadcast.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "url": {"type": "string", "description": "The x402-enabled endpoint URL."},
+                "payment_proof": {"type": "string", "description": "Optional transaction hash proving payment. If empty, returns the 402 challenge for human review."},
+            },
+            "required": ["url"],
+            "additionalProperties": False,
+        },
+    },
 }
 
 TOOL_HANDLERS: dict[str, Callable[[dict[str, Any]], dict[str, Any]]] = {
@@ -371,6 +405,7 @@ TOOL_HANDLERS: dict[str, Callable[[dict[str, Any]], dict[str, Any]]] = {
     "x402_manifest": tool_x402_manifest,
     "generate_release_packet": tool_generate_release_packet,
     "list_examples": tool_list_examples,
+    "x402_paid_request": tool_x402_paid_request,
 }
 
 

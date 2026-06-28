@@ -187,7 +187,9 @@ class InstalledLayoutTests(unittest.TestCase):
         responses = [json.loads(line) for line in result.stdout.splitlines()]
         _version = re.search(r'__version__\s*=\s*"([^"]+)"', (PACKAGE_SOURCE / "__init__.py").read_text()).group(1)
         self.assertEqual(responses[0]["result"]["serverInfo"]["version"], _version)
-        self.assertEqual(len(responses[1]["result"]["tools"]), 8)
+        tool_names = {tool["name"] for tool in responses[1]["result"]["tools"]}
+        self.assertIn("x402_paid_request", tool_names)
+        self.assertEqual(len(tool_names), 9)
 
     def test_mainnet_override_remains_blocked(self) -> None:
         env = self.env.copy()

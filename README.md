@@ -93,6 +93,7 @@ python3 -m pip install arc-builder-kit==0.2.0
 arc-builder --version
 arc-builder templates
 arc-builder validate
+arc-builder x402 challenge http://127.0.0.1:8087/protected
 arc-builder-mcp-server
 ```
 
@@ -100,6 +101,10 @@ arc-builder-mcp-server
 checks installed package integrity when run from a wheel. Default commands make
 zero network calls. The only network-enabled doctor flags are explicit,
 read-only opt-ins; no command accepts private keys, signs, or broadcasts.
+The `arc-builder x402` helper is also read-only: `challenge` fetches a 402
+payment challenge for human review, and `verify` checks a supplied Arc Testnet
+transaction hash against receipt evidence before retrying the protected
+resource. It never accepts private keys and never signs or broadcasts.
 
 Maintainers publish through the release-only Trusted Publishing workflow in
 `.github/workflows/publish-pypi.yml`; no long-lived PyPI token is stored in the

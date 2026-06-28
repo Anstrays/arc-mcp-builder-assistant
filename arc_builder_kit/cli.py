@@ -187,6 +187,27 @@ def cmd_release_packet(args: argparse.Namespace) -> int:
     return release_packet_main(argv)
 
 
+def cmd_x402(args: argparse.Namespace) -> int:
+    from arc_builder_kit.x402_client import paid_request
+    import json as _json
+
+    try:
+        if args.x402_command == "challenge":
+            result = paid_request(args.url)
+        elif args.x402_command == "verify":
+            result = paid_request(args.url, payment_proof=args.txhash)
+        else:
+            return 1
+        payload = result.to_dict()
+        print(_json.dumps(payload, indent=2, sort_keys=True))
+        if args.x402_command == "verify" and result.receipt_verification is not None:
+            return 0 if result.receipt_verification.verified else 1
+        return 0
+    except Exception as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="arc-builder",
@@ -242,6 +263,23 @@ def build_parser() -> argparse.ArgumentParser:
         help="Overwrite existing packet directory.",
     )
 
+    x402 = sub.add_parser(
+        "x402",
+        help="Inspect x402 challenges and verify Arc Testnet payment proofs (read-only).",
+    )
+    x402_sub = x402.add_subparsers(dest="x402_command", required=True)
+    x402_challenge = x402_sub.add_parser(
+        "challenge",
+        help="Fetch and print an x402 HTTP 402 challenge for human review.",
+    )
+    x402_challenge.add_argument("url", help="x402-enabled endpoint URL.")
+    x402_verify = x402_sub.add_parser(
+        "verify",
+        help="Fetch the challenge and verify a transaction hash against Arc Testnet receipt evidence.",
+    )
+    x402_verify.add_argument("url", help="x402-enabled endpoint URL.")
+    x402_verify.add_argument("txhash", help="Arc Testnet transaction hash used as the payment proof.")
+
     return parser
 
 
@@ -254,6 +292,7 @@ COMMANDS = {
     "manifest": cmd_manifest,
     "mcp": cmd_mcp,
     "release-packet": cmd_release_packet,
+    "x402": cmd_x402,
 }
 
 

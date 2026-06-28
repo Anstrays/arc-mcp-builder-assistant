@@ -28,6 +28,7 @@ CHECKS = [
     "scripts/test_arc_testnet_facts.py",
     "scripts/test_payment_intent_playground.py",
     "scripts/test_x402_boundary.py",
+    "scripts/test_x402_client.py",
     "scripts/test_arc_production_deployment.py",
     "scripts/test_arc_testnet_status_helper.py",
     "scripts/test_receipt_verifier_playground.py",

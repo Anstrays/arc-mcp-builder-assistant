@@ -19,12 +19,24 @@ python3 -m pip install arc-builder-kit==0.2.0
 arc-builder --version
 arc-builder templates
 arc-builder validate
+arc-builder x402 challenge http://127.0.0.1:8087/protected
 ```
 
 The installed integrity check is intentionally narrower than the clone-level
 repository validator. It verifies package resources, pinned Arc Testnet facts,
 and fail-closed mainnet/custody policy without requiring git, docs, CI files, or
 network access.
+
+The installable `arc-builder` entry point also includes a read-only x402 helper:
+
+```bash
+# Fetch a 402 challenge for human review.
+arc-builder x402 challenge http://127.0.0.1:8087/protected
+
+# Verify an Arc Testnet transaction hash against receipt evidence before retrying
+# the protected resource. No private keys, signing, or broadcast are accepted.
+arc-builder x402 verify http://127.0.0.1:8087/protected 0x...
+```
 
 ### Maintainer release flow
 
@@ -121,6 +133,7 @@ python3 scripts/arc_builder_cli.py mcp
 | `validate_repo` | Run repository validation. |
 | `get_arc_testnet_facts` | Return reviewed Arc Testnet facts. |
 | `x402_manifest` | Return the local x402 paid-agent manifest. |
+| `x402_paid_request` | Fetch a 402 challenge or verify an Arc Testnet transaction hash proof read-only. |
 | `generate_release_packet` | Generate a local maintainer release packet. |
 | `list_examples` | List available browser-facing examples. |
 
