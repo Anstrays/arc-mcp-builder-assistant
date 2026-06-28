@@ -6,6 +6,16 @@ from pathlib import Path
 
 _PACKAGE_DIR = Path(__file__).resolve().parent
 
+# A source checkout has the canonical scripts beside this package. An installed
+# wheel has its reviewed resources inside the package directory instead.
+_SOURCE_ROOT = _PACKAGE_DIR.parent
+IS_SOURCE_CHECKOUT = (
+    (_SOURCE_ROOT / "scripts" / "validate_repo.py").is_file()
+    and (_SOURCE_ROOT / "config" / "arc_testnet.facts.json").is_file()
+)
+REPO_ROOT = _SOURCE_ROOT if IS_SOURCE_CHECKOUT else _PACKAGE_DIR
+DEFAULT_OUTPUT_ROOT = REPO_ROOT if IS_SOURCE_CHECKOUT else Path.cwd().resolve()
+
 
 def _resolve_resource_dir(name: str) -> Path:
     """Find a resource directory in installed wheel or editable/development layout.
@@ -17,7 +27,7 @@ def _resolve_resource_dir(name: str) -> Path:
     installed = _PACKAGE_DIR / name
     if installed.exists() and installed.is_dir():
         return installed
-    dev = _PACKAGE_DIR.parent / name
+    dev = _SOURCE_ROOT / name
     if dev.exists() and dev.is_dir():
         return dev
     raise FileNotFoundError(
@@ -27,7 +37,6 @@ def _resolve_resource_dir(name: str) -> Path:
 
 
 PACKAGE_DIR = _PACKAGE_DIR
-REPO_ROOT = _PACKAGE_DIR.parent
 TEMPLATES_DIR = _resolve_resource_dir("templates")
 CONFIG_DIR = _resolve_resource_dir("config")
 EXAMPLES_DIR = _resolve_resource_dir("examples")

@@ -82,6 +82,30 @@ python3 examples/x402-local-challenge-server/server.py --port 8087
 # in another terminal: curl -i http://127.0.0.1:8087/protected
 ```
 
+### Installable CLI and MCP server
+
+The Python 3.10+ PyPI distribution is self-contained: it includes the reviewed Arc Testnet
+facts, starter templates, and local examples needed by the CLI and stdio MCP
+server. After publication, install it in an isolated environment:
+
+```bash
+python3 -m pip install arc-builder-kit==0.2.0
+arc-builder --version
+arc-builder templates
+arc-builder validate
+arc-builder-mcp-server
+```
+
+`arc-builder validate` checks the full repository when run from a clone and
+checks installed package integrity when run from a wheel. Default commands make
+zero network calls. The only network-enabled doctor flags are explicit,
+read-only opt-ins; no command accepts private keys, signs, or broadcasts.
+
+Maintainers publish through the release-only Trusted Publishing workflow in
+`.github/workflows/publish-pypi.yml`; no long-lived PyPI token is stored in the
+repository. First-release setup and the exact pending-publisher values are in
+[`docs/builder-tooling.md`](./docs/builder-tooling.md#maintainer-release-flow).
+
 ### Arc Builder Doctor
 
 One command tells you whether your clone, Arc Testnet facts, and public

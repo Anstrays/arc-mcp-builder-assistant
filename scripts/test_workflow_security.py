@@ -86,6 +86,10 @@ class WorkflowSecurityTests(unittest.TestCase):
           exit "$doctor_status"
 """,
         )
+        self.write(
+            ".github/workflows/publish-pypi.yml",
+            (ROOT / ".github/workflows/publish-pypi.yml").read_text(encoding="utf-8"),
+        )
 
     def test_current_runtime_and_permission_contract_passes(self) -> None:
         self.validator.validate_workflow_security()
@@ -221,6 +225,43 @@ class WorkflowSecurityTests(unittest.TestCase):
         )
         self.write(path, changed)
         with self.assertRaisesRegex(SystemExit, "missing active Doctor summary marker"):
+            self.validator.validate_workflow_security()
+
+    def test_pypi_publish_requires_job_scoped_oidc(self) -> None:
+        path = ".github/workflows/publish-pypi.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace(
+            "      id-token: write\n",
+            "",
+        )
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "publish job permissions must be exactly"):
+            self.validator.validate_workflow_security()
+
+    def test_pypi_publish_rejects_token_secrets(self) -> None:
+        path = ".github/workflows/publish-pypi.yml"
+        changed = (self.root / path).read_text(encoding="utf-8") + "\n# secrets.PYPI_API_TOKEN\n"
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "forbidden token-based"):
+            self.validator.validate_workflow_security()
+
+    def test_pypi_publish_action_must_be_sha_pinned(self) -> None:
+        path = ".github/workflows/publish-pypi.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace(
+            "pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b",
+            "pypa/gh-action-pypi-publish@release/v1",
+        )
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "full commit SHA|missing active trusted-publishing"):
+            self.validator.validate_workflow_security()
+
+    def test_pypi_publish_rejects_manual_trigger(self) -> None:
+        path = ".github/workflows/publish-pypi.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace(
+            "  release:\n",
+            "  workflow_dispatch:\n  release:\n",
+        )
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "only be triggered"):
             self.validator.validate_workflow_security()
 
 

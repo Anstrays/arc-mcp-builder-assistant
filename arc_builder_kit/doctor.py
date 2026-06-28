@@ -24,14 +24,16 @@ import shutil
 import subprocess
 import sys
 import time
+from contextlib import redirect_stdout
 from datetime import datetime, timezone
+from io import StringIO
 from pathlib import Path
 from typing import Any, Callable, Iterable
 from urllib import error as urllib_error
 from urllib import request as urllib_request
 from urllib.parse import urlparse
 
-from arc_builder_kit._paths import REPO_ROOT as ROOT
+from arc_builder_kit._paths import CONFIG_DIR, IS_SOURCE_CHECKOUT, REPO_ROOT as ROOT
 
 KIND = "arc_builder_doctor_report"
 SCHEMA_VERSION = 1
@@ -42,7 +44,7 @@ STATUS_FAIL = "fail"
 STATUS_SKIP = "skip"
 VALID_STATUSES = (STATUS_PASS, STATUS_WARN, STATUS_FAIL, STATUS_SKIP)
 
-MIN_PYTHON = (3, 9)
+MIN_PYTHON = (3, 10)
 MIN_NODE_MAJOR = 18
 
 EXPECTED_CHAIN_ID_DECIMAL = 5042002
@@ -64,7 +66,7 @@ DETAIL_LIMIT = 240
 
 # Critical builder-kit files the doctor itself depends on. This is an
 # orchestrator-level sanity list, not a copy of the full completion contract.
-CRITICAL_FILES = (
+SOURCE_CRITICAL_FILES = (
     "README.md",
     "SECURITY.md",
     "scripts/arc_builder_doctor.py",
@@ -84,6 +86,22 @@ CRITICAL_FILES = (
     "examples/arc-testnet-wallet-send-gate/wallet-send-gate.js",
     "examples/arc-testnet-wallet-send-gate/live-infrastructure-policy.example.json",
 )
+INSTALLED_CRITICAL_FILES = (
+    "__init__.py",
+    "cli.py",
+    "doctor.py",
+    "mcp_server.py",
+    "release_packet.py",
+    "validate_repo.py",
+    "config/arc_testnet.facts.json",
+    "templates/payment-intent-starter/README.md",
+    "templates/x402-agent-starter/server.py",
+    "templates/job-escrow-starter/README.md",
+    "examples/payment-intent-receipt-matcher/index.html",
+    "examples/arc-testnet-wallet-send-gate/live-infrastructure-policy.example.json",
+    "examples/x402-local-challenge-server/server.py",
+)
+CRITICAL_FILES = SOURCE_CRITICAL_FILES if IS_SOURCE_CHECKOUT else INSTALLED_CRITICAL_FILES
 
 _REDACTED = "[redacted]"
 
@@ -409,7 +427,39 @@ def check_workflow_security(options: Options) -> dict[str, Any]:
     )
 
 
+def check_installed_package(options: Options) -> dict[str, Any]:
+    """Run the wheel's dependency-free resource and safety validation."""
+    start = time.monotonic()
+    try:
+        from arc_builder_kit.validate_repo import validate_installed_package
+
+        with redirect_stdout(StringIO()):
+            validate_installed_package()
+    except (OSError, RuntimeError, SystemExit, ValueError) as exc:
+        return make_check(
+            "package.integrity",
+            "Installed package integrity",
+            STATUS_FAIL,
+            str(exc) or "installed package validation failed",
+            duration_ms=_elapsed_ms(start),
+        )
+    return make_check(
+        "package.integrity",
+        "Installed package integrity",
+        STATUS_PASS,
+        "reviewed resources and Arc Testnet safety policy are present",
+        duration_ms=_elapsed_ms(start),
+    )
+
+
 def check_canonical_suite(options: Options) -> dict[str, Any]:
+    if not IS_SOURCE_CHECKOUT:
+        return make_check(
+            "repo.canonical_suite",
+            "Canonical regression suite",
+            STATUS_SKIP,
+            "full repository suite requires a source checkout",
+        )
     return _python_script_check(
         "repo.canonical_suite",
         "Canonical regression suite",
@@ -419,6 +469,8 @@ def check_canonical_suite(options: Options) -> dict[str, Any]:
 
 
 def check_arc_testnet_status(options: Options) -> dict[str, Any]:
+    if not IS_SOURCE_CHECKOUT:
+        return _check_installed_arc_testnet_status(options)
     start = time.monotonic()
     unavailable = options.optional_unavailable_status()
     argv = [
@@ -485,6 +537,84 @@ def check_arc_testnet_status(options: Options) -> dict[str, Any]:
         "Arc Testnet read-only status",
         unavailable,
         "Arc Testnet RPC unavailable",
+        source=source,
+        duration_ms=_elapsed_ms(start),
+    )
+
+
+class _NoRpcRedirectHandler(urllib_request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[override]
+        raise ForeignRedirectError("Arc Testnet RPC redirects are not allowed")
+
+
+def _check_installed_arc_testnet_status(options: Options) -> dict[str, Any]:
+    """Perform the explicit read-only chain-id probe from an installed wheel."""
+    start = time.monotonic()
+    unavailable = options.optional_unavailable_status()
+    source = "https://rpc.testnet.arc.network"
+    try:
+        facts = json.loads((CONFIG_DIR / "arc_testnet.facts.json").read_text(encoding="utf-8"))
+        rpc_url = facts["network"]["rpcUrl"]
+        if rpc_url != source:
+            raise ValueError("reviewed RPC URL does not match the pinned Arc Testnet endpoint")
+        body = json.dumps(
+            {"jsonrpc": "2.0", "id": 1, "method": "eth_chainId", "params": []}
+        ).encode("utf-8")
+        request = urllib_request.Request(
+            rpc_url,
+            data=body,
+            method="POST",
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "User-Agent": "arc-builder-doctor",
+            },
+        )
+        opener = urllib_request.build_opener(_NoRpcRedirectHandler())
+        with opener.open(request, timeout=options.network_timeout) as response:
+            raw = response.read(MAX_NETWORK_BYTES + 1)
+        if len(raw) > MAX_NETWORK_BYTES:
+            raise OversizedResponseError("Arc Testnet RPC response exceeded 1 MB")
+        payload = json.loads(raw.decode("utf-8"))
+        chain_hex = payload.get("result") if isinstance(payload, dict) else None
+        if not isinstance(chain_hex, str):
+            raise ValueError("Arc Testnet RPC response did not contain a chain id")
+        chain_hex = chain_hex.lower()
+        chain_decimal = int(chain_hex, 16)
+    except (
+        ForeignRedirectError,
+        OversizedResponseError,
+        OSError,
+        ValueError,
+        KeyError,
+        json.JSONDecodeError,
+        urllib_error.URLError,
+        http_client.HTTPException,
+        TimeoutError,
+    ) as exc:
+        return make_check(
+            "arc_testnet.read_only_status",
+            "Arc Testnet read-only status",
+            unavailable,
+            f"Arc Testnet RPC unavailable: {exc}",
+            source=source,
+            duration_ms=_elapsed_ms(start),
+        )
+    if chain_decimal != EXPECTED_CHAIN_ID_DECIMAL or chain_hex != EXPECTED_CHAIN_ID_HEX:
+        return make_check(
+            "arc_testnet.read_only_status",
+            "Arc Testnet read-only status",
+            STATUS_FAIL,
+            f"unexpected chain id: {chain_decimal} ({chain_hex}); expected "
+            f"{EXPECTED_CHAIN_ID_DECIMAL} ({EXPECTED_CHAIN_ID_HEX})",
+            source=source,
+            duration_ms=_elapsed_ms(start),
+        )
+    return make_check(
+        "arc_testnet.read_only_status",
+        "Arc Testnet read-only status",
+        STATUS_PASS,
+        f"Arc Testnet chain {chain_decimal} ({chain_hex})",
         source=source,
         duration_ms=_elapsed_ms(start),
     )
@@ -583,14 +713,23 @@ def check_public_site(options: Options) -> list[dict[str, Any]]:
 # --- assembly -----------------------------------------------------------------
 
 _DEFAULT_CHECKS: tuple[Callable[[Options], dict[str, Any]], ...] = (
-    check_python,
-    check_node,
-    check_required_files,
-    check_clean_safety_markers,
-    check_public_claims,
-    check_live_infrastructure_policy,
-    check_arc_testnet_facts,
-    check_workflow_security,
+    (
+        check_python,
+        check_node,
+        check_required_files,
+        check_clean_safety_markers,
+        check_public_claims,
+        check_live_infrastructure_policy,
+        check_arc_testnet_facts,
+        check_workflow_security,
+    )
+    if IS_SOURCE_CHECKOUT
+    else (
+        check_python,
+        check_node,
+        check_required_files,
+        check_installed_package,
+    )
 )
 
 

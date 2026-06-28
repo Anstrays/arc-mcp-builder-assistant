@@ -27,7 +27,14 @@ import sys
 from pathlib import Path
 from typing import Any, Sequence
 
-from arc_builder_kit._paths import CONFIG_DIR, EXAMPLES_DIR, REPO_ROOT, TEMPLATES_DIR
+from arc_builder_kit import __version__
+from arc_builder_kit._paths import (
+    CONFIG_DIR,
+    DEFAULT_OUTPUT_ROOT,
+    EXAMPLES_DIR,
+    REPO_ROOT,
+    TEMPLATES_DIR,
+)
 from arc_builder_kit.doctor import main as doctor_main
 from arc_builder_kit.mcp_server import main as mcp_main
 from arc_builder_kit.release_packet import main as release_packet_main
@@ -172,11 +179,11 @@ def cmd_release_packet(args: argparse.Namespace) -> int:
     out = (
         Path(args.output).expanduser().resolve()
         if args.output
-        else REPO_ROOT / ".arc-release-packet"
+        else DEFAULT_OUTPUT_ROOT / ".arc-release-packet"
     )
-    if args.force and out.exists():
-        shutil.rmtree(out)
     argv = ["--out", str(out)]
+    if args.force:
+        argv.append("--force")
     return release_packet_main(argv)
 
 
@@ -188,7 +195,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--version",
         action="version",
-        version="%(prog)s 0.1.0",
+        version=f"%(prog)s {__version__}",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 

@@ -44,7 +44,7 @@ RELEASE_PACKET_SCRIPT = SCRIPTS_DIR / "generate_arc_release_packet.py"
 
 PROTOCOL_VERSION = "2024-11-05"
 SERVER_NAME = "arc-builder-mcp"
-SERVER_VERSION = "0.1.0"
+SERVER_VERSION = "0.2.0"
 MAX_REQUEST_BYTES = 1_000_000
 
 
