@@ -1,0 +1,269 @@
+#!/usr/bin/env python3
+"""Failure-path tests for repository workflow security validation."""
+
+from __future__ import annotations
+
+import importlib.util
+import tempfile
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+VALIDATOR_PATH = ROOT / "scripts" / "validate_repo.py"
+PINNED_SETUP_PYTHON = "a309ff8b426b58ec0e2a45f0f869d46889d02405"
+PINNED_SETUP_NODE = "48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e"
+
+
+def load_validator():
+    spec = importlib.util.spec_from_file_location("repo_validator_under_test", VALIDATOR_PATH)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Unable to load {VALIDATOR_PATH}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def workflow(permissions: str, trigger: str = "workflow_dispatch:", setup_node_ref: str = PINNED_SETUP_NODE) -> str:
+    return f"""name: test
+on:
+  {trigger}
+permissions:
+{permissions}
+jobs:
+  test:
+    steps:
+      - uses: actions/setup-python@{PINNED_SETUP_PYTHON}
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@{setup_node_ref}
+        with:
+          node-version: "22"
+      - run: python scripts/test_all.py
+"""
+
+
+class WorkflowSecurityTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.validator = load_validator()
+        self.temp = tempfile.TemporaryDirectory(prefix=".arc-test-", dir=ROOT)
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.validator.ROOT = self.root
+        self.write_workflows()
+
+    def write(self, relative: str, text: str) -> None:
+        path = self.root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+
+    def write_workflows(self) -> None:
+        self.write(
+            ".github/workflows/validate.yml",
+            workflow("  contents: read")
+            + """
+      - name: Publish Arc Builder Doctor summary
+        if: always()
+        run: |
+          python3 scripts/arc_builder_doctor.py --markdown > arc-builder-doctor-report.md
+          cat arc-builder-doctor-report.md >> "$GITHUB_STEP_SUMMARY"
+""",
+        )
+        self.write(
+            ".github/workflows/pages.yml",
+            workflow("  contents: read\n  pages: write\n  id-token: write"),
+        )
+        self.write(
+            ".github/workflows/readiness-monitor.yml",
+            workflow("  contents: read", trigger="schedule:\n    - cron: \"17 6 * * 1\"\n  workflow_dispatch:")
+            + """
+    timeout-minutes: 10
+      - run: |
+          set +e
+          python scripts/arc_builder_doctor.py --include-arc-rpc --include-public-site --strict --markdown > "$RUNNER_TEMP/arc-builder-doctor.md"
+          doctor_status=$?
+          set -e
+          cat "$RUNNER_TEMP/arc-builder-doctor.md" >> "$GITHUB_STEP_SUMMARY"
+          exit "$doctor_status"
+""",
+        )
+        self.write(
+            ".github/workflows/publish-pypi.yml",
+            (ROOT / ".github/workflows/publish-pypi.yml").read_text(encoding="utf-8"),
+        )
+
+    def test_current_runtime_and_permission_contract_passes(self) -> None:
+        self.validator.validate_workflow_security()
+
+    def test_unpinned_action_ref_fails_closed(self) -> None:
+        self.write(
+            ".github/workflows/validate.yml",
+            workflow("  contents: read", setup_node_ref="v6"),
+        )
+        with self.assertRaisesRegex(SystemExit, "full commit SHA"):
+            self.validator.validate_workflow_security()
+
+    def test_commented_runtime_markers_cannot_spoof_active_steps(self) -> None:
+        spoofed = workflow("  contents: read")
+        spoofed = spoofed.replace(
+            f"      - uses: actions/setup-node@{PINNED_SETUP_NODE}",
+            f"      # uses: actions/setup-node@{PINNED_SETUP_NODE}",
+        ).replace(
+            '          node-version: "22"',
+            '          # node-version: "22"',
+        )
+        self.write(".github/workflows/validate.yml", spoofed)
+        with self.assertRaisesRegex(SystemExit, "missing active runtime setup action"):
+            self.validator.validate_workflow_security()
+
+    def test_privileged_trigger_fails_closed(self) -> None:
+        self.write(
+            ".github/workflows/validate.yml",
+            workflow("  contents: read", trigger="pull_request_target:"),
+        )
+        with self.assertRaisesRegex(SystemExit, "forbidden privileged workflow trigger"):
+            self.validator.validate_workflow_security()
+
+    def test_validation_write_permission_fails_closed(self) -> None:
+        self.write(
+            ".github/workflows/validate.yml",
+            workflow("  contents: write"),
+        )
+        with self.assertRaisesRegex(SystemExit, "permissions must be exactly"):
+            self.validator.validate_workflow_security()
+
+    def test_validation_additional_write_permission_fails_closed(self) -> None:
+        self.write(
+            ".github/workflows/validate.yml",
+            workflow("  contents: read\n  issues: write"),
+        )
+        with self.assertRaisesRegex(SystemExit, "permissions must be exactly"):
+            self.validator.validate_workflow_security()
+
+    def test_permission_shorthand_fails_closed(self) -> None:
+        self.write(
+            ".github/workflows/validate.yml",
+            workflow("  contents: read").replace(
+                "permissions:\n  contents: read",
+                "permissions: write-all\n# contents: read",
+            ),
+        )
+        with self.assertRaisesRegex(SystemExit, "explicit top-level map"):
+            self.validator.validate_workflow_security()
+
+    def test_inline_permission_map_cannot_be_spoofed_by_other_yaml(self) -> None:
+        self.write(
+            ".github/workflows/validate.yml",
+            workflow("  contents: read").replace(
+                "permissions:\n  contents: read",
+                "permissions: { contents: write }\nenv:\n  contents: read",
+            ),
+        )
+        with self.assertRaisesRegex(SystemExit, "explicit top-level map"):
+            self.validator.validate_workflow_security()
+
+    def test_job_level_permission_block_fails_closed(self) -> None:
+        self.write(
+            ".github/workflows/validate.yml",
+            workflow("  contents: read").replace(
+                "    steps:",
+                "    permissions:\n      issues: write\n    steps:",
+            ),
+        )
+        with self.assertRaisesRegex(SystemExit, "exactly one permissions block"):
+            self.validator.validate_workflow_security()
+
+    def test_pages_additional_read_permission_fails_closed(self) -> None:
+        self.write(
+            ".github/workflows/pages.yml",
+            workflow("  contents: read\n  pages: write\n  id-token: write\n  packages: read"),
+        )
+        with self.assertRaisesRegex(SystemExit, "permissions must be exactly"):
+            self.validator.validate_workflow_security()
+
+    def test_readiness_monitor_write_permission_fails_closed(self) -> None:
+        path = ".github/workflows/readiness-monitor.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace(
+            "permissions:\n  contents: read",
+            "permissions:\n  contents: write",
+        )
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "permissions must be exactly"):
+            self.validator.validate_workflow_security()
+
+    def test_readiness_monitor_requires_strict_opt_in_summary_markers(self) -> None:
+        path = ".github/workflows/readiness-monitor.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace("--strict", "--relaxed")
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "missing active readiness-monitor safety marker"):
+            self.validator.validate_workflow_security()
+
+    def test_commented_readiness_marker_cannot_spoof_active_command(self) -> None:
+        path = ".github/workflows/readiness-monitor.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace(
+            "          set +e",
+            "          # set +e",
+        )
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "missing active readiness-monitor safety marker"):
+            self.validator.validate_workflow_security()
+
+    def test_validate_workflow_requires_doctor_summary_marker(self) -> None:
+        path = ".github/workflows/validate.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace(
+            "python3 scripts/arc_builder_doctor.py --markdown",
+            "",
+        )
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "missing active Doctor summary marker"):
+            self.validator.validate_workflow_security()
+
+    def test_validate_workflow_requires_github_step_summary_output(self) -> None:
+        path = ".github/workflows/validate.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace(
+            'cat arc-builder-doctor-report.md >> "$GITHUB_STEP_SUMMARY"',
+            'cat arc-builder-doctor-report.md',
+        )
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "missing active Doctor summary marker"):
+            self.validator.validate_workflow_security()
+
+    def test_pypi_publish_requires_job_scoped_oidc(self) -> None:
+        path = ".github/workflows/publish-pypi.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace(
+            "      id-token: write\n",
+            "",
+        )
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "publish job permissions must be exactly"):
+            self.validator.validate_workflow_security()
+
+    def test_pypi_publish_rejects_token_secrets(self) -> None:
+        path = ".github/workflows/publish-pypi.yml"
+        changed = (self.root / path).read_text(encoding="utf-8") + "\n# secrets.PYPI_API_TOKEN\n"
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "forbidden token-based"):
+            self.validator.validate_workflow_security()
+
+    def test_pypi_publish_action_must_be_sha_pinned(self) -> None:
+        path = ".github/workflows/publish-pypi.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace(
+            "pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b",
+            "pypa/gh-action-pypi-publish@release/v1",
+        )
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "full commit SHA|missing active trusted-publishing"):
+            self.validator.validate_workflow_security()
+
+    def test_pypi_publish_rejects_manual_trigger(self) -> None:
+        path = ".github/workflows/publish-pypi.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace(
+            "  release:\n",
+            "  workflow_dispatch:\n  release:\n",
+        )
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "only be triggered"):
+            self.validator.validate_workflow_security()
+
+
+if __name__ == "__main__":
+    unittest.main()

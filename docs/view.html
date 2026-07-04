@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Styled Markdown documentation reader for the Arc MCP Builder Assistant GitHub Pages site." />
+  <title>Docs viewer · Arc MCP Builder Assistant</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232563eb'/%3E%3Cstop offset='1' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Ctext x='50%25' y='55%25' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-size='38' font-weight='900' fill='white'%3EA%3C/text%3E%3C/svg%3E" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090a12;
+      --panel: rgba(255,255,255,.055);
+      --panel-strong: rgba(255,255,255,.09);
+      --text: #f6f3ff;
+      --muted: #b9b1d4;
+      --line: rgba(255,255,255,.14);
+      --accent: #7cf7d4;
+      --accent-2: #b388ff;
+      --warn: #ffd166;
+      --shadow: 0 24px 80px rgba(0,0,0,.38);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 18% 0%, rgba(124,247,212,.18), transparent 32rem),
+        radial-gradient(circle at 82% 10%, rgba(179,136,255,.2), transparent 34rem),
+        linear-gradient(180deg, #090a12 0%, #101225 54%, #090a12 100%);
+      line-height: 1.7;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    a:focus-visible,
+    button:focus-visible,
+    select:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    .skip-link { position: absolute; left: -9999px; top: 12px; z-index: 10; padding: 10px 14px; border-radius: 999px; background: var(--accent); color: #06110d; font-weight: 900; }
+    .skip-link:focus { left: 12px; }
+    header, main { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+    header { padding: 26px 0 12px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 18px; flex-wrap: wrap; }
+    .brand { display: inline-flex; gap: 10px; align-items: center; font-weight: 950; letter-spacing: -.02em; color: var(--text); }
+    .dot { width: 14px; height: 14px; border-radius: 999px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 0 28px rgba(124,247,212,.6); }
+    nav { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    nav a, .button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.045);
+      color: var(--text);
+      font-weight: 850;
+      font-size: .94rem;
+    }
+    .button.primary { color: #07110f; background: var(--accent); border-color: transparent; }
+    .button.secondary { color: var(--text); }
+    main { padding: 28px 0 72px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 300px); gap: 24px; align-items: start; }
+    .panel, aside {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--panel-strong), var(--panel));
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+    .panel { padding: clamp(22px, 4vw, 46px); overflow: hidden; }
+    aside { position: sticky; top: 18px; padding: 20px; }
+    .panel, aside { min-width: 0; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 950; text-transform: uppercase; letter-spacing: .16em; }
+    h1, h2, h3 { line-height: 1.12; letter-spacing: -.035em; }
+    h1, h2, h3, p, li, .meta, .doc-list a { overflow-wrap: anywhere; }
+    h1 { margin: 12px 0 14px; font-size: clamp(2rem, 6vw, 4.2rem); }
+    h2 { margin: 34px 0 12px; font-size: clamp(1.45rem, 3vw, 2.2rem); }
+    h3 { margin: 26px 0 10px; font-size: 1.25rem; }
+    p, li { color: var(--muted); }
+    ul, ol { padding-left: 1.4rem; }
+    li ul, li ol { margin-top: 6px; }
+    .task { display: inline-flex; gap: 8px; align-items: flex-start; }
+    .task input { margin-top: .42em; accent-color: var(--accent); }
+    .table-wrap { overflow-x: auto; margin: 18px 0; border: 1px solid var(--line); border-radius: 18px; }
+    table { width: 100%; border-collapse: collapse; min-width: 560px; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; }
+    th { color: var(--text); background: rgba(124,247,212,.08); font-size: .88rem; text-transform: uppercase; letter-spacing: .06em; }
+    tr:last-child td { border-bottom: 0; }
+    pre {
+      overflow-x: auto;
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,.38);
+      color: #eafff8;
+    }
+    code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; color: #dbfff5; }
+    p code, li code { padding: 2px 6px; border-radius: 8px; background: rgba(124,247,212,.1); border: 1px solid rgba(124,247,212,.18); }
+    blockquote { margin: 20px 0; padding: 14px 18px; border-left: 4px solid var(--accent); background: rgba(124,247,212,.08); border-radius: 14px; color: var(--text); }
+    hr { border: 0; border-top: 1px solid var(--line); margin: 30px 0; }
+    .meta { color: var(--muted); margin-bottom: 20px; }
+    .doc-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 28px; }
+    .doc-list { display: grid; gap: 8px; margin-top: 14px; }
+    .doc-list a { color: var(--muted); padding: 8px 10px; border-radius: 12px; border: 1px solid transparent; }
+    .doc-list a[aria-current="page"] { color: var(--text); border-color: rgba(124,247,212,.32); background: rgba(124,247,212,.08); }
+    .doc-group { margin: 16px 0 0; color: var(--accent); font-size: .72rem; font-weight: 950; text-transform: uppercase; letter-spacing: .14em; }
+    .error { color: var(--warn); }
+    @media (max-width: 900px) {
+      main { grid-template-columns: minmax(0, 1fr); }
+      aside { position: static; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header>
+    <div class="topbar">
+      <a class="brand" href="../" aria-label="Arc MCP Builder Assistant home"><span class="dot" aria-hidden="true"></span>Arc MCP Builder Assistant</a>
+      <nav aria-label="Docs navigation">
+        <a href="../">Home</a>
+        <a href="../examples/payment-intent-playground/">Playground</a>
+        <a href="https://github.com/Anstrays/arc-mcp-builder-assistant/tree/main/docs" target="_blank" rel="noopener noreferrer">Docs source</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <article class="panel" id="content">
+      <p class="eyebrow">Styled Markdown reader</p>
+      <h1 id="doc-title">Loading docs…</h1>
+      <p class="meta" id="doc-meta">Rendering checked-in Markdown as a readable GitHub Pages page.</p>
+      <div class="doc-actions">
+        <a class="button primary" id="docs-home-link" href="../index.html#docs">Back to styled docs</a>
+        <a class="button secondary" id="github-link" href="https://github.com/Anstrays/arc-mcp-builder-assistant/tree/main/docs" target="_blank" rel="noopener noreferrer">Edit on GitHub</a>
+      </div>
+      <div id="doc-body" aria-live="polite"></div>
+    </article>
+    <aside aria-label="Available pages">
+      <p class="eyebrow">Pages</p>
+      <strong>Choose a readable page</strong>
+      <div class="doc-list" id="doc-list"></div>
+    </aside>
+  </main>
+  <script src="./viewer.js" defer></script>
+</body>
+</html>

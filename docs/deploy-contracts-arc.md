@@ -2,6 +2,11 @@
 
 > Practical notes from Arc's official `Deploy contracts` tutorial for turning Arc docs into builder-friendly AI prompts and prototypes.
 
+> Security boundary: this is a separate backend/custody integration path, not
+> code used by the static site or guarded browser-wallet lab. Use a disposable
+> Arc Testnet project, keep credentials out of frontend code and chat, and use
+> a deployment secret manager for any reviewed non-local environment.
+
 Source docs:
 
 - https://docs.arc.network/arc/tutorials/deploy-contracts
@@ -30,7 +35,9 @@ You need:
 3. Circle API Key — Console → Keys → Create a key → API key → Standard Key
 4. Circle Entity Secret — required for Circle Dev-Controlled Wallets SDK
 
-Do **not** commit Circle credentials. Keep them in `.env` only.
+Do **not** commit Circle credentials or expose them to browser code. A local
+`.env` is acceptable only for a disposable Arc Testnet experiment and must stay
+ignored; use a deployment secret manager for any reviewed non-local environment.
 
 ## Project setup
 

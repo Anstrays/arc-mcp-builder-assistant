@@ -1,242 +1,389 @@
-"""
-Circle Wallet SDK Client
-------------------------
-Thin Python wrapper around Circle's Developer-Controlled Wallets REST API.
+"""Circle Wallet SDK guard helpers for Arc Testnet.
 
-Uses httpx for async HTTP calls. All secrets MUST come from environment
-variables — never hardcode API keys or entity secrets.
-
-Reference: https://developers.circle.com/wallets/api-reference
+This module intentionally does not import Circle's SDK, open wallets, sign, or
+broadcast. It builds reviewable manifests, environment readiness summaries, and
+copy-paste snippets for a human-approved Circle Developer-Controlled Wallet SDK
+run on Arc Testnet.
 """
 
 from __future__ import annotations
 
+import json
 import os
-from dataclasses import dataclass, field
-from typing import Any
+import re
+from typing import Mapping, cast
 
-import httpx
-
-CIRCLE_API_BASE = "https://api.circle.com/v1"
-TIMEOUT_SEC = 30
-
-
-# ── data models ─────────────────────────────────────────────────
-
-
-@dataclass
-class WalletInfo:
-    id: str
-    address: str
-    blockchain: str
-    account_type: str
-    custody_type: str
-    wallet_set_id: str
-    name: str = ""
-    state: str = "LIVE"
+ARC_TESTNET_BLOCKCHAIN = "ARC-TESTNET"
+ARC_TESTNET_CHAIN_ID = 5_042_002
+ARC_TESTNET_CHAIN_ID_HEX = "0x4cef52"
+SDK_PYTHON_PACKAGE = "circle-developer-controlled-wallets"
+SDK_TYPESCRIPT_PACKAGE = "@circle-fin/developer-controlled-wallets"
+REQUIRED_ENVIRONMENT = ("CIRCLE_API_KEY", "CIRCLE_ENTITY_SECRET")
+OPTIONAL_ENVIRONMENT = ("CIRCLE_WALLET_SET_ID", "CIRCLE_API_BASE_URL")
+ACCOUNT_TYPES = ("EOA", "SCA")
+MAX_WALLET_COUNT = 50
+DEFAULT_WALLET_SET_NAME = "arc-agent-wallets"
+_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_. -]{0,62}$")
 
 
-@dataclass
-class Balance:
-    amount: str
-    currency: str
-    blockchain: str
+def _validate_account_type(account_type: str) -> str:
+    normalized = account_type.strip().upper()
+    if normalized not in ACCOUNT_TYPES:
+        raise ValueError(f"account_type must be one of {', '.join(ACCOUNT_TYPES)}")
+    return normalized
 
 
-@dataclass
-class TransactionResult:
-    id: str
-    state: str
-    blockchain: str
-    tx_hash: str = ""
-    amount: str = ""
-    currency: str = ""
+def _validate_count(count: int) -> int:
+    if isinstance(count, bool) or not isinstance(count, int):
+        raise ValueError("count must be an integer")
+    if not 1 <= count <= MAX_WALLET_COUNT:
+        raise ValueError(f"count must be between 1 and {MAX_WALLET_COUNT}")
+    return count
 
 
-# ── client ──────────────────────────────────────────────────────
+def _validate_wallet_set_name(name: str) -> str:
+    value = name.strip()
+    if not value:
+        raise ValueError("wallet_set_name must be non-empty")
+    if any(ch in value for ch in "\r\n\0"):
+        raise ValueError("wallet_set_name contains forbidden control characters")
+    if not _NAME_RE.match(value):
+        raise ValueError("wallet_set_name must start with an alphanumeric character and use only simple label characters")
+    return value
 
 
-class CircleWalletClient:
-    """Python client for Circle Developer-Controlled Wallets API."""
+def build_sdk_guard_manifest() -> dict[str, object]:
+    """Return the reviewed Circle Wallet SDK integration guard manifest."""
 
-    def __init__(
-        self,
-        api_key: str | None = None,
-        entity_secret: str | None = None,
-        base_url: str = CIRCLE_API_BASE,
-        timeout: int = TIMEOUT_SEC,
-    ) -> None:
-        self._api_key = api_key or os.environ.get("CIRCLE_API_KEY", "")
-        self._entity_secret = entity_secret or os.environ.get("CIRCLE_ENTITY_SECRET", "")
-        if not self._api_key:
-            raise ValueError(
-                "CIRCLE_API_KEY is required — set the env var or pass api_key=."
-            )
-        if not self._entity_secret:
-            raise ValueError(
-                "CIRCLE_ENTITY_SECRET is required — set the env var or pass entity_secret=."
-            )
+    return {
+        "name": "circle-wallet-sdk-arc-testnet-guard",
+        "version": "0.1.0",
+        "purpose": "Human-reviewed Circle Developer-Controlled Wallet SDK bootstrap for Arc Testnet.",
+        "blockchain": ARC_TESTNET_BLOCKCHAIN,
+        "chainId": ARC_TESTNET_CHAIN_ID,
+        "chainIdHex": ARC_TESTNET_CHAIN_ID_HEX,
+        "sdk": {
+            "pythonPackage": SDK_PYTHON_PACKAGE,
+            "typescriptPackage": SDK_TYPESCRIPT_PACKAGE,
+            "product": "Circle Developer-Controlled Wallets",
+            "docs": [
+                "https://developers.circle.com/wallets/dev-controlled/create-your-first-wallet",
+                "https://developers.circle.com/sdks/developer-controlled-wallets-python-sdk",
+            ],
+        },
+        "requiredEnvironment": list(REQUIRED_ENVIRONMENT),
+        "optionalEnvironment": list(OPTIONAL_ENVIRONMENT),
+        "supportedAccountTypes": list(ACCOUNT_TYPES),
+        "walletCountLimit": MAX_WALLET_COUNT,
+        "safety": {
+            "testnetOnly": True,
+            "humanApprovalRequired": True,
+            "liveSdkExecution": False,
+            "privateKeysAccepted": False,
+            "rawSigning": False,
+            "transactionBroadcast": False,
+            "custodyInRepo": False,
+            "mainnetEnabled": False,
+            "secretsPrinted": False,
+        },
+        "reviewedOperations": [
+            "create_wallet_set",
+            "create_wallet on ARC-TESTNET",
+            "list_wallets / inspect wallet metadata",
+        ],
+        "nonGoals": [
+            "No committed API keys or entity secrets.",
+            "No autonomous SDK execution from this repo command.",
+            "No mainnet wallet creation.",
+            "No token transfer, contract execution, signing, or broadcast.",
+        ],
+    }
 
-        self._client = httpx.AsyncClient(
-            base_url=base_url,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {self._api_key}",
-            },
-            timeout=httpx.Timeout(timeout),
-        )
 
-    # ── wallets ──────────────────────────────────────────────
+def build_wallet_creation_plan(
+    *,
+    account_type: str = "SCA",
+    count: int = 1,
+    wallet_set_name: str = DEFAULT_WALLET_SET_NAME,
+) -> dict[str, object]:
+    """Build a JSON-ready, non-executing wallet creation plan."""
 
-    async def create_wallet_set(self, name: str = "Builder Kit Set") -> dict[str, Any]:
-        """Create a new wallet set."""
-        resp = await self._client.post(
-            "/w3s/walletSets",
-            json={"entitySecret": self._entity_secret, "name": name},
-        )
-        resp.raise_for_status()
-        return resp.json()["data"]
+    normalized_type = _validate_account_type(account_type)
+    normalized_count = _validate_count(count)
+    normalized_name = _validate_wallet_set_name(wallet_set_name)
+    return {
+        "walletSet": {
+            "name": normalized_name,
+            "operation": "create_wallet_set",
+        },
+        "wallets": {
+            "operation": "create_wallet",
+            "blockchains": [ARC_TESTNET_BLOCKCHAIN],
+            "accountType": normalized_type,
+            "count": normalized_count,
+        },
+        "execution": {
+            "liveSdkExecution": False,
+            "requiresExplicitHumanRunApproval": True,
+            "requiresEnvironment": list(REQUIRED_ENVIRONMENT),
+            "allowedFollowUps": ["manual SDK run", "read-only list wallets", "manual faucet funding"],
+            "blockedFollowUps": ["mainnet", "private keys", "raw signing", "autonomous transfer", "broadcast"],
+        },
+        "reviewChecklist": [
+            "Confirm Circle account/project is testnet-only for this run.",
+            "Confirm CIRCLE_API_KEY and CIRCLE_ENTITY_SECRET are present only in the local shell or secret manager.",
+            "Confirm blockchains is exactly ['ARC-TESTNET'] before running SDK code.",
+            "Record wallet IDs/addresses without storing secrets in the repo.",
+        ],
+    }
 
-    async def create_wallets(
-        self,
-        blockchain: str = "ARC-TESTNET",
-        count: int = 1,
-        wallet_set_id: str | None = None,
-        account_type: str = "SCA",
-    ) -> list[WalletInfo]:
-        """Create developer-controlled wallets."""
-        payload: dict[str, Any] = {
-            "entitySecret": self._entity_secret,
-            "blockchains": [blockchain],
-            "count": count,
-            "accountType": account_type,
+
+def summarize_environment(env: Mapping[str, str] | None = None) -> dict[str, object]:
+    """Return presence-only Circle SDK environment state, redacting values."""
+
+    source = os.environ if env is None else env
+    variables: dict[str, dict[str, object]] = {}
+    missing: list[str] = []
+    for name in (*REQUIRED_ENVIRONMENT, *OPTIONAL_ENVIRONMENT):
+        value = source.get(name, "")
+        present = bool(value)
+        variables[name] = {
+            "present": present,
+            "required": name in REQUIRED_ENVIRONMENT,
+            "value": "[REDACTED]" if present else "",
         }
-        if wallet_set_id:
-            payload["walletSetId"] = wallet_set_id
+        if name in REQUIRED_ENVIRONMENT and not present:
+            missing.append(name)
+    return {
+        "readyForManualSdkRun": not missing,
+        "missingRequired": missing,
+        "variables": variables,
+        "safety": {
+            "valuesRedacted": True,
+            "secretsPrinted": False,
+            "liveSdkExecution": False,
+        },
+    }
 
-        resp = await self._client.post("/w3s/wallets", json=payload)
-        resp.raise_for_status()
-        raw = resp.json()["data"]["wallets"]
-        return [
-            WalletInfo(
-                id=w["id"],
-                address=w["address"],
-                blockchain=w.get("blockchain", blockchain),
-                account_type=w.get("accountType", account_type),
-                custody_type=w.get("custodyType", "DEVELOPER"),
-                wallet_set_id=w.get("walletSetId", ""),
-                name=w.get("name", ""),
-                state=w.get("state", "LIVE"),
-            )
-            for w in raw
-        ]
 
-    async def list_wallets(self) -> list[WalletInfo]:
-        """List all wallets in the account."""
-        resp = await self._client.get("/w3s/wallets")
-        resp.raise_for_status()
-        raw = resp.json()["data"]["wallets"]
-        return [
-            WalletInfo(
-                id=w["id"],
-                address=w["address"],
-                blockchain=w.get("blockchain", ""),
-                account_type=w.get("accountType", ""),
-                custody_type=w.get("custodyType", ""),
-                wallet_set_id=w.get("walletSetId", ""),
-                name=w.get("name", ""),
-                state=w.get("state", "LIVE"),
-            )
-            for w in raw
-        ]
+def generate_python_sdk_snippet(
+    *,
+    account_type: str = "SCA",
+    count: int = 1,
+    wallet_set_name: str = DEFAULT_WALLET_SET_NAME,
+) -> str:
+    """Return a secret-safe Python SDK snippet for manual human execution."""
 
-    async def get_wallet(self, wallet_id: str) -> WalletInfo:
-        """Get a single wallet by ID."""
-        resp = await self._client.get(f"/w3s/wallets/{wallet_id}")
-        resp.raise_for_status()
-        w = resp.json()["data"]["wallet"]
-        return WalletInfo(
-            id=w["id"],
-            address=w["address"],
-            blockchain=w.get("blockchain", ""),
-            account_type=w.get("accountType", ""),
-            custody_type=w.get("custodyType", ""),
-            wallet_set_id=w.get("walletSetId", ""),
-            name=w.get("name", ""),
-            state=w.get("state", "LIVE"),
+    plan = build_wallet_creation_plan(
+        account_type=account_type,
+        count=count,
+        wallet_set_name=wallet_set_name,
+    )
+    wallet_set = cast(Mapping[str, object], plan["walletSet"])
+    wallets = cast(Mapping[str, object], plan["wallets"])
+    payload = {
+        "walletSetName": wallet_set["name"],
+        "blockchains": wallets["blockchains"],
+        "accountType": wallets["accountType"],
+        "count": wallets["count"],
+    }
+    payload_json = json.dumps(payload, indent=4)
+    return f'''#!/usr/bin/env python3
+"""Manual Circle Developer-Controlled Wallet SDK run for Arc Testnet.
+
+Before running:
+- export CIRCLE_API_KEY in your local shell or secret manager
+- export CIRCLE_ENTITY_SECRET in your local shell or secret manager
+- review that blockchains is exactly ["{ARC_TESTNET_BLOCKCHAIN}"]
+"""
+
+import json
+import os
+
+from circle.web3 import developer_controlled_wallets, utils
+
+REQUEST = {payload_json}
+
+client = utils.init_developer_controlled_wallets_client(
+    api_key=os.environ["CIRCLE_API_KEY"],
+    entity_secret=os.environ["CIRCLE_ENTITY_SECRET"],
+)
+wallet_sets_api = developer_controlled_wallets.WalletSetsApi(client)
+wallets_api = developer_controlled_wallets.WalletsApi(client)
+
+wallet_set = wallet_sets_api.create_wallet_set(
+    developer_controlled_wallets.CreateWalletSetRequest.from_dict({{
+        "name": REQUEST["walletSetName"],
+    }})
+)
+wallet_set_id = wallet_set.data.wallet_set.actual_instance.id
+
+wallets = wallets_api.create_wallet(
+    developer_controlled_wallets.CreateWalletRequest.from_dict({{
+        "walletSetId": wallet_set_id,
+        "blockchains": REQUEST["blockchains"],
+        "count": REQUEST["count"],
+        "accountType": REQUEST["accountType"],
+    }})
+)
+
+print(json.dumps(json.loads(wallets.model_dump_json()), indent=2))
+'''
+
+
+def build_wallet_status_summary() -> dict[str, object]:
+    """Return a combined wallet guard status summary."""
+    import os
+    env_state = summarize_environment(os.environ)
+    return {
+        "manifest": build_sdk_guard_manifest(),
+        "environment": env_state,
+        "safety": {
+            "testnetOnly": True,
+            "liveSdkExecution": False,
+            "humanApprovalRequired": True,
+            "privateKeysAccepted": False,
+            "transactionBroadcast": False,
+            "mainnetEnabled": False,
+        },
+    }
+
+
+def get_usdc_balance(
+    address: str,
+    *,
+    rpc_url: str = "https://rpc.testnet.arc.network",
+    timeout: float = 30,
+) -> dict[str, object]:
+    """Read-only: check USDC balance of an address on Arc Testnet via eth_call."""
+    import json
+    from urllib import request as urllib_request
+
+    if not isinstance(address, str) or not address.startswith("0x") or len(address) != 42:
+        return {"ok": False, "error": "invalid EVM address", "address": address}
+
+    # balanceOf(address) selector = keccak256("balanceOf(address)")[:4] = 0x70a08231
+    # padded address (32 bytes, left-padded with zeros)
+    padded = "0x" + "0" * 24 + address[2:]
+    data = f"0x70a08231{padded[2:]}"
+
+    payload = json.dumps({
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "eth_call",
+        "params": [{"to": "0x3600000000000000000000000000000000000000", "data": data}, "latest"],
+    }).encode("utf-8")
+
+    try:
+        req = urllib_request.Request(
+            rpc_url,
+            data=payload,
+            headers={"Content-Type": "application/json"},
+            method="POST",
         )
+        with urllib_request.urlopen(req, timeout=timeout) as resp:
+            response = json.loads(resp.read().decode("utf-8"))
+    except Exception as exc:
+        return {"ok": False, "error": f"rpc call failed: {exc}", "address": address}
 
-    # ── balances ─────────────────────────────────────────────
+    result = response.get("result")
+    if not isinstance(result, str) or not result.startswith("0x"):
+        error = response.get("error", {})
+        return {
+            "ok": False,
+            "error": error.get("message", f"unexpected RPC response: {response!r}"),
+            "address": address,
+        }
 
-    async def get_balance(self, wallet_id: str) -> list[Balance]:
-        """Get token balances for a wallet."""
-        resp = await self._client.get(f"/w3s/wallets/{wallet_id}/balances")
-        resp.raise_for_status()
-        raw = resp.json()["data"]["tokenBalances"]
-        return [
-            Balance(
-                amount=b.get("amount", "0"),
-                currency=b.get("token", {}).get("name", "USDC"),
-                blockchain=b.get("blockchain", ""),
-            )
-            for b in raw
-        ]
+    try:
+        raw_balance = int(result, 16)
+    except (ValueError, TypeError):
+        return {"ok": False, "error": f"could not decode balance hex: {result!r}", "address": address}
 
-    # ── transactions ─────────────────────────────────────────
+    display = f"{raw_balance / 10**6:.6f}"
+    return {
+        "ok": True,
+        "address": address,
+        "rawBalanceHex": result,
+        "rawBalanceWei": raw_balance,
+        "balanceUSDC": display,
+        "decimals": 6,
+        "network": "ARC-TESTNET",
+        "chainId": ARC_TESTNET_CHAIN_ID,
+        "rpcUrl": rpc_url,
+        "safety": {"readOnlyRpc": True, "noBroadcast": True, "noKeys": True},
+    }
 
-    async def create_transaction(
-        self,
-        wallet_id: str,
-        destination: str,
-        amount: str,
-        currency: str = "USDC",
-        blockchain: str = "ARC-TESTNET",
-        memo: str = "",
-    ) -> TransactionResult:
-        """Create and send a payment transaction."""
-        payload: dict[str, Any] = {
-            "entitySecret": self._entity_secret,
-            "walletId": wallet_id,
-            "destinationAddress": destination,
+
+def prepare_send_intent(
+    *,
+    to_address: str,
+    amount: str,
+    network: str = "ARC-TESTNET",
+    asset: str = "USDC",
+) -> dict[str, object]:
+    """Prepare a guarded USDC send intent for human review (NOT auto-executed)."""
+    # Validate address
+    if not isinstance(to_address, str) or not to_address.startswith("0x") or len(to_address) != 42:
+        return {"ok": False, "error": "invalid EVM address", "toAddress": to_address}
+    # Validate amount
+    try:
+        whole, dot, frac = amount.partition(".")
+        if not whole.isdigit() or (dot and not frac.isdigit()):
+            raise ValueError
+        if len(frac) > 6:
+            return {"ok": False, "error": "USDC amounts use at most 6 decimal places", "amount": amount}
+    except (ValueError, TypeError):
+        return {"ok": False, "error": "amount must be a positive decimal string", "amount": amount}
+    # Validate network is testnet
+    if "mainnet" in network.lower():
+        return {"ok": False, "error": f"mainnet network rejected (testnet-only): {network!r}", "network": network}
+
+    return {
+        "ok": True,
+        "intent": {
+            "network": network,
+            "asset": asset,
             "amount": amount,
-            "tokenId": currency,
-            "blockchain": blockchain,
-        }
-        if memo:
-            payload["memo"] = memo
+            "toAddress": to_address,
+            "status": "pending_human_approval",
+        },
+        "execution": {
+            "liveExecution": False,
+            "humanApprovalRequired": True,
+            "autoExecute": False,
+            "transactionBroadcast": False,
+        },
+        "safety": {
+            "testnetOnly": True,
+            "humanApprovalRequired": True,
+            "transactionBroadcast": False,
+            "privateKeysAccepted": False,
+            "readOnlyRpc": False,
+            "mainnetEnabled": False,
+            "autonomousSpending": False,
+        },
+        "nextSteps": [
+            f"Verify recipient {to_address} on Arc Testnet (https://testnet.arcscan.app).",
+            "Confirm amount and network in a human review.",
+            "Execute actual USDC transfer via MetaMask, Circle SDK, or another wallet.",
+            "After sending, verify receipt with: arc-builder x402 verify <url> <txhash>",
+        ],
+    }
 
-        resp = await self._client.post("/w3s/transactions", json=payload)
-        resp.raise_for_status()
-        tx = resp.json()["data"]["transaction"]
-        return TransactionResult(
-            id=tx["id"],
-            state=tx.get("state", "PENDING"),
-            blockchain=tx.get("blockchain", blockchain),
-            tx_hash=tx.get("txHash", ""),
-            amount=tx.get("amount", amount),
-            currency=tx.get("tokenId", currency),
-        )
 
-    async def get_transaction(self, tx_id: str) -> TransactionResult:
-        """Get transaction details by ID."""
-        resp = await self._client.get(f"/w3s/transactions/{tx_id}")
-        resp.raise_for_status()
-        tx = resp.json()["data"]["transaction"]
-        return TransactionResult(
-            id=tx["id"],
-            state=tx.get("state", "UNKNOWN"),
-            blockchain=tx.get("blockchain", ""),
-            tx_hash=tx.get("txHash", ""),
-            amount=tx.get("amount", ""),
-            currency=tx.get("tokenId", ""),
-        )
-
-    async def close(self) -> None:
-        await self._client.aclose()
-
-    # ── sync helper (for testing) ────────────────────────────
-
-    def _run_sync(self, coro):
-        """Run an async method synchronously. For tests only."""
-        import asyncio
-        return asyncio.run(coro)
+__all__ = [
+    "ACCOUNT_TYPES",
+    "ARC_TESTNET_BLOCKCHAIN",
+    "ARC_TESTNET_CHAIN_ID",
+    "ARC_TESTNET_CHAIN_ID_HEX",
+    "MAX_WALLET_COUNT",
+    "REQUIRED_ENVIRONMENT",
+    "build_sdk_guard_manifest",
+    "build_wallet_creation_plan",
+    "build_wallet_status_summary",
+    "generate_python_sdk_snippet",
+    "get_usdc_balance",
+    "prepare_send_intent",
+    "summarize_environment",
+]
