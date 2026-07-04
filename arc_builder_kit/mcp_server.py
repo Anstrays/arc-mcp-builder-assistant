@@ -19,11 +19,17 @@ Supported tools:
 - get_arc_testnet_facts
 - x402_manifest
 - x402_paid_request
+- x402_fetch_challenge
+- x402_verify_receipt
+- wallet_status
+- wallet_balance
+- wallet_prepare_send
 - generate_release_packet
 - list_examples
 
 Each tool result contains both human-readable `content` and `structuredContent`
-so MCP clients can render text or consume JSON.
+and a `meta` block with `durationMs`. Streaming progress notifications are
+emitted on stderr for long-running tools (HTTP fetch, RPC verify, balance check).
 """
 
 from __future__ import annotations
@@ -56,23 +62,135 @@ SERVER_VERSION = __version__
 MAX_REQUEST_BYTES = 1_000_000
 
 
+# ---------------------------------------------------------------------------
+# MCP Server v2 — structured errors, typed codes, progress notifications
+# ---------------------------------------------------------------------------
+
+# Standard JSON-RPC error codes
+ERR_PARSE          = -32700
+ERR_INVALID_REQ    = -32600
+ERR_METHOD_NOT_FOUND = -32601
+ERR_INVALID_PARAMS = -32602
+ERR_INTERNAL       = -32603
+ERR_TIMEOUT        = -32000
+ERR_SERVER         = -32001  # server error (transient)
+ERR_SERVER_BUSY    = -32002  # server overloaded / rate-limited
+ERR_PAYMENT        = -32050  # custom: x402 payment error
+ERR_RPC            = -32060  # custom: upstream RPC error
+
+
 class McpError(Exception):
-    def __init__(self, code: int, message: str, data: Any = None) -> None:
+    """Base MCP error with structured fields.
+
+    Fields:
+        code:       JSON-RPC error code (negative int)
+        message:    machine-readable short label
+        details:    optional structured payload (dict)
+        user_message: optional human-facing explanation
+        retry_hint:  optional advice: 'retry', 'backoff', 'fix_input', 'contact_support'
+    """
+    def __init__(
+        self,
+        code: int,
+        message: str,
+        *,
+        details: Any = None,
+        user_message: str | None = None,
+        retry_hint: str | None = None,
+    ) -> None:
         super().__init__(message)
         self.code = code
         self.message = message
-        self.data = data
+        self.details = details
+        self.user_message = user_message
+        self.retry_hint = retry_hint
+
+
+class ValidationError(McpError):
+    """Input validation failure (ERR_INVALID_PARAMS)."""
+    def __init__(self, message: str, *, details: Any = None, user_message: str | None = None) -> None:
+        super().__init__(ERR_INVALID_PARAMS, message, details=details, user_message=user_message, retry_hint="fix_input")
+
+
+class ToolNotFoundError(McpError):
+    """Unknown tool (ERR_METHOD_NOT_FOUND)."""
+    def __init__(self, name: str) -> None:
+        super().__init__(ERR_METHOD_NOT_FOUND, f"unknown tool: {name}", retry_hint="fix_input")
+
+
+class TimeoutError(McpError):
+    """Tool execution timed out (ERR_TIMEOUT)."""
+    def __init__(self, tool_name: str, timeout: float) -> None:
+        super().__init__(
+            ERR_TIMEOUT,
+            f"tool '{tool_name}' timed out after {timeout}s",
+            retry_hint="retry",
+            user_message="The operation took too long. Check network connectivity and try again.",
+        )
+
+
+class RpcError(McpError):
+    """Upstream RPC call failure (ERR_RPC, custom)."""
+    def __init__(self, message: str, *, details: Any = None, user_message: str | None = None) -> None:
+        super().__init__(ERR_RPC, message, details=details, user_message=user_message, retry_hint="retry")
+
+
+class PaymentError(McpError):
+    """x402 payment verification failure (ERR_PAYMENT, custom)."""
+    def __init__(self, message: str, *, details: Any = None, user_message: str | None = None) -> None:
+        super().__init__(ERR_PAYMENT, message, details=details, user_message=user_message, retry_hint="fix_input")
+
+
+def _emit_progress(progress: float, total: float, message: str | None = None) -> None:
+    """Emit a progress notification on stderr (streaming)."""
+    params: dict[str, Any] = {"progress": progress, "total": total}
+    if message is not None:
+        params["message"] = message
+    notification = json.dumps({
+        "jsonrpc": "2.0",
+        "method": "notifications/progress",
+        "params": params,
+    })
+    print(notification, file=sys.stderr, flush=True)
+
+
+def _to_error_dict(exc: McpError) -> dict[str, Any]:
+    """Convert a typed McpError to a JSON-RPC error dict."""
+    error: dict[str, Any] = {"code": exc.code, "message": exc.message}
+    data: dict[str, Any] = {}
+    if exc.details is not None:
+        data["details"] = exc.details
+    if exc.user_message is not None:
+        data["userMessage"] = exc.user_message
+    if exc.retry_hint is not None:
+        data["retryHint"] = exc.retry_hint
+    if data:
+        error["data"] = data
+    return error
 
 
 def _json_response(id: Any, result: Any) -> dict[str, Any]:
     return {"jsonrpc": "2.0", "id": id, "result": result}
 
 
-def _json_error(id: Any, code: int, message: str, data: Any = None) -> dict[str, Any]:
-    error: dict[str, Any] = {"code": code, "message": message}
-    if data is not None:
-        error["data"] = data
-    return {"jsonrpc": "2.0", "id": id, "error": error}
+def _json_error(id: Any, exc: McpError) -> dict[str, Any]:
+    """Build a JSON-RPC error response from a typed McpError."""
+    return {"jsonrpc": "2.0", "id": id, "error": _to_error_dict(exc)}
+
+
+def _tool_result(text: str, structured: Any, *, duration: float = 0.0) -> dict[str, Any]:
+    """Build a v2 tool result with metadata."""
+    result: dict[str, Any] = {
+        "content": [{"type": "text", "text": text}],
+        "structuredContent": structured,
+        "isError": False,
+    }
+    meta: dict[str, Any] = {}
+    if duration:
+        meta["durationMs"] = int(duration * 1000)
+    if meta:
+        result["meta"] = meta
+    return result
 
 
 def _run_script(
@@ -83,7 +201,7 @@ def _run_script(
     check: bool = False,
 ) -> subprocess.CompletedProcess[str]:
     if not script.exists():
-        raise McpError(-32603, f"script not found: {script}")
+        raise McpError(ERR_INTERNAL, f"script not found: {script}", retry_hint="fix_input", details={"script": str(script)})
     return subprocess.run(
         [sys.executable, str(script), *args],
         capture_output=True,
@@ -275,11 +393,13 @@ def tool_x402_fetch_challenge(params: dict[str, Any]) -> dict[str, Any]:
     url = params.get("url", "")
     if not isinstance(url, str) or not url:
         return _tool_error("missing or invalid 'url' argument")
+    _emit_progress(0.2, 1.0, f"Fetching challenge from {url}...")
     try:
         result = fetch_challenge(url)
+        _emit_progress(1.0, 1.0, "Challenge fetched.")
         payload = result.to_dict()
         has_challenge = payload.get("challenge") is not None
-        return _tool_text(
+        return _tool_result(
             f"x402 challenge fetched: {len(payload.get('challenge', {}).get('requirements', []))} requirement(s)"
             if has_challenge
             else f"No 402 challenge — server returned HTTP {payload.get('resourceStatus')}",
@@ -302,18 +422,70 @@ def tool_x402_verify_receipt(params: dict[str, Any]) -> dict[str, Any]:
         return _tool_error(f"invalid tx_hash: {exc}")
     if expected_pay_to is not None and (not isinstance(expected_pay_to, str) or not expected_pay_to):
         return _tool_error("'expected_pay_to' must be a non-empty string")
+    _emit_progress(0.2, 1.0, "Verifying transaction receipt on Arc Testnet...")
     try:
         verification = verify_receipt(
             tx_hash,
             expected_pay_to=expected_pay_to or None,
         )
+        _emit_progress(1.0, 1.0, "Verification complete.")
         payload = verification.to_dict()
-        return _tool_text(
+        return _tool_result(
             f"Receipt verified: {verification.verified} — {verification.reason}",
             payload,
         )
     except Exception as exc:
         return _tool_error(f"x402 verify receipt failed: {exc}")
+
+
+def tool_wallet_status(params: dict[str, Any]) -> dict[str, Any]:
+    """Show wallet guard status summary."""
+    from arc_builder_kit.circle_wallet_sdk import build_wallet_status_summary, prepare_send_intent
+    payload = build_wallet_status_summary()
+    env_ok = payload.get("environment", {}).get("readyForManualSdkRun", False)
+    return _tool_result(
+        f"Wallet guard status: {'ready' if env_ok else 'missing env vars'}",
+        payload,
+    )
+
+
+def tool_wallet_balance(params: dict[str, Any]) -> dict[str, Any]:
+    """Check USDC balance on Arc Testnet (read-only RPC)."""
+    from arc_builder_kit.circle_wallet_sdk import get_usdc_balance
+    address = params.get("address", "")
+    if not isinstance(address, str) or not address.startswith("0x") or len(address) != 42:
+        return _tool_error(f"invalid address: {address!r}; expected 0x-prefixed 42-char EVM address")
+    _emit_progress(0.3, 1.0, f"Checking USDC balance for {address}...")
+    try:
+        payload = get_usdc_balance(address)
+        _emit_progress(1.0, 1.0, "Balance retrieved.")
+    except Exception as exc:
+        return _tool_error(f"balance check failed: {exc}")
+    if not payload.get("ok"):
+        return _tool_error(payload.get("error", "unknown"))
+    return _tool_result(
+        f"USDC balance: {payload['balanceUSDC']} (Arc Testnet, chain {payload['chainId']})",
+        payload,
+    )
+
+
+def tool_wallet_prepare_send(params: dict[str, Any]) -> dict[str, Any]:
+    """Prepare a guarded USDC send intent for human review (no broadcast)."""
+    from arc_builder_kit.circle_wallet_sdk import prepare_send_intent
+    to_address = params.get("to_address", "")
+    amount = params.get("amount", "")
+    if not isinstance(to_address, str) or not to_address:
+        return _tool_error("missing or invalid 'to_address' argument")
+    if not isinstance(amount, str) or not amount:
+        return _tool_error("missing or invalid 'amount' argument")
+    network = params.get("network", "ARC-TESTNET")
+    payload = prepare_send_intent(to_address=to_address, amount=amount, network=network)
+    if not payload.get("ok"):
+        return _tool_error(payload.get("error", "unknown"), payload)
+    return _tool_result(
+        f"Send intent prepared: {payload['intent']['amount']} USDC → {payload['intent']['toAddress'][:10]}...",
+        payload,
+    )
 
 
 def tool_generate_release_packet(params: dict[str, Any]) -> dict[str, Any]:
@@ -464,6 +636,34 @@ TOOLS: dict[str, dict[str, Any]] = {
             "additionalProperties": False,
         },
     },
+    "wallet_status": {
+        "description": "Show the Circle Wallet SDK guard status summary: manifest, env checks, safety flags. No network calls, no side effects.",
+        "inputSchema": {"type": "object", "additionalProperties": False},
+    },
+    "wallet_balance": {
+        "description": "Check USDC balance of an EVM address on Arc Testnet via read-only RPC (eth_call). No keys, no broadcast.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "address": {"type": "string", "description": "EVM address to check USDC balance for (0x-prefixed, 42 chars)."},
+            },
+            "required": ["address"],
+            "additionalProperties": False,
+        },
+    },
+    "wallet_prepare_send": {
+        "description": "Prepare a guarded USDC send intent for human review. Validates the recipient address and amount, returns a pending_human_approval intent. Does NOT broadcast or sign anything.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "to_address": {"type": "string", "description": "Recipient EVM address (0x-prefixed, 42 chars)."},
+                "amount": {"type": "string", "description": "USDC amount as decimal string (e.g. '1.50')."},
+                "network": {"type": "string", "description": "Network identifier (default: ARC-TESTNET)."},
+            },
+            "required": ["to_address", "amount"],
+            "additionalProperties": False,
+        },
+    },
 }
 
 TOOL_HANDLERS: dict[str, Callable[[dict[str, Any]], dict[str, Any]]] = {
@@ -478,6 +678,9 @@ TOOL_HANDLERS: dict[str, Callable[[dict[str, Any]], dict[str, Any]]] = {
     "x402_paid_request": tool_x402_paid_request,
     "x402_fetch_challenge": tool_x402_fetch_challenge,
     "x402_verify_receipt": tool_x402_verify_receipt,
+    "wallet_status": tool_wallet_status,
+    "wallet_balance": tool_wallet_balance,
+    "wallet_prepare_send": tool_wallet_prepare_send,
 }
 
 
@@ -495,41 +698,48 @@ def handle_tools_list(id: Any, _params: Any) -> dict[str, Any]:
 
 def handle_tools_call(id: Any, params: Any) -> dict[str, Any]:
     if not isinstance(params, dict):
-        return _json_error(id, -32602, "invalid params: expected object")
+        return _json_error(id, ValidationError("invalid params: expected object"))
     name = params.get("name")
     arguments = params.get("arguments") or {}
     if not isinstance(name, str) or not name:
-        return _json_error(id, -32602, "missing or invalid tool name")
+        return _json_error(id, ValidationError("missing or invalid tool name"))
     if not isinstance(arguments, dict):
-        return _json_error(id, -32602, "invalid arguments: expected object")
+        return _json_error(id, ValidationError("invalid arguments: expected object"))
     if name not in TOOL_HANDLERS:
-        return _json_error(id, -32601, f"unknown tool: {name}")
+        return _json_error(id, ToolNotFoundError(name))
+    import time
+    t0 = time.time()
     try:
         result = TOOL_HANDLERS[name](arguments)
     except McpError as exc:
-        return _json_error(id, exc.code, exc.message, exc.data)
+        return _json_error(id, exc)
     except subprocess.TimeoutExpired:
-        return _json_error(id, -32000, f"tool '{name}' timed out")
+        return _json_error(id, TimeoutError(name, timeout=120))
     except Exception as exc:  # noqa: BLE001 - catch-all for tool safety
-        return _json_error(id, -32603, f"tool '{name}' failed: {exc}")
+        return _json_error(id, McpError(ERR_INTERNAL, f"tool '{name}' failed", details={"error": repr(exc)}, user_message=str(exc), retry_hint="retry"))
+    duration = time.time() - t0
+    if not result.get("meta"):
+        result["meta"] = {}
+    if "durationMs" not in result["meta"]:
+        result["meta"]["durationMs"] = int(duration * 1000)
     return _json_response(id, result)
 
 
 def handle_request(request: dict[str, Any]) -> dict[str, Any] | None:
     if request.get("jsonrpc") != "2.0":
-        return _json_error(request.get("id"), -32600, "invalid JSON-RPC version")
+        return _json_error(request.get("id"), ValidationError("invalid JSON-RPC version (must be 2.0)"))
     id = request.get("id")
     method = request.get("method")
     params = request.get("params", {})
     if not isinstance(method, str):
-        return _json_error(id, -32600, "invalid method")
+        return _json_error(id, ValidationError("invalid method: must be a string"))
     if method == "initialize":
         return handle_initialize(id, params)
     if method == "tools/list":
         return handle_tools_list(id, params)
     if method == "tools/call":
         return handle_tools_call(id, params)
-    return _json_error(id, -32601, f"method not found: {method}")
+    return _json_error(id, McpError(ERR_METHOD_NOT_FOUND, f"method not found: {method}", retry_hint="fix_input"))
 
 
 def main() -> int:
@@ -545,16 +755,16 @@ def main() -> int:
             continue
         try:
             if len(line.encode("utf-8")) > MAX_REQUEST_BYTES:
-                response = _json_error(None, -32700, "request too large")
+                response = _json_error(None, McpError(ERR_PARSE, "request too large", retry_hint="fix_input", user_message=f"Request exceeds {MAX_REQUEST_BYTES} byte limit."))
                 print(json.dumps(response), flush=True)
                 continue
             request = json.loads(line)
         except json.JSONDecodeError as exc:
-            response = _json_error(None, -32700, f"parse error: {exc}")
+            response = _json_error(None, McpError(ERR_PARSE, f"parse error", details={"error": str(exc)}, retry_hint="fix_input"))
             print(json.dumps(response), flush=True)
             continue
         if not isinstance(request, dict):
-            response = _json_error(None, -32600, "invalid request")
+            response = _json_error(None, ValidationError("invalid request: expected JSON object"))
             print(json.dumps(response), flush=True)
             continue
         if "id" not in request:
