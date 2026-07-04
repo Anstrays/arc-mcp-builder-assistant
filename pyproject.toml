@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arc-builder-kit"
-version = "0.2.1"
+version = "0.3.0"
 description = "Arc MCP Builder Assistant — installable CLI and MCP server for Arc builder tooling."
 readme = "README.md"
 license = "MIT"

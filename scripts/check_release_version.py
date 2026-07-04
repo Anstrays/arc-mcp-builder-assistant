@@ -47,7 +47,7 @@ def observed_versions(root: Path = ROOT) -> dict[str, str]:
         ),
         "source_mcp": _extract(
             root / "scripts/arc_builder_mcp_server.py",
-            r'^SERVER_VERSION\s*=\s*"([^"]+)"\s*$',
+            r'^__version__\s*=\s*"([^"]+)"\s*$',
             "source MCP version",
         ),
     }

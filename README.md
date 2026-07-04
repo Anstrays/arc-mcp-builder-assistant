@@ -93,7 +93,7 @@ facts, starter templates, and local examples needed by the CLI and stdio MCP
 server. After publication, install it in an isolated environment:
 
 ```bash
-python3 -m pip install arc-builder-kit==0.2.0
+python3 -m pip install arc-builder-kit==0.3.0
 arc-builder --version
 arc-builder templates
 arc-builder validate
@@ -112,8 +112,10 @@ transaction hash against receipt evidence before retrying the protected
 resource. It never accepts private keys and never signs or broadcasts.
 The `arc-builder wallet` helper is also guard-only: it builds a Circle
 Developer-Controlled Wallet SDK plan pinned to `ARC-TESTNET`, checks required
-environment variables with values redacted, and prints a manual SDK snippet
-without running the SDK, signing, or broadcasting.
+environment variables with values redacted, prints a manual SDK snippet
+without running the SDK, signing, or broadcasting. It also supports
+`wallet status` (guard status summary), `wallet balance <address>` (read-only USDC balance via RPC),
+and `wallet send <to> <amount>` (guarded send intent for human review).
 
 Maintainers publish through the release-only Trusted Publishing workflow in
 `.github/workflows/publish-pypi.yml`; no long-lived PyPI token is stored in the
@@ -318,7 +320,7 @@ Guarded Arc Testnet wallet-send lab (`examples/arc-testnet-wallet-send-gate/`):
 - [`examples/x402-local-challenge-server/`](./examples/x402-local-challenge-server/) — dependency-free local HTTP 402 challenge server with MCP-style manifest, strict schema/envelope validation, bounded unambiguous proof input, fail-closed verifier results/direct-helper config, JSON CLI helpers, and a swappable verifier boundary for future Circle/x402 settlement work.
 - [`scripts/arc_builder_cli.py`](./scripts/arc_builder_cli.py) — unified CLI for listing templates, scaffolding projects, running validation, printing Arc Testnet facts, building Circle Wallet SDK guard plans, generating release packets, and launching the MCP server.
 - [`scripts/arc_builder_mcp_server.py`](./scripts/arc_builder_mcp_server.py) — stdio MCP server that exposes the CLI operations as JSON-RPC tools for AI coding agents.
-- [`templates/`](./templates/) — dependency-free project starters (`payment-intent-starter`, `x402-agent-starter`, `job-escrow-starter`).
+|- [`templates/`](./templates/) — dependency-free project starters (`payment-intent-starter`, `x402-agent-starter`, `job-escrow-starter`, `marketplace`, `treasury`, `x402-verified-api`).
 - [`examples/payment-intent-demo/`](./examples/payment-intent-demo/) — tiny static mockup for the first payment-intent flow, including trust-boundary and review-state UI copy.
 
 ## Screenshots
@@ -350,7 +352,7 @@ For the shortest reviewer-facing checkpoint, see [`docs/current-readiness-report
 - x402 local challenge boundary with machine-readable manifest, JSON-RPC/MCP-style stdio helpers, `.env.example`, local transcript, and production deployment runbook.
 - Agent commerce starter-kit examples: components, flows, identity profile preview, and review packet exporter.
 - Committed screenshots for the landing page, docs viewer, payment-intent playground, and job escrow simulator.
-- Phase 4 builder tooling plus wallet guards: unified CLI (`scripts/arc_builder_cli.py`) with `wallet sdk-plan/env-check/sdk-snippet`, stdio MCP server (`scripts/arc_builder_mcp_server.py`) with 8 JSON-RPC tools (including release-packet and example-listing), and dependency-free project starter templates under `templates/`.
+- Phase 4 builder tooling plus wallet guards: unified CLI (`scripts/arc_builder_cli.py`) with `wallet sdk-plan/env-check/sdk-snippet/status/balance/send`, stdio MCP server with 14 JSON-RPC tools (MCP Server v2: structured errors, progress streaming, wallet tools) and dependency-free project starter templates under `templates/` (payment-intent-starter, x402-agent-starter, job-escrow-starter, marketplace, treasury, x402-verified-api).
 
 ### Safe default
 

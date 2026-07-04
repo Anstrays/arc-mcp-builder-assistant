@@ -27,7 +27,7 @@ checker = load_checker()
 
 class ReleaseVersionTests(unittest.TestCase):
     def test_current_release_tag_matches_all_surfaces(self) -> None:
-        self.assertEqual(checker.validate_release_tag("v0.2.1"), "0.2.1")
+        self.assertEqual(checker.validate_release_tag("v0.3.0"), "0.3.0")
 
     def test_missing_v_prefix_fails(self) -> None:
         with self.assertRaises(checker.ReleaseVersionError):
