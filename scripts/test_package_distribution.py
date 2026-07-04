@@ -206,7 +206,9 @@ class InstalledLayoutTests(unittest.TestCase):
         self.assertEqual(responses[0]["result"]["serverInfo"]["version"], _version)
         tool_names = {tool["name"] for tool in responses[1]["result"]["tools"]}
         self.assertIn("x402_paid_request", tool_names)
-        self.assertEqual(len(tool_names), 9)
+        self.assertIn("x402_fetch_challenge", tool_names)
+        self.assertIn("x402_verify_receipt", tool_names)
+        self.assertEqual(len(tool_names), 11)
 
     def test_mainnet_override_remains_blocked(self) -> None:
         env = self.env.copy()

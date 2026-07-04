@@ -242,6 +242,37 @@ def cmd_wallet(args: argparse.Namespace) -> int:
             )
         )
         return 0
+    if args.wallet_command == "status":
+        payload = circle_wallet_sdk.build_wallet_status_summary()
+        _print_json_or_human(payload, as_json=args.json)
+        return 0
+    if args.wallet_command == "balance":
+        try:
+            payload = circle_wallet_sdk.get_usdc_balance(args.address)
+        except Exception as exc:
+            print(f"error: balance check failed: {exc}", file=sys.stderr)
+            return 1
+        if not payload.get("ok"):
+            print(f"error: {payload.get('error', 'unknown')}", file=sys.stderr)
+            return 1
+        print(f"Address: {payload['address']}")
+        print(f"Balance: {payload['balanceUSDC']} USDC")
+        print(f"Network: {payload['network']} (chain {payload['chainId']})")
+        if args.json:
+            print()
+            print(json.dumps(payload, indent=2, sort_keys=True))
+        return 0
+    if args.wallet_command == "send":
+        payload = circle_wallet_sdk.prepare_send_intent(
+            to_address=args.to_address,
+            amount=args.amount,
+            network=getattr(args, "network", "ARC-TESTNET"),
+        )
+        if not payload.get("ok"):
+            print(f"error: {payload.get('error', 'unknown')}", file=sys.stderr)
+            return 1
+        _print_json_or_human(payload, as_json=args.json)
+        return 0
     return 1
 
 
@@ -333,6 +364,22 @@ def build_parser() -> argparse.ArgumentParser:
     snippet.add_argument("--account-type", choices=circle_wallet_sdk.ACCOUNT_TYPES, default="SCA")
     snippet.add_argument("--count", type=int, default=1)
     snippet.add_argument("--wallet-set-name", default=circle_wallet_sdk.DEFAULT_WALLET_SET_NAME)
+
+    wallet_status = wallet_sub.add_parser("status", help="Show wallet guard status summary.")
+    wallet_status.add_argument("--json", action="store_true", help="Output machine-readable JSON.")
+
+    wallet_balance = wallet_sub.add_parser("balance", help="Check USDC balance on Arc Testnet (read-only RPC).")
+    wallet_balance.add_argument("address", help="EVM address to check USDC balance for.")
+    wallet_balance.add_argument("--json", action="store_true", help="Show full JSON response.")
+
+    wallet_send = wallet_sub.add_parser(
+        "send",
+        help="Prepare a guarded USDC send intent for human review (no broadcast).",
+    )
+    wallet_send.add_argument("to_address", help="Recipient EVM address.")
+    wallet_send.add_argument("amount", help="USDC amount (e.g. 1.50).")
+    wallet_send.add_argument("--json", action="store_true", help="Output machine-readable JSON.")
+    wallet_send.add_argument("--network", default="ARC-TESTNET", help="Network (default: ARC-TESTNET).")
 
     return parser
 

@@ -269,6 +269,53 @@ def tool_x402_paid_request(params: dict[str, Any]) -> dict[str, Any]:
         return _tool_error(f"x402 flow failed: {exc}")
 
 
+def tool_x402_fetch_challenge(params: dict[str, Any]) -> dict[str, Any]:
+    """Fetch a 402 payment challenge from an x402-enabled endpoint."""
+    from arc_builder_kit.x402_client import fetch_challenge
+    url = params.get("url", "")
+    if not isinstance(url, str) or not url:
+        return _tool_error("missing or invalid 'url' argument")
+    try:
+        result = fetch_challenge(url)
+        payload = result.to_dict()
+        has_challenge = payload.get("challenge") is not None
+        return _tool_text(
+            f"x402 challenge fetched: {len(payload.get('challenge', {}).get('requirements', []))} requirement(s)"
+            if has_challenge
+            else f"No 402 challenge — server returned HTTP {payload.get('resourceStatus')}",
+            payload,
+        )
+    except Exception as exc:
+        return _tool_error(f"x402 fetch challenge failed: {exc}")
+
+
+def tool_x402_verify_receipt(params: dict[str, Any]) -> dict[str, Any]:
+    """Verify an on-chain USDC payment receipt on Arc Testnet."""
+    from arc_builder_kit.x402_client import verify_receipt, validate_tx_hash
+    tx_hash = params.get("tx_hash", "")
+    expected_pay_to = params.get("expected_pay_to")
+    if not isinstance(tx_hash, str) or not tx_hash:
+        return _tool_error("missing or invalid 'tx_hash' argument")
+    try:
+        validate_tx_hash(tx_hash)
+    except ValueError as exc:
+        return _tool_error(f"invalid tx_hash: {exc}")
+    if expected_pay_to is not None and (not isinstance(expected_pay_to, str) or not expected_pay_to):
+        return _tool_error("'expected_pay_to' must be a non-empty string")
+    try:
+        verification = verify_receipt(
+            tx_hash,
+            expected_pay_to=expected_pay_to or None,
+        )
+        payload = verification.to_dict()
+        return _tool_text(
+            f"Receipt verified: {verification.verified} — {verification.reason}",
+            payload,
+        )
+    except Exception as exc:
+        return _tool_error(f"x402 verify receipt failed: {exc}")
+
+
 def tool_generate_release_packet(params: dict[str, Any]) -> dict[str, Any]:
     output = params.get("output")
     force = bool(params.get("force", False))
@@ -394,6 +441,29 @@ TOOLS: dict[str, dict[str, Any]] = {
             "additionalProperties": False,
         },
     },
+    "x402_fetch_challenge": {
+        "description": "Fetch a 402 payment challenge from an x402-enabled endpoint. Returns the challenge requirements, payment intent, and safety flags. Read-only, no keys, no broadcast.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "url": {"type": "string", "description": "The x402-enabled endpoint URL to fetch a challenge from."},
+            },
+            "required": ["url"],
+            "additionalProperties": False,
+        },
+    },
+    "x402_verify_receipt": {
+        "description": "Verify an on-chain USDC payment receipt on Arc Testnet. Checks the transaction receipt for USDC Transfer events from the correct sender/recipient. Read-only RPC, no keys, no broadcast.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "tx_hash": {"type": "string", "description": "Arc Testnet transaction hash (0x-prefixed, 64 hex chars)."},
+                "expected_pay_to": {"type": "string", "description": "Optional expected recipient address. If provided, the tool confirms the USDC Transfer went to this address."},
+            },
+            "required": ["tx_hash"],
+            "additionalProperties": False,
+        },
+    },
 }
 
 TOOL_HANDLERS: dict[str, Callable[[dict[str, Any]], dict[str, Any]]] = {
@@ -406,6 +476,8 @@ TOOL_HANDLERS: dict[str, Callable[[dict[str, Any]], dict[str, Any]]] = {
     "generate_release_packet": tool_generate_release_packet,
     "list_examples": tool_list_examples,
     "x402_paid_request": tool_x402_paid_request,
+    "x402_fetch_challenge": tool_x402_fetch_challenge,
+    "x402_verify_receipt": tool_x402_verify_receipt,
 }
 
 

@@ -57,11 +57,13 @@ class ToolsListTests(unittest.TestCase):
             "validate_repo",
             "get_arc_testnet_facts",
             "x402_manifest",
+            "x402_fetch_challenge",
+            "x402_verify_receipt",
             "generate_release_packet",
             "list_examples",
         }
         self.assertEqual(names, expected)
-        self.assertEqual(len(names), 8)
+        self.assertEqual(len(names), 10)
 
 
 class ToolCallTests(unittest.TestCase):

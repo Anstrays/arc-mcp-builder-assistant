@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arc Agent Treasury — Demo</title>
+<style>
+  :root {
+    --bg: #0d1117; --card: #161b22; --border: #30363d;
+    --text: #c9d1d9; --accent: #58a6ff; --green: #3fb950;
+    --red: #f85149; --yellow: #d29922;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'Segoe UI', monospace; background: var(--bg); color: var(--text); padding: 2rem; display: flex; flex-direction: column; align-items: center; }
+  .container { max-width: 640px; width: 100%; }
+  h1 { font-size: 1.5rem; color: var(--accent); margin-bottom: 0.5rem; }
+  .subtitle { color: #8b949e; font-size: 0.85rem; margin-bottom: 1.5rem; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; }
+  .card h2 { font-size: 1rem; color: var(--accent); margin-bottom: 0.75rem; }
+  .balance { font-size: 2rem; font-weight: 700; color: var(--green); }
+  .label { font-size: 0.75rem; color: #8b949e; text-transform: uppercase; letter-spacing: 0.05em; }
+  .field { margin-bottom: 0.75rem; }
+  .field label { display: block; font-size: 0.8rem; color: #8b949e; margin-bottom: 0.25rem; }
+  .field input { width: 100%; background: #0d1117; border: 1px solid var(--border); border-radius: 4px; padding: 0.5rem; color: var(--text); font-family: monospace; font-size: 0.9rem; }
+  .field input:focus { outline: none; border-color: var(--accent); }
+  button { background: var(--accent); color: #0d1117; border: none; border-radius: 6px; padding: 0.6rem 1.2rem; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
+  button:hover { opacity: 0.85; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .intent-preview { background: #0d1117; border: 1px solid var(--border); border-radius: 4px; padding: 0.75rem; font-size: 0.8rem; margin-top: 0.75rem; white-space: pre-wrap; word-break: break-all; }
+  .badge { display: inline-block; font-size: 0.7rem; padding: 0.15rem 0.45rem; border-radius: 3px; font-weight: 600; }
+  .badge.open { background: #1a3a1a; color: var(--green); }
+  .badge.pending { background: #3a2a1a; color: var(--yellow); }
+  .badge.done { background: #1a1a3a; color: var(--accent); }
+  .history-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+  .history-item:last-child { border-bottom: none; }
+  .safety { font-size: 0.75rem; color: #8b949e; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 0.75rem; }
+  .error { color: var(--red); font-size: 0.8rem; margin-top: 0.5rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🏦 Arc Agent Treasury</h1>
+  <p class="subtitle">Demo · Arc Testnet · USDC only · No broadcast</p>
+
+  <div class="card">
+    <h2>Balance</h2>
+    <div class="balance" id="balanceDisplay">0.000000</div>
+    <div class="label">USDC · Arc Testnet</div>
+  </div>
+
+  <div class="card">
+    <h2>Prepare Send Intent</h2>
+    <div class="field">
+      <label>Recipient Address (0x...)</label>
+      <input type="text" id="recipientInput" placeholder="0x..." />
+    </div>
+    <div class="field">
+      <label>Amount (USDC)</label>
+      <input type="text" id="amountInput" placeholder="1.50" />
+    </div>
+    <button id="prepareBtn">Prepare Intent</button>
+    <div id="intentPreview" class="intent-preview" style="display:none;"></div>
+    <div id="errorDisplay" class="error"></div>
+  </div>
+
+  <div class="card">
+    <h2>Payment History</h2>
+    <div id="historyList">
+      <div style="color:#8b949e;font-size:0.85rem;text-align:center;padding:1rem;">No payments yet</div>
+    </div>
+  </div>
+
+  <div class="safety">
+    ⚠️ Demo only. No private keys, no signing, no broadcast. All data is local mock values pinned to Arc Testnet/USDC semantics.
+  </div>
+</div>
+
+<script>
+"use strict";
+
+const DEMO_BALANCE = 100.00;
+const CHAIN_ID = 5042002;
+const EXPLORER_URL = "https://testnet.arcscan.app";
+const USDC_SYMBOL = "USDC";
+
+let balance = DEMO_BALANCE;
+const history = [];
+
+function render() {
+  document.getElementById("balanceDisplay").textContent = balance.toFixed(6);
+  const list = document.getElementById("historyList");
+  if (history.length === 0) {
+    list.innerHTML = '<div style="color:#8b949e;font-size:0.85rem;text-align:center;padding:1rem;">No payments yet</div>';
+    return;
+  }
+  list.innerHTML = history.map(h => {
+    const badgeClass = h.status === "verified" ? "done" : h.status === "pending" ? "pending" : "open";
+    return `<div class="history-item">
+      <span>${h.amount} ${USDC_SYMBOL} → <code>${h.to.slice(0, 10)}...</code></span>
+      <span><span class="badge ${badgeClass}">${h.status}</span></span>
+    </div>`;
+  }).join("");
+}
+
+document.getElementById("prepareBtn").addEventListener("click", () => {
+  const to = document.getElementById("recipientInput").value.trim();
+  const amount = document.getElementById("amountInput").value.trim();
+  const errorEl = document.getElementById("errorDisplay");
+  const previewEl = document.getElementById("intentPreview");
+
+  errorEl.textContent = "";
+  previewEl.style.display = "none";
+
+  // Validate address
+  if (!to.match(/^0x[a-fA-F0-9]{40}$/)) {
+    errorEl.textContent = "Invalid EVM address (must be 0x + 40 hex chars).";
+    return;
+  }
+  const amt = parseFloat(amount);
+  if (isNaN(amt) || amt <= 0) {
+    errorEl.textContent = "Invalid amount.";
+    return;
+  }
+  if (amt > balance) {
+    errorEl.textContent = "Insufficient balance.";
+    return;
+  }
+
+  const intent = {
+    network: "arc-testnet",
+    chainId: CHAIN_ID,
+    asset: USDC_SYMBOL,
+    amount: amt.toFixed(6),
+    toAddress: to,
+    status: "pending_human_approval",
+    humanApprovalRequired: true,
+    autoExecute: false,
+    timestamp: new Date().toISOString(),
+  };
+  previewEl.textContent = JSON.stringify(intent, null, 2);
+  previewEl.style.display = "block";
+
+  // Add to history
+  balance -= amt;
+  history.unshift({ to, amount: amt.toFixed(6), status: "pending", timestamp: intent.timestamp });
+  render();
+});
+</script>
+</body>
+</html>

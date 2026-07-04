@@ -231,6 +231,147 @@ print(json.dumps(json.loads(wallets.model_dump_json()), indent=2))
 '''
 
 
+def build_wallet_status_summary() -> dict[str, object]:
+    """Return a combined wallet guard status summary."""
+    import os
+    env_state = summarize_environment(os.environ)
+    return {
+        "manifest": build_sdk_guard_manifest(),
+        "environment": env_state,
+        "safety": {
+            "testnetOnly": True,
+            "liveSdkExecution": False,
+            "humanApprovalRequired": True,
+            "privateKeysAccepted": False,
+            "transactionBroadcast": False,
+            "mainnetEnabled": False,
+        },
+    }
+
+
+def get_usdc_balance(
+    address: str,
+    *,
+    rpc_url: str = "https://rpc.testnet.arc.network",
+    timeout: float = 30,
+) -> dict[str, object]:
+    """Read-only: check USDC balance of an address on Arc Testnet via eth_call."""
+    import json
+    from urllib import request as urllib_request
+
+    if not isinstance(address, str) or not address.startswith("0x") or len(address) != 42:
+        return {"ok": False, "error": "invalid EVM address", "address": address}
+
+    # balanceOf(address) selector = keccak256("balanceOf(address)")[:4] = 0x70a08231
+    # padded address (32 bytes, left-padded with zeros)
+    padded = "0x" + "0" * 24 + address[2:]
+    data = f"0x70a08231{padded[2:]}"
+
+    payload = json.dumps({
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "eth_call",
+        "params": [{"to": "0x3600000000000000000000000000000000000000", "data": data}, "latest"],
+    }).encode("utf-8")
+
+    try:
+        req = urllib_request.Request(
+            rpc_url,
+            data=payload,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib_request.urlopen(req, timeout=timeout) as resp:
+            response = json.loads(resp.read().decode("utf-8"))
+    except Exception as exc:
+        return {"ok": False, "error": f"rpc call failed: {exc}", "address": address}
+
+    result = response.get("result")
+    if not isinstance(result, str) or not result.startswith("0x"):
+        error = response.get("error", {})
+        return {
+            "ok": False,
+            "error": error.get("message", f"unexpected RPC response: {response!r}"),
+            "address": address,
+        }
+
+    try:
+        raw_balance = int(result, 16)
+    except (ValueError, TypeError):
+        return {"ok": False, "error": f"could not decode balance hex: {result!r}", "address": address}
+
+    display = f"{raw_balance / 10**6:.6f}"
+    return {
+        "ok": True,
+        "address": address,
+        "rawBalanceHex": result,
+        "rawBalanceWei": raw_balance,
+        "balanceUSDC": display,
+        "decimals": 6,
+        "network": "ARC-TESTNET",
+        "chainId": ARC_TESTNET_CHAIN_ID,
+        "rpcUrl": rpc_url,
+        "safety": {"readOnlyRpc": True, "noBroadcast": True, "noKeys": True},
+    }
+
+
+def prepare_send_intent(
+    *,
+    to_address: str,
+    amount: str,
+    network: str = "ARC-TESTNET",
+    asset: str = "USDC",
+) -> dict[str, object]:
+    """Prepare a guarded USDC send intent for human review (NOT auto-executed)."""
+    # Validate address
+    if not isinstance(to_address, str) or not to_address.startswith("0x") or len(to_address) != 42:
+        return {"ok": False, "error": "invalid EVM address", "toAddress": to_address}
+    # Validate amount
+    try:
+        whole, dot, frac = amount.partition(".")
+        if not whole.isdigit() or (dot and not frac.isdigit()):
+            raise ValueError
+        if len(frac) > 6:
+            return {"ok": False, "error": "USDC amounts use at most 6 decimal places", "amount": amount}
+    except (ValueError, TypeError):
+        return {"ok": False, "error": "amount must be a positive decimal string", "amount": amount}
+    # Validate network is testnet
+    if "mainnet" in network.lower():
+        return {"ok": False, "error": f"mainnet network rejected (testnet-only): {network!r}", "network": network}
+
+    return {
+        "ok": True,
+        "intent": {
+            "network": network,
+            "asset": asset,
+            "amount": amount,
+            "toAddress": to_address,
+            "status": "pending_human_approval",
+        },
+        "execution": {
+            "liveExecution": False,
+            "humanApprovalRequired": True,
+            "autoExecute": False,
+            "transactionBroadcast": False,
+        },
+        "safety": {
+            "testnetOnly": True,
+            "humanApprovalRequired": True,
+            "transactionBroadcast": False,
+            "privateKeysAccepted": False,
+            "readOnlyRpc": False,
+            "mainnetEnabled": False,
+            "autonomousSpending": False,
+        },
+        "nextSteps": [
+            f"Verify recipient {to_address} on Arc Testnet (https://testnet.arcscan.app).",
+            "Confirm amount and network in a human review.",
+            "Execute actual USDC transfer via MetaMask, Circle SDK, or another wallet.",
+            "After sending, verify receipt with: arc-builder x402 verify <url> <txhash>",
+        ],
+    }
+
+
 __all__ = [
     "ACCOUNT_TYPES",
     "ARC_TESTNET_BLOCKCHAIN",
@@ -240,6 +381,9 @@ __all__ = [
     "REQUIRED_ENVIRONMENT",
     "build_sdk_guard_manifest",
     "build_wallet_creation_plan",
+    "build_wallet_status_summary",
     "generate_python_sdk_snippet",
+    "get_usdc_balance",
+    "prepare_send_intent",
     "summarize_environment",
 ]
