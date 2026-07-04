@@ -33,7 +33,7 @@ Homepage = "https://anstrays.github.io/arc-mcp-builder-assistant/"
 Documentation = "https://anstrays.github.io/arc-mcp-builder-assistant/"
 Repository = "https://github.com/Anstrays/arc-mcp-builder-assistant"
 Issues = "https://github.com/Anstrays/arc-mcp-builder-assistant/issues"
-Changelog = "https://github.com/Anstrays/arc-mcp-builder-assistant/releases"
+Changelog = "https://github.com/Anstrays/arc-mcp-builder-assistant/blob/main/CHANGELOG.md"
 
 [project.scripts]
 arc-builder = "arc_builder_kit.cli:main"

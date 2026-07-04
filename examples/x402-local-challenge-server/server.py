@@ -134,6 +134,126 @@ class LocalDemoVerifier:
         )
 
 
+class RpcVerifier:
+    """Verifies payment proofs by checking on-chain USDC Transfer events
+    via Arc Testnet RPC (read-only: eth_getTransactionReceipt).
+
+    The proof is expected to be a 0x-prefixed transaction hash.
+
+    This lets the server run in real verifier mode instead of the local demo
+    proof switch.  It never opens wallets, signs, or broadcasts — it only
+    reads already-settled on-chain data.
+    """
+
+    RPC_URL = "https://rpc.testnet.arc.network"
+    REQUEST_TIMEOUT = 30
+
+    def verify(self, proof: str, challenge: Mapping[str, object], config: PaymentConfig) -> VerificationResult:
+        # proof must be a valid 0x-prefixed 64-char tx hash
+        if not isinstance(proof, str) or not re.match(r"^0x[a-fA-F0-9]{64}$", proof):
+            return VerificationResult(
+                ok=False,
+                reason="invalid_tx_hash",
+                receipt={"settled": False, "transactionBroadcast": False, "verifierMode": "rpc"},
+            )
+
+        # parse the expected pay_to from the challenge accepts
+        accepts = challenge.get("accepts", [])
+        expected_pay_to = None
+        if isinstance(accepts, list) and accepts:
+            entry = accepts[0]
+            if isinstance(entry, dict):
+                expected_pay_to = entry.get("payTo", "")
+
+        # call eth_getTransactionReceipt
+        payload = json.dumps({
+            "jsonrpc": "2.0", "id": 1, "method": "eth_getTransactionReceipt",
+            "params": [proof],
+        }).encode("utf-8")
+
+        import urllib.request as ur  # noqa: N812
+        req = ur.Request(self.RPC_URL, data=payload, method="POST")
+        req.add_header("Content-Type", "application/json")
+        req.add_header("Accept", "application/json")
+
+        try:
+            with ur.urlopen(req, timeout=self.REQUEST_TIMEOUT) as resp:
+                result = json.loads(resp.read().decode("utf-8"))
+        except Exception as exc:
+            return VerificationResult(
+                ok=False,
+                reason=f"rpc_error: {exc}",
+                receipt={"settled": False, "transactionBroadcast": False, "verifierMode": "rpc"},
+            )
+
+        if "error" in result:
+            return VerificationResult(
+                ok=False,
+                reason=f"rpc_error: {result['error']}",
+                receipt={"settled": False, "transactionBroadcast": False, "verifierMode": "rpc"},
+            )
+
+        receipt_data = result.get("result")
+        if receipt_data is None:
+            return VerificationResult(
+                ok=False,
+                reason="transaction_not_found",
+                receipt={"settled": False, "transactionBroadcast": False, "verifierMode": "rpc"},
+            )
+
+        # check status (0x1 = success)
+        if receipt_data.get("status") != "0x1":
+            return VerificationResult(
+                ok=False,
+                reason="transaction_reverted",
+                receipt={"settled": False, "transactionBroadcast": False, "verifierMode": "rpc"},
+            )
+
+        # check logs for USDC Transfer event matching expected pay_to
+        logs = receipt_data.get("logs", [])
+        usdc_addr = "0x3600000000000000000000000000000000000000"
+        transfer_topic = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+        transfer_found = False
+        for log in logs:
+            if not isinstance(log, dict):
+                continue
+            if log.get("address", "").lower() != usdc_addr.lower():
+                continue
+            topics = log.get("topics", [])
+            if not isinstance(topics, list) or len(topics) < 3:
+                continue
+            if topics[0] != transfer_topic:
+                continue
+            to_addr = "0x" + topics[2][-40:] if isinstance(topics[2], str) else ""
+            if expected_pay_to and to_addr.lower() != expected_pay_to.lower():
+                continue
+            transfer_found = True
+            break
+
+        if not transfer_found:
+            return VerificationResult(
+                ok=False,
+                reason="no_usdc_transfer_event_found",
+                receipt={"settled": False, "transactionBroadcast": False, "verifierMode": "rpc"},
+            )
+
+        return VerificationResult(
+            ok=True,
+            reason="usdc_transfer_event_confirmed",
+            receipt={
+                "settled": True,
+                "transactionBroadcast": True,
+                "mainnetEnabled": config.mainnet_enabled,
+                "verifierMode": "rpc",
+                "challengeId": challenge["id"],
+                "network": config.network,
+                "asset": config.asset,
+                "amount": config.amount,
+                "txHash": proof,
+            },
+        )
+
+
 def require_exact_keys(value: Mapping[str, object], expected: set[str], label: str) -> None:
     observed = set(value)
     if observed != expected:
@@ -357,8 +477,7 @@ def handle_protected_request(
     config: PaymentConfig | None = None,
     verifier: PaymentVerifier | None = None,
 ) -> Response:
-    """Return 402 until a local verifier accepts the proof header."""
-
+    """Return 402 until the verifier accepts the proof header."""
     config = config or PaymentConfig.demo()
     verifier = verifier or LocalDemoVerifier()
     try:
@@ -601,6 +720,7 @@ def run_mcp_stdio(config: PaymentConfig | None = None) -> None:
 
 class DemoHandler(BaseHTTPRequestHandler):
     config = PaymentConfig.demo()
+    verifier: PaymentVerifier = LocalDemoVerifier()
 
     def do_GET(self) -> None:  # noqa: N802 - stdlib handler API
         path = urlsplit(self.path).path
@@ -608,7 +728,7 @@ class DemoHandler(BaseHTTPRequestHandler):
             self._send(Response(status=HTTPStatus.OK, body={"ok": True, "service": "x402-local-challenge-server"}))
             return
         if path == "/protected":
-            self._send(handle_protected_request(self.headers, self.config))
+            self._send(handle_protected_request(self.headers, self.config, self.verifier))
             return
         self._send(Response(status=HTTPStatus.NOT_FOUND, body={"error": "not_found"}))
 
@@ -647,9 +767,12 @@ def build_cli_challenge_payload(config: PaymentConfig | None = None) -> dict[str
     }
 
 
-def build_cli_verification_payload(proof: str, config: PaymentConfig | None = None) -> dict[str, object]:
+def build_cli_verification_payload(
+    proof: str, config: PaymentConfig | None = None, verifier: PaymentVerifier | None = None
+) -> dict[str, object]:
     config = config or PaymentConfig.demo()
-    response = handle_protected_request({"X-Payment": proof}, config)
+    verifier = verifier or LocalDemoVerifier()
+    response = handle_protected_request({"X-Payment": proof}, config, verifier)
     return {"status": int(response.status), "body": response.body}
 
 
@@ -657,6 +780,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run the local-only x402 challenge server demo.")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8087)
+    parser.add_argument(
+        "--verifier-mode",
+        default="local-simulation",
+        choices=["local-simulation", "rpc"],
+        help="'local-simulation' (default) accepts deterministic demo proofs. "
+        "'rpc' verifies X-Payment tx hashes on-chain via Arc Testnet RPC.",
+    )
     parser.add_argument(
         "--mcp-stdio",
         action="store_true",
@@ -675,13 +805,19 @@ def main() -> None:
     parser.add_argument(
         "--verify-payment",
         metavar="X_PAYMENT",
-        help="Verify one local-demo X-Payment value and print the simulated response JSON.",
+        help="Verify one X-Payment value and print the simulated response JSON.",
     )
     args = parser.parse_args()
     try:
         config = PaymentConfig.from_env()
     except ValueError as error:
         raise SystemExit(f"Invalid x402 demo configuration: {error}") from error
+
+    verifier: PaymentVerifier
+    if args.verifier_mode == "rpc":
+        verifier = RpcVerifier()
+    else:
+        verifier = LocalDemoVerifier()
 
     if args.print_manifest:
         print_json(build_mcp_manifest(config))
@@ -690,7 +826,7 @@ def main() -> None:
         print_json(build_cli_challenge_payload(config))
         return
     if args.verify_payment is not None:
-        print_json(build_cli_verification_payload(args.verify_payment, config))
+        print_json(build_cli_verification_payload(args.verify_payment, config, verifier))
         return
     if args.mcp_stdio:
         run_mcp_stdio(config)
@@ -701,8 +837,11 @@ def main() -> None:
     except ValueError as error:
         raise SystemExit(f"Invalid local server bind target: {error}") from error
     DemoHandler.config = config
+    DemoHandler.verifier = verifier
+    mode_label = "rpc (on-chain)" if args.verifier_mode == "rpc" else "local-simulation (demo)"
     server = ThreadingHTTPServer((args.host, args.port), DemoHandler)
     print(f"local x402 challenge server listening on http://{args.host}:{args.port}")
+    print(f"verifier mode: {mode_label}")
     print("GET /protected returns a 402 challenge. No funds move in this demo.")
     server.serve_forever()
 

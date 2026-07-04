@@ -550,6 +550,43 @@ class X402BoundaryTests(unittest.TestCase):
         self.assertNotEqual(invalid_port.returncode, 0)
         self.assertIn("between 1 and 65535", invalid_port.stderr)
 
+    # ------------------------------------------------------------------
+    # RpcVerifier tests (no network — pure logic + error-path coverage)
+    # ------------------------------------------------------------------
+
+    def test_rpc_verifier_rejects_invalid_tx_hash_shapes(self) -> None:
+        verifier = self.server.RpcVerifier()
+        challenge = {"accepts": [{"payTo": "0x1111111111111111111111111111111111111111"}], "id": "test"}
+
+        for bad_proof in ("0xshort", "not-a-hex", "0xgggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", "", "0x"):
+            with self.subTest(proof=bad_proof):
+                result = verifier.verify(bad_proof, challenge, self.config)
+                self.assertFalse(result.ok)
+                self.assertEqual(result.reason, "invalid_tx_hash")
+
+    def test_rpc_verifier_handles_network_error_gracefully(self) -> None:
+        """RPC call to unreachable URL returns clean error, not crash."""
+        verifier = self.server.RpcVerifier()
+        verifier.RPC_URL = "http://127.0.0.1:1"  # will refuse connection
+        tx_hash = "0x" + "a" * 64
+        challenge = {"accepts": [{"payTo": "0x1111111111111111111111111111111111111111"}], "id": "test"}
+
+        result = verifier.verify(tx_hash, challenge, self.config)
+        self.assertFalse(result.ok)
+        self.assertIn("rpc_error", result.reason)
+        self.assertFalse(result.receipt["settled"])
+        self.assertFalse(result.receipt["transactionBroadcast"])
+
+    def test_rpc_verifier_returns_fail_closed_receipt_on_error(self) -> None:
+        verifier = self.server.RpcVerifier()
+        verifier.RPC_URL = "http://127.0.0.1:1"
+        tx_hash = "0x" + "b" * 64
+        challenge = {"accepts": [{"payTo": "0x1111111111111111111111111111111111111111"}], "id": "test"}
+
+        result = verifier.verify(tx_hash, challenge, self.config)
+        self.assertFalse(result.ok)
+        self.assertEqual(result.receipt["verifierMode"], "rpc")
+
 
 if __name__ == "__main__":
     unittest.main()
