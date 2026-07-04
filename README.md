@@ -2,84 +2,111 @@
 
 > Independent early-stage builder resource for exploring Arc's MCP server, AI-assisted development workflows, and agentic commerce prototypes.
 
-Arc MCP Builder Assistant is a lightweight documentation + prompt kit that helps builders use Arc's official MCP/docs surface with AI coding tools to prototype faster.
+Arc MCP Builder Assistant is a **lightweight documentation + Python toolkit** that helps builders use Arc's official MCP/docs surface with AI coding tools to prototype faster.
 
-The first version focuses on three practical workflows:
+## What's included
 
-1. **Connect AI tools to Arc docs through MCP** — so builders can ask targeted questions and retrieve relevant docs while coding.
-2. **Generate better Arc app plans** — prompts for payment flows, agent registration, stablecoin FX, and agentic commerce.
-3. **Prototype Arc agent payment concepts** — a minimal payment-intent demo spec that can evolve into a working testnet app.
+### 🐍 Python Package — `arc-builder-kit`
 
-This repository is intentionally scoped as a builder enablement kit, not an official Arc product.
+Installable toolkit with:
 
-## Why this matters
+| Module | Description |
+|--------|-------------|
+| `ArcDocsClient` | Async HTTP client for Arc's MCP server (doc search/read) |
+| `CircleWalletClient` | Async client for Circle Developer-Controlled Wallets API |
+| `mcp_server` | Self-contained MCP server (14 tools, dependency-free JSON-RPC over stdio) |
+| `cli` | Typer CLI — `arc-builder wallet list`, `arc-builder docs search`, etc. |
 
-Arc's public docs and positioning point toward stablecoin-native finance, agentic economy applications, autonomous agents, onchain identity, and developer-friendly payment infrastructure.
+**14 MCP tools** available via the MCP server:
 
-Many builders want to explore that direction, but the first step is often messy:
+- `search_arc_docs` / `get_arc_page` / `list_arc_tools` / `fetch_llms_txt` — Arc documentation
+- `wallet_status` / `wallet_balance` / `wallet_list` / `wallet_send` — Circle wallet operations
+- `get_transaction` / `create_wallet_set` — transaction management
+- `arc_docs_overview` / `quickstart_prompt` / `template_info` / `estimate_fee` — builder helpers
 
-- finding the right docs;
-- translating docs into implementation tasks;
-- creating safe AI-coding prompts;
-- scoping a realistic first demo;
-- documenting what works and what fails.
+```bash
+# Install
+pip install arc-builder-kit
 
-This kit turns those steps into reusable guides, prompts, and examples.
+# Or from repo
+pip install -e .
 
-## Current MVP
+# CLI
+arc-builder --version
+arc-builder wallet list
+arc-builder docs search "ERC-8004 agent identity"
 
-- `docs/arc-mcp-setup.md` — real Arc MCP setup steps for Claude Code, Claude Desktop, Cursor, VS Code, Windsurf, and HTTP MCP clients.
-- `docs/arc-docs-map.md` — practical map of Arc Testnet config, contracts, agent primitives, tutorials, tools, and the recommended build path.
-- `docs/deploy-contracts-arc.md` — builder notes from Arc's deploy-contracts tutorial using Circle Contracts and Arc Testnet.
-- `docs/builder-workflows.md` — practical Arc + AI builder workflows.
-- `docs/payment-intent-demo.md` — first demo specification.
-- `prompts/` — copy-paste prompts for AI coding tools.
-- `examples/payment-intent-demo/` — tiny static mockup for the first payment-intent flow.
+# MCP server (stdio)
+python scripts/arc_builder_mcp_server.py
+```
+
+### 📚 Documentation
+
+- [`docs/arc-mcp-setup.md`](docs/arc-mcp-setup.md) — Arc MCP setup for Claude, Cursor, VS Code, Windsurf
+- [`docs/arc-docs-map.md`](docs/arc-docs-map.md) — Practical map of Arc Testnet config, contracts, ERC-8004, ERC-8183
+- [`docs/deploy-contracts-arc.md`](docs/deploy-contracts-arc.md) — Deploy contracts with Circle + Arc Testnet
+- [`docs/builder-workflows.md`](docs/builder-workflows.md) — Practical Arc + AI builder workflows
+- [`docs/payment-intent-demo.md`](docs/payment-intent-demo.md) — Payment intent demo specification
+- [`docs/agent-commerce-kit.md`](docs/agent-commerce-kit.md) — ERC-8004 agent identity + ERC-8183 job escrow
+
+### 🖥️ Payment Intent Demo
+
+A working web UI prototype:
+
+```bash
+python3 examples/payment-intent-demo/server.py
+# → http://localhost:8080
+```
+
+- Create payment intents (recipient, amount, asset, memo)
+- Review and approve manually
+- View Arc Testnet network info
+- Backend API ready for real Circle wallet integration
+
+### 🎯 Prompts
+
+Copy-paste prompts for AI coding tools:
+
+- [`explain-arc-docs.md`](prompts/explain-arc-docs.md)
+- [`build-payment-intent-demo.md`](prompts/build-payment-intent-demo.md)
+- [`deploy-contracts-on-arc.md`](prompts/deploy-contracts-on-arc.md)
+- [`register-agent-notes.md`](prompts/register-agent-notes.md)
+
+## Quick start
+
+```bash
+# 1. Install the toolkit
+pip install -e .
+
+# 2. Run the MCP server
+python scripts/arc_builder_mcp_server.py
+
+# 3. Or start the web UI
+python3 examples/payment-intent-demo/server.py
+```
 
 ## Roadmap
 
-### Phase 1 — Documentation kit
+| Phase | Status |
+|-------|--------|
+| Phase A — Python `arc-builder-kit` package | ✅ v0.1.0 |
+| Phase B — Web UI prototype with API | ✅ |
+| Phase C — Agent Commerce Kit (ERC-8004/8183) | ✅ |
+| Phase D — DevOps / CI | ✅ |
+| Phase E — PyPI publish & GitHub Release | 🔜 |
 
-- Publish MCP setup checklist.
-- Publish Arc builder prompt library.
-- Publish payment-intent demo spec.
-- Publish Arc docs map with network config, core contracts, ERC-8004, ERC-8183, and event-monitoring roadmap.
-- Share build log in Arc community.
+## Development
 
-### Phase 2 — Working prototype
+```bash
+# Install in dev mode
+pip install -e .
 
-- Build a small web UI for agent payment intents.
-- Use Arc Testnet config from the docs map: RPC, chain ID, USDC gas, and ArcScan.
-- Use Arc MCP docs to verify current testnet and wallet details.
-- Add Circle Dev-Controlled SCA Wallet notes for Arc Testnet.
-- Add optional Circle Contracts template deployment notes for receipts, credits, or payout demos.
-- Track transaction/payment status.
-- Add a short tutorial.
+# Run tests
+python3 -m unittest discover -s tests -v
 
-### Phase 3 — Agent commerce starter kit
+# Validate repo
+python3 scripts/validate_repo.py
 
-- Add agent identity notes around Arc's ERC-8004 tutorial.
-- Add ERC-8183 job escrow notes for agentic commerce flows.
-- Add reusable components for agent cards, payment requests, receipts, and logs.
-- Add example flows for creator payouts, API payments, and AI-agent commerce.
-
-## Suggested use
-
-Use this repo with an AI coding assistant that supports MCP or can read local docs.
-
-Example task:
-
-```text
-Use Arc MCP/docs context and this repo to design a minimal Arc payment-intent demo where an AI agent requests a USDC payment and the user approves it manually.
+# Build wheel
+python3 -m build --wheel --no-isolation
 ```
-
-## Safety and honesty
-
-- Do not paste private keys, wallet seed phrases, access tokens, or API keys into AI tools.
-- Do not imply official Arc endorsement unless confirmed.
-- Treat all generated code as a draft until tested against current Arc docs.
-- Keep claims honest: this is an early independent builder resource.
-
-## Status
-
-Early MVP scaffold. Built in public as an Arc builder experiment.
