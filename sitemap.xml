@@ -6,8 +6,83 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://anstrays.github.io/arc-mcp-builder-assistant/docs/view.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://anstrays.github.io/arc-mcp-builder-assistant/examples/payment-intent-demo/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://anstrays.github.io/arc-mcp-builder-assistant/examples/payment-intent-playground/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://anstrays.github.io/arc-mcp-builder-assistant/examples/receipt-verifier-playground/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://anstrays.github.io/arc-mcp-builder-assistant/examples/receipt-viewer/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://anstrays.github.io/arc-mcp-builder-assistant/examples/payment-intent-receipt-matcher/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://anstrays.github.io/arc-mcp-builder-assistant/examples/transaction-status-playground/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://anstrays.github.io/arc-mcp-builder-assistant/examples/arc-testnet-wallet-send-gate/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://anstrays.github.io/arc-mcp-builder-assistant/examples/agent-commerce-components/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://anstrays.github.io/arc-mcp-builder-assistant/examples/agent-commerce-flows/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://anstrays.github.io/arc-mcp-builder-assistant/examples/agent-commerce-review-packet/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://anstrays.github.io/arc-mcp-builder-assistant/examples/agent-identity-profile-preview/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://anstrays.github.io/arc-mcp-builder-assistant/examples/job-escrow-simulator/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://anstrays.github.io/arc-mcp-builder-assistant/examples/arc-agent-treasury-lab/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://anstrays.github.io/arc-mcp-builder-assistant/examples/circle-wallet-integration/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://anstrays.github.io/arc-mcp-builder-assistant/examples/agent-commerce-live/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
   </url>
 </urlset>

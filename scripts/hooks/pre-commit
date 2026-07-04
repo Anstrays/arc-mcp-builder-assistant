@@ -1,0 +1,18 @@
+#!/bin/sh
+# arc-builder-managed-hook:v1
+set -eu
+
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+
+if command -v python3 >/dev/null 2>&1; then
+  python_cmd=python3
+elif command -v python >/dev/null 2>&1; then
+  python_cmd=python
+else
+  echo "pre-commit guard: Python 3 is required" >&2
+  exit 1
+fi
+
+"$python_cmd" scripts/pre_commit_guard.py
+"$python_cmd" scripts/scan_for_secrets.py

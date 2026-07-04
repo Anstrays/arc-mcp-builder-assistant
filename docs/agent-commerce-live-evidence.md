@@ -1,0 +1,214 @@
+# Agent commerce live evidence
+
+This page documents the first real agent-commerce transactions on Arc Testnet using a Circle agent wallet. All transactions are testnet-only, human-approved, and use faucet-funded USDC with no real value.
+
+## Wallet
+
+| Field | Value |
+|---|---|
+| Address | `0x0cd9b933302d90bfe295471deac7f4eafd9ea401` |
+| Type | Circle agent wallet (SCA) |
+| Chain | Arc Testnet (chain ID 5042002 / 0x4cef52) |
+| Session | Testnet (OTP-authenticated) |
+| Funding | Circle faucet (20 USDC native + 20 USDC ERC-20) |
+
+## Transaction log
+
+All transactions are verifiable on [Arc Testnet Explorer](https://testnet.arcscan.app).
+
+### 1. Faucet funding
+
+| Field | Value |
+|---|---|
+| Operation | TRANSFER |
+| Amount | 20 USDC (native + ERC-20) |
+| Block | 48020204 |
+| Status | COMPLETE |
+
+### 2. Self-transfer (wallet deployment test)
+
+| Field | Value |
+|---|---|
+| Tx hash | `0xb570a204eb4d81d3610694cce5e33d647312924ef7e1448e01ce8f42fa733dd1` |
+| Operation | TRANSFER |
+| Amount | 1 USDC |
+| Block | 48020319 |
+| Network fee | 0.0076 USDC (native) |
+| Status | COMPLETE |
+
+### 3. CCTP bridge — Arc Testnet → Base Sepolia
+
+| Field | Value |
+|---|---|
+| Approve tx | `0x044184a5ce5760a27693a6b2d48a1d21c2272a9174b913e630dd1aaa6c4b273b` |
+| Burn tx | `0x7855802e76412ee50a7f7ffe445ae291fade450914103154277960974b623f15` |
+| Forward tx | `0xd704d32f0c903f4d62dec509cb3e50aa9af43e49de3b10ac129b8b9c9b94297e` |
+| Amount | 1 USDC |
+| Route | Arc Testnet → Base Sepolia (CCTP domain 26 → domain 6) |
+| Status | COMPLETE |
+
+### 4. Agent payment — paid API simulation
+
+| Field | Value |
+|---|---|
+| Tx hash | `0x490df63904f7722c369a76bc656f8d59f2223846274b52e41b626e187ee13aa8` |
+| Operation | TRANSFER |
+| From | `0x0cd9b933302d90bfe295471deac7f4eafd9ea401` |
+| To | `0x000000000000000000000000000000000000dEaD` (burn address) |
+| Amount | 0.5 USDC |
+| Block | 48027390 |
+| Network fee | 0.0036 USDC (native) |
+| Status | COMPLETE |
+| Simulation | Agent pays 0.5 USDC for a paid API call response |
+
+### 5. Agent payment — micro-payment simulation
+
+| Field | Value |
+|---|---|
+| Tx hash | `0xda2ed5d09c781cbf5c475e4d9fc697e479c35b6e5cef866ab4dd78d86f247fca` |
+| Operation | TRANSFER |
+| From | `0x0cd9b933302d90bfe295471deac7f4eafd9ea401` |
+| To | `0x000000000000000000000000000000000000dEaD` (burn address) |
+| Amount | 0.25 USDC |
+| Block | 48027419 |
+| Network fee | 0.0039 USDC (native) |
+| Status | COMPLETE |
+| Simulation | Agent pays 0.25 USDC for a micro-service call |
+
+## On-chain verification
+
+The USDC ERC-20 balance can be verified directly from the contract:
+
+```bash
+# Query USDC balance on-chain (read-only)
+circle contract query "balanceOf(address)" 0x0cd9b933302d90bfe295471deac7f4eafd9ea401 \
+  --contract 0x3600000000000000000000000000000000000000 \
+  --chain "Arc Testnet" --output json
+```
+
+The USDC contract on Arc Testnet:
+- Address: `0x3600000000000000000000000000000000000000`
+- Decimals: 6 (ERC-20) / 18 (native gas)
+- Name: USDC
+- Symbol: USDC
+
+## Gateway interaction
+
+Arc is Gateway domain 26. The Gateway supports sub-500ms batched payments for x402 services.
+
+```bash
+# Check Gateway balance
+circle gateway balance --address 0x0cd9b933302d90bfe295471deac7f4eafd9ea401 --chain ARC-TESTNET
+
+# Deposit USDC into Gateway (direct, same-chain on Arc Testnet)
+circle gateway deposit --amount 5 --address 0x0cd9b933302d90bfe295471deac7f4eafd9ea401 --chain ARC-TESTNET --method direct
+
+# Withdraw from Gateway back to wallet
+circle gateway withdraw --amount 1 --address 0x0cd9b933302d90bfe295471deac7f4eafd9ea401 --chain ARC-TESTNET
+```
+
+### 6. Gateway deposit — 5 USDC into Arc domain 26
+
+| Field | Value |
+|---|---|
+| Approve tx | `0x3387de0e7ebae09a29b9390e56d0284bbe055c20f03f875e2022ed8a7ec487df` |
+| Deposit tx | `0x2f458c54c4d6586817034dd28b649f219b5f33ad7f1acaa7330b9966a52e3f53` |
+| Amount | 5 USDC |
+| Gateway domain | 26 (Arc) |
+| Block | 48028452 |
+| Status | COMPLETE |
+
+### 7. Gateway withdraw — 1 USDC back to wallet
+
+| Field | Value |
+|---|---|
+| Mint tx | `0x3ffb115ba2c453f5c07ae9d79f7a11e7e75132dc92e14b0a5bdeac455d53931e` |
+| Amount | 1 USDC |
+| Gateway fee | 0.0035 USDC |
+| Status | COMPLETE |
+
+### On-chain contract queries
+
+| Query | Contract | Result |
+|---|---|---|
+| `balanceOf(address)` | USDC `0x3600…0000` | Verified wallet balance on-chain |
+| `decimals()` | USDC `0x3600…0000` | 6 (ERC-20) |
+| `name()` | USDC `0x3600…0000` | USDC |
+| `symbol()` | USDC `0x3600…0000` | USDC |
+| `totalSupply()` | USDC `0x3600…0000` | Verified circulating supply |
+| `allowance(address,address)` | USDC `0x3600…0000` | Verified escrow approval (1,000,000 = 1 USDC) |
+
+### 8. Job escrow — approve USDC for escrow agent
+
+| Field | Value |
+|---|---|
+| Tx hash | `0x61751274d8233493080f8f30814a54bb3e64ab00d8cf812b3877fc8909a25d30` |
+| Operation | CONTRACT_EXECUTION |
+| Function | `approve(address,uint256)` |
+| Spender | `0x000000000000000000000000000000000000dEaD` (escrow agent) |
+| Amount | 1,000,000 (1 USDC, 6 decimals) |
+| Contract | USDC `0x3600…0000` |
+| Block | 48029256 |
+| Status | COMPLETE |
+
+### 9. Job escrow — fund escrow (job posting)
+
+| Field | Value |
+|---|---|
+| Tx hash | `0x95584de37f93d4233aa1fec007761bc28d4b9f8bcb71e5b7473cae7c920306ba` |
+| Operation | TRANSFER |
+| Amount | 0.75 USDC |
+| To | Escrow address (0xdEaD) |
+| Block | 48029281 |
+| Status | COMPLETE |
+| Simulation | Job poster funds escrow with 0.75 USDC for a data analysis task |
+
+### 10. Job escrow — worker payout (escrow release)
+
+| Field | Value |
+|---|---|
+| Tx hash | `0xbe8651d059314d29939e00dc8683162d3bfc589a4a3d0dfd2876626fa44c1852` |
+| Operation | TRANSFER |
+| Amount | 0.5 USDC |
+| To | Worker address (0xdEaD) |
+| Block | 48029312 |
+| Status | COMPLETE |
+| Simulation | Escrow releases 0.5 USDC to worker after human review of deliverable |
+
+## Job escrow flow summary
+
+```text
+1. approve(escrow_agent, 1 USDC)     → escrow agent can spend up to 1 USDC
+2. transfer(escrow_address, 0.75)    → job poster funds escrow
+3. [human review of deliverable]
+4. transfer(worker_address, 0.5)     → escrow releases payout to worker
+5. allowance(owner, spender)         → on-chain verification of approval
+```
+
+This simulates the ERC-8183 job escrow flow with real on-chain USDC operations on Arc Testnet. The burn address (0xdEaD) represents the escrow/worker counterparty since we operate a single wallet.
+
+## Unit economics
+
+| Metric | Value |
+|---|---|
+| Starting balance | 20.00 USDC (ERC-20) |
+| Total payments sent | 1.75 USDC (1 self + 0.5 API + 0.25 micro) |
+| Gateway deposit | 5.00 USDC |
+| Gateway withdraw | 1.00 USDC (fee: 0.0035) |
+| Gateway balance | 3.9965 USDC (domain 26) |
+| Total network fees | ~0.09 USDC (native) |
+| Bridge amount | 1.00 USDC (to Base Sepolia) |
+| On-chain balance | ~14.05 USDC (ERC-20) |
+| Cost per payment | ~0.004 USDC network fee |
+| Total transactions | 13 (all COMPLETE) |
+| Escrow payments | 1.25 USDC (0.75 funding + 0.5 payout) |
+
+## Safety boundaries
+
+- **Testnet only** — faucet USDC has no real value
+- **No private keys in repo** — Circle CLI manages keys internally
+- **No custody** — Circle agent wallet is non-custodial SCA
+- **No mainnet** — all transactions on Arc Testnet (chain ID 5042002)
+- **No autonomous spending** — every transaction was human-approved
+- **No secrets committed** — wallet address is public, no keys/tokens/OTP stored
+- **Burn address** — payments sent to `0xdEaD` simulate service provider without funding a real counterparty

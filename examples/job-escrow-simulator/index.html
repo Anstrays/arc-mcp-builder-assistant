@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Local-only ERC-8183-style job escrow simulator for Arc MCP Builder Assistant." />
+  <title>Job Escrow Simulator · Arc MCP Builder Assistant</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232563eb'/%3E%3Cstop offset='1' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Ctext x='50%25' y='55%25' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-size='38' font-weight='900' fill='white'%3EA%3C/text%3E%3C/svg%3E" />
+  <style>
+    :root { color-scheme: dark; --bg: #080a12; --panel: rgba(255,255,255,.065); --line: rgba(255,255,255,.14); --text: #f7f3ff; --muted: #bfb6d9; --accent: #7cf7d4; --accent2: #b388ff; --warn: #ffd166; --good: #7cf7a8; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; min-height: 100vh; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text); background: radial-gradient(circle at 20% 0%, rgba(124,247,212,.18), transparent 32rem), radial-gradient(circle at 82% 8%, rgba(179,136,255,.2), transparent 34rem), linear-gradient(180deg, #080a12 0%, #11152a 60%, #080a12 100%); line-height: 1.65; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    .skip-link { position: absolute; left: -9999px; top: 12px; z-index: 10; padding: 10px 14px; border-radius: 999px; background: var(--accent); color: #06110d; font-weight: 900; }
+    .skip-link:focus { left: 12px; }
+    .wrap { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+    header { padding: 26px 0 10px; }
+    .topbar, .hero, .grid, .actions { display: flex; gap: 16px; }
+    .topbar { align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .brand { color: var(--text); font-weight: 950; letter-spacing: -.02em; }
+    nav { display: flex; gap: 10px; flex-wrap: wrap; }
+    nav a, button, .button { border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.055); color: var(--text); padding: 10px 14px; font-weight: 850; cursor: pointer; }
+    button.primary, .button.primary { background: var(--accent); color: #07110f; border-color: transparent; }
+    button:disabled { cursor: not-allowed; opacity: .46; }
+    .hero { padding: 34px 0 22px; align-items: stretch; }
+    .hero > * { flex: 1; min-width: 0; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 950; text-transform: uppercase; letter-spacing: .16em; }
+    h1, h2, h3 { letter-spacing: -.035em; line-height: 1.08; }
+    h1 { margin: 12px 0 14px; font-size: clamp(2.1rem, 7vw, 4.9rem); }
+    h2 { margin-top: 0; font-size: clamp(1.4rem, 3vw, 2.2rem); }
+    p, li, label { color: var(--muted); }
+    .panel { border: 1px solid var(--line); border-radius: 28px; background: linear-gradient(180deg, rgba(255,255,255,.09), var(--panel)); box-shadow: 0 24px 80px rgba(0,0,0,.34); padding: clamp(20px, 4vw, 34px); }
+    .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; padding-bottom: 72px; }
+    .grid > * { min-width: 0; }
+    .actions { flex-wrap: wrap; }
+    .field { display: grid; gap: 8px; margin-bottom: 14px; }
+    input, textarea { width: 100%; border: 1px solid var(--line); border-radius: 16px; background: rgba(0,0,0,.24); color: var(--text); padding: 12px 14px; font: inherit; }
+    textarea { min-height: 92px; resize: vertical; }
+    pre { white-space: pre-wrap; word-break: break-word; overflow-x: auto; padding: 18px; border-radius: 18px; border: 1px solid var(--line); background: rgba(0,0,0,.38); color: #eafff8; }
+    code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+    .status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(124,247,212,.3); color: var(--accent); background: rgba(124,247,212,.08); font-weight: 900; }
+    .timeline { list-style: none; padding: 0; display: grid; gap: 10px; }
+    .timeline li { border-left: 3px solid var(--line); padding-left: 12px; }
+    .timeline li.done { border-color: var(--good); color: var(--text); }
+    .warning { border-color: rgba(255,209,102,.38); background: rgba(255,209,102,.08); }
+    @media (max-width: 860px) { .hero, .grid { display: grid; grid-template-columns: 1fr; } nav { display: none; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="wrap">
+    <div class="topbar">
+      <a class="brand" href="../../">Arc MCP Builder Assistant</a>
+      <nav aria-label="Simulator navigation">
+        <a href="../../">Home</a>
+        <a href="../../docs/view.html#job-escrow-demo.md">Escrow spec</a>
+        <a href="../../docs/view.html#arc-builder-readiness-checklist.md">Readiness checklist</a>
+        <a href="../payment-intent-playground/">Payment playground</a>
+      </nav>
+    </div>
+  </header>
+  <main id="content" class="wrap">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Local-only simulator · no wallet connection</p>
+        <h1>Job escrow flow without touching funds.</h1>
+        <p>This ERC-8183-style simulator shows how a user could post a job, fund escrow, receive agent output, request changes, reject, dispute, expire, cancel, or manually approve payout. It does not connect to a wallet, broadcast transactions, or talk to any backend.</p>
+        <p class="status" id="status-pill">Draft job</p>
+      </div>
+      <div class="panel warning">
+        <h2>Safety boundary</h2>
+        <ul>
+          <li>Human keeps approval control.</li>
+          <li>Escrow funding, change requests, and payout are simulated UI states.</li>
+          <li>Rejection, dispute, expiry, and cancellation are terminal local review states with no payout release.</li>
+          <li>No private keys, no custody, no mainnet, no autonomous spending.</li>
+          <li>Reviewer changes and disputes are simulated review notes; they do not message an agent, arbitrator, validator, wallet, or backend.</li>
+          <li>Use this before adding any real Arc Testnet transaction path.</li>
+        </ul>
+      </div>
+    </section>
+    <section class="grid">
+      <div class="panel">
+        <h2>Job details</h2>
+        <div class="field"><label for="job-title">Job title</label><input id="job-title" value="Summarize Arc agent docs" /></div>
+        <div class="field"><label for="budget">Budget, USDC</label><input id="budget" type="number" min="1" step="1" value="25" /></div>
+        <div class="field"><label for="agent">Agent</label><input id="agent" value="Research Agent" /></div>
+        <div class="field"><label for="deliverable">Expected deliverable</label><textarea id="deliverable">A concise build note with cited Arc docs, open questions, and next implementation tasks.</textarea></div>
+        <div class="field"><label for="revision-note">Reviewer change request / revision note</label><textarea id="revision-note">Add a risk section before payout approval.</textarea></div>
+        <div class="field"><label for="dispute-note">Reject / dispute / close note</label><textarea id="dispute-note">Output missed acceptance criteria; keep funds unreleased in the local simulation.</textarea></div>
+        <div class="actions">
+          <button class="primary" id="post-job">Post job</button>
+          <button id="accept-job" disabled>Agent accepts</button>
+          <button id="fund-escrow" disabled>Fund escrow</button>
+          <button id="submit-work" disabled>Submit work</button>
+          <button id="request-changes" disabled>Request changes</button>
+          <button id="revise-work" disabled>Revise work</button>
+          <button id="reject-work" disabled>Reject no payout</button>
+          <button id="open-dispute" disabled>Open dispute</button>
+          <button id="expire-job" disabled>Expire job</button>
+          <button id="cancel-job" disabled>Cancel job</button>
+          <button id="approve-payout" disabled>Approve payout</button>
+          <button id="reset-flow">Reset</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Reviewable escrow object</h2>
+        <pre id="escrow-json"></pre>
+        <h3>Event timeline</h3>
+        <ol class="timeline" id="timeline"></ol>
+      </div>
+    </section>
+  </main>
+  <script src="./simulator.js" defer></script>
+</body>
+</html>

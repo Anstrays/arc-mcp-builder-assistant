@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Circle agent wallet integration lab for Arc Testnet — bootstrap, faucet, transfer, bridge, and Gateway walkthrough." />
+  <title>Circle Wallet Integration Lab · Arc MCP Builder Assistant</title>
+  <style>
+    :root { color-scheme: dark; --bg: #070916; --panel: rgba(255,255,255,.075); --line: rgba(255,255,255,.16); --text: #fbf9ff; --muted: #c6bedc; --accent: #7cf7d4; --violet: #b597ff; --warn: #ffd166; --good: #89ffb8; --circle: #00d4ff; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; min-height: 100vh; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text); line-height: 1.64; background: radial-gradient(circle at 12% 2%, rgba(0,212,255,.18), transparent 34rem), radial-gradient(circle at 90% 6%, rgba(124,247,212,.24), transparent 38rem), linear-gradient(180deg, #070916 0%, #121832 70%, #070916 100%); }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    .wrap { width: min(1160px, calc(100% - 32px)); margin: 0 auto; }
+    header { padding: 26px 0 12px; }
+    .topbar, nav, .actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .topbar { justify-content: space-between; }
+    .brand { color: var(--text); font-weight: 950; letter-spacing: -.02em; }
+    nav a, button, .badge { border: 1px solid var(--line); border-radius: 999px; padding: 10px 14px; background: rgba(255,255,255,.055); color: var(--text); font-weight: 850; }
+    button { cursor: pointer; }
+    button.primary { background: var(--circle); color: #06110f; border-color: transparent; }
+    .hero { display: grid; grid-template-columns: .95fr 1.05fr; gap: 18px; align-items: start; padding: 34px 0 22px; }
+    .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; padding-bottom: 72px; align-items: start; }
+    .panel { border: 1px solid var(--line); border-radius: 28px; padding: clamp(20px, 4vw, 32px); background: linear-gradient(180deg, rgba(255,255,255,.1), var(--panel)); box-shadow: 0 22px 80px rgba(0,0,0,.34); }
+    .warning { border-color: rgba(255,209,102,.36); background: rgba(255,209,102,.08); }
+    .eyebrow { color: var(--circle); font-size: .78rem; letter-spacing: .16em; text-transform: uppercase; font-weight: 950; }
+    h1, h2, h3 { letter-spacing: -.035em; line-height: 1.08; }
+    h1 { margin: 12px 0 14px; font-size: clamp(2.15rem, 7vw, 4.6rem); }
+    h2 { margin-top: 0; font-size: clamp(1.35rem, 3vw, 2rem); }
+    p, li, label { color: var(--muted); }
+    .field { display: grid; gap: 8px; margin-bottom: 14px; }
+    input, select { width: 100%; border: 1px solid var(--line); border-radius: 16px; background: rgba(0,0,0,.24); color: var(--text); padding: 12px 14px; font: inherit; }
+    pre { white-space: pre-wrap; word-break: break-word; overflow-x: auto; border: 1px solid var(--line); border-radius: 18px; padding: 18px; background: rgba(0,0,0,.42); color: #eafff8; font-size: .82rem; }
+    .badge { display: inline-flex; width: fit-content; }
+    .badge.circle { color: var(--circle); border-color: rgba(0,212,255,.36); background: rgba(0,212,255,.08); }
+    .badge.good { color: var(--good); border-color: rgba(137,255,184,.36); background: rgba(137,255,184,.08); }
+    .badge.warn { color: var(--warn); border-color: rgba(255,209,102,.36); background: rgba(255,209,102,.08); }
+    .info-grid { display: grid; gap: 10px; }
+    .info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border: 1px solid var(--line); border-radius: 14px; background: rgba(0,0,0,.2); }
+    .info-label { color: var(--muted); font-size: .85rem; }
+    .info-value { color: var(--text); font-weight: 800; font-family: ui-monospace, "SF Mono", monospace; font-size: .85rem; }
+    .step-list { counter-reset: step; list-style: none; padding: 0; margin: 0; }
+    .step-list li { counter-increment: step; padding: 14px 0 14px 42px; position: relative; border-bottom: 1px solid var(--line); }
+    .step-list li:last-child { border-bottom: none; }
+    .step-list li::before { content: counter(step); position: absolute; left: 0; top: 14px; width: 28px; height: 28px; border-radius: 50%; background: var(--circle); color: #06110f; display: flex; align-items: center; justify-content: center; font-weight: 950; font-size: .82rem; }
+    code { font-family: ui-monospace, "SF Mono", monospace; font-size: .85rem; background: rgba(0,0,0,.3); padding: 2px 6px; border-radius: 6px; }
+    @media (max-width: 920px) { .hero, .layout { grid-template-columns: 1fr; } nav { display: none; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#content" style="position:absolute;top:12px;left:-9999px;z-index:10;padding:10px 14px;border-radius:999px;background:var(--accent);color:#06110f;font-weight:950;">Skip to content</a>
+  <header class="wrap">
+    <div class="topbar">
+      <a class="brand" href="../../">Arc MCP Builder Assistant</a>
+      <nav aria-label="Circle wallet lab navigation">
+        <a href="../../">Home</a>
+        <a href="../../docs/view.html#circle-wallet-integration.md">Docs</a>
+        <a href="../arc-testnet-wallet-send-gate/">Wallet send gate</a>
+        <a href="../arc-agent-treasury-lab/">Treasury lab</a>
+        <a href="../x402-local-challenge-server/">x402 challenge</a>
+      </nav>
+    </div>
+  </header>
+  <main id="circle-wallet-lab" class="wrap">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Circle Agent Wallet · Arc Testnet</p>
+        <h1>Circle wallet integration lab</h1>
+        <p>Walk through the Circle agent wallet bootstrap flow on Arc Testnet: login, wallet creation, faucet funding, USDC transfer, and CCTP bridge — all through the <code>circle</code> CLI.</p>
+        <div class="actions">
+          <span class="badge circle" id="wallet-status">Session: not checked</span>
+          <span class="badge good" id="wallet-network">Arc Testnet · 5042002</span>
+        </div>
+      </div>
+      <div class="panel warning">
+        <h2>Safety boundary</h2>
+        <ul>
+          <li>No private keys in this page or repo — Circle CLI manages keys internally.</li>
+          <li>No custody, no mainnet, no autonomous spending.</li>
+          <li>Testnet USDC only — faucet tokens have no real value.</li>
+          <li>Human approval required for every wallet action.</li>
+          <li>Testnet only — faucet tokens have no real value.</li>
+          <li>x402 marketplace payments require mainnet USDC on an accepted chain.</li>
+        </ul>
+      </div>
+    </section>
+    <section class="layout">
+      <div class="panel">
+        <h2>Wallet state (read-only preview)</h2>
+        <p>This panel shows a static preview of the Circle wallet integration. It does not connect to Circle, RPC, or any external service. Use the <code>circle</code> CLI for live operations.</p>
+        <div class="info-grid">
+          <div class="info-row"><span class="info-label">Wallet address</span><span class="info-value" id="wallet-address">0x0cd9…a401</span></div>
+          <div class="info-row"><span class="info-label">Chain</span><span class="info-value">Arc Testnet</span></div>
+          <div class="info-row"><span class="info-label">Chain ID</span><span class="info-value">5042002 / 0x4cef52</span></div>
+          <div class="info-row"><span class="info-label">USDC ERC-20</span><span class="info-value" id="wallet-balance-erc20">— USDC</span></div>
+          <div class="info-row"><span class="info-label">USDC native (gas)</span><span class="info-value" id="wallet-balance-native">— USDC</span></div>
+          <div class="info-row"><span class="info-label">USDC contract</span><span class="info-value">0x3600…0000</span></div>
+          <div class="info-row"><span class="info-label">Gateway domain</span><span class="info-value">26 (Arc)</span></div>
+          <div class="info-row"><span class="info-label">Session</span><span class="info-value" id="wallet-session">testnet</span></div>
+        </div>
+        <div class="actions" style="margin-top:18px">
+          <button class="primary" id="refresh-preview">Refresh preview</button>
+          <button id="show-cli">Show CLI commands</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Bootstrap steps</h2>
+        <ol class="step-list">
+          <li><strong>Login (mainnet + testnet)</strong><br><code>circle wallet login &lt;email&gt; --type agent --init</code><br><code>circle wallet login &lt;email&gt; --type agent --testnet --init</code></li>
+          <li><strong>Create agent wallet</strong><br><code>circle wallet create --output json</code></li>
+          <li><strong>Fund via faucet</strong><br><code>circle wallet fund --address &lt;addr&gt; --chain "Arc Testnet" --token usdc</code></li>
+          <li><strong>Check balance</strong><br><code>circle wallet balance --address &lt;addr&gt; --chain "Arc Testnet"</code></li>
+          <li><strong>Transfer USDC</strong><br><code>circle wallet transfer &lt;to&gt; --amount 1 --address &lt;addr&gt; --chain "Arc Testnet"</code></li>
+          <li><strong>Bridge via CCTP</strong><br><code>circle bridge transfer "Base Sepolia" --amount 1 --address &lt;addr&gt; --chain "Arc Testnet"</code></li>
+        </ol>
+        <pre id="cli-output" style="display:none"># Login (mainnet)
+circle wallet login user@example.com --type agent --init
+# → OTP sent, then:
+circle wallet login --type agent --request &lt;id&gt; --otp &lt;code&gt;
+
+# Login (testnet — separate session)
+circle wallet login user@example.com --type agent --testnet --init
+circle wallet login --type agent --testnet --request &lt;id&gt; --otp &lt;code&gt;
+
+# Create wallet
+circle wallet create --output json
+
+# Fund from faucet
+circle wallet fund --address 0x0cd9… --chain "Arc Testnet" --token usdc
+
+# Balance
+circle wallet balance --address 0x0cd9… --chain "Arc Testnet" --output json
+
+# Transfer 1 USDC
+circle wallet transfer 0xrecipient… --amount 1 \
+  --address 0x0cd9… --chain "Arc Testnet" --output json
+
+# Bridge to Base Sepolia
+circle bridge transfer "Base Sepolia" --amount 1 \
+  --address 0x0cd9… --chain "Arc Testnet" --output json
+
+# Transaction history
+circle transaction list --address 0x0cd9… --chain "Arc Testnet"
+
+# Gateway balance
+circle gateway balance --address 0x0cd9… --chain "Arc Testnet"</pre>
+      </div>
+    </section>
+  </main>
+  <script src="./wallet-lab.js" defer></script>
+</body>
+</html>

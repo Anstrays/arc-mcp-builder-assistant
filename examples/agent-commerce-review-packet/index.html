@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Local-only review packet exporter for Arc agent commerce demos." />
+  <title>Agent Commerce Review Packet · Arc MCP Builder Assistant</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232563eb'/%3E%3Cstop offset='1' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Ctext x='50%25' y='55%25' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-size='38' font-weight='900' fill='white'%3EA%3C/text%3E%3C/svg%3E" />
+  <style>
+    :root { color-scheme: dark; --bg: #070916; --panel: rgba(255,255,255,.075); --line: rgba(255,255,255,.16); --text: #fbf9ff; --muted: #c6bedc; --accent: #7cf7d4; --violet: #b597ff; --warn: #ffd166; --good: #89ffb8; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; min-height: 100vh; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text); line-height: 1.64; background: radial-gradient(circle at 12% 2%, rgba(124,247,212,.18), transparent 34rem), radial-gradient(circle at 90% 6%, rgba(181,151,255,.24), transparent 38rem), linear-gradient(180deg, #070916 0%, #121832 70%, #070916 100%); }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    .skip-link { position: absolute; top: 12px; left: -9999px; z-index: 10; padding: 10px 14px; border-radius: 999px; background: var(--accent); color: #06110f; font-weight: 950; }
+    .skip-link:focus { left: 12px; }
+    .wrap { width: min(1160px, calc(100% - 32px)); margin: 0 auto; }
+    header { padding: 26px 0 12px; }
+    .topbar, nav, .actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .topbar { justify-content: space-between; }
+    .brand { color: var(--text); font-weight: 950; letter-spacing: -.02em; }
+    nav a, button, .badge { border: 1px solid var(--line); border-radius: 999px; padding: 10px 14px; background: rgba(255,255,255,.055); color: var(--text); font-weight: 850; }
+    button { cursor: pointer; }
+    button.primary { background: var(--accent); color: #06110f; border-color: transparent; }
+    .hero, .layout { display: grid; grid-template-columns: .95fr 1.05fr; gap: 18px; align-items: start; }
+    .hero { padding: 34px 0 22px; }
+    .layout { padding-bottom: 72px; }
+    .panel { border: 1px solid var(--line); border-radius: 28px; padding: clamp(20px, 4vw, 32px); background: linear-gradient(180deg, rgba(255,255,255,.1), var(--panel)); box-shadow: 0 22px 80px rgba(0,0,0,.34); }
+    .warning { border-color: rgba(255,209,102,.36); background: rgba(255,209,102,.08); }
+    .eyebrow { color: var(--accent); font-size: .78rem; letter-spacing: .16em; text-transform: uppercase; font-weight: 950; }
+    h1, h2, h3 { letter-spacing: -.035em; line-height: 1.08; }
+    h1 { margin: 12px 0 14px; font-size: clamp(2.15rem, 7vw, 4.6rem); }
+    h2 { margin-top: 0; font-size: clamp(1.35rem, 3vw, 2rem); }
+    p, li, label { color: var(--muted); }
+    .field { display: grid; gap: 8px; margin-bottom: 14px; }
+    input, select, textarea { width: 100%; border: 1px solid var(--line); border-radius: 16px; background: rgba(0,0,0,.24); color: var(--text); padding: 12px 14px; font: inherit; }
+    textarea { min-height: 86px; resize: vertical; }
+    pre { white-space: pre-wrap; word-break: break-word; overflow-x: auto; border: 1px solid var(--line); border-radius: 18px; padding: 18px; background: rgba(0,0,0,.42); color: #eafff8; }
+    .badge { display: inline-flex; width: fit-content; color: var(--accent); border-color: rgba(124,247,212,.36); background: rgba(124,247,212,.08); }
+    @media (max-width: 920px) { .hero, .layout { grid-template-columns: 1fr; } nav { display: none; } }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="wrap">
+    <div class="topbar">
+      <a class="brand" href="../../">Arc MCP Builder Assistant</a>
+      <nav aria-label="Review packet navigation">
+        <a href="../../">Home</a>
+        <a href="../../docs/view.html#agent-commerce-review-packet.md">Packet docs</a>
+        <a href="../agent-identity-profile-preview/">Identity preview</a>
+        <a href="../agent-commerce-flows/">Commerce flows</a>
+        <a href="../job-escrow-simulator/">Escrow simulator</a>
+      </nav>
+    </div>
+  </header>
+  <main id="content" class="wrap">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Local review artifact · no spend authority</p>
+        <h1>Export a reviewer packet before live agent commerce.</h1>
+        <p>Compose agent identity, commerce flow, escrow outcome, approval notes, and safety controls into one local JSON object. This is not a wallet handoff or transaction request.</p>
+        <p class="badge" id="packet-status">draft_packet</p>
+      </div>
+      <div class="panel warning">
+        <h2>Safety boundary</h2>
+        <ul>
+          <li>No wallet connection, signing, broadcast, RPC, backend, or settlement.</li>
+          <li>Terminal no-payout outcomes keep payout release disabled.</li>
+          <li>Human approval notes are local review data, not spend authorization.</li>
+        </ul>
+      </div>
+    </section>
+    <section class="layout">
+      <div class="panel">
+        <h2>Packet fields</h2>
+        <div class="field"><label for="agent-name">Agent name</label><input id="agent-name" value="Research Buyer Agent" /></div>
+        <div class="field"><label for="flow-kind">Commerce flow</label><select id="flow-kind"><option value="paid_api_call">Paid API call</option><option value="creator_payout">Creator payout</option><option value="ai_agent_commerce">AI-agent commerce</option><option value="job_escrow">Job escrow</option></select></div>
+        <div class="field"><label for="amount">Amount, USDC</label><input id="amount" type="number" min="0" step="0.01" value="2.50" /></div>
+        <div class="field"><label for="outcome">Review outcome</label><select id="outcome"><option value="pending_local_review">Pending local review</option><option value="approved_for_local_demo">Approved for local demo</option><option value="rejected_no_payout">Rejected no payout</option><option value="disputed_manual_review">Disputed manual review</option><option value="expired_no_payout">Expired no payout</option><option value="cancelled_no_payout">Cancelled no payout</option></select></div>
+        <div class="field"><label for="approval-note">Approval / close note</label><textarea id="approval-note">Reviewer checked money fields, disabled wallet controls, and local-only status.</textarea></div>
+        <div class="actions"><button class="primary" id="freeze-packet">Freeze packet</button><button id="reset-packet">Reset</button></div>
+      </div>
+      <div class="panel">
+        <h2>Review packet JSON</h2>
+        <pre id="packet-json"></pre>
+      </div>
+    </section>
+  </main>
+  <script src="./packet.js" defer></script>
+</body>
+</html>

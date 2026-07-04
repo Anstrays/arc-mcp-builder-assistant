@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Arc Testnet Wallet Send Gate | Arc MCP Builder Assistant</title>
+  <meta name="description" content="Disabled-by-default Arc Testnet browser-wallet send gate with frozen USDC payload review, explicit human confirmation, and one-attempt transaction broadcast." />
+  <meta name="author" content="Arc MCP Builder Assistant contributors" />
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="#101417" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests" />
+  <link rel="canonical" href="https://anstrays.github.io/arc-mcp-builder-assistant/examples/arc-testnet-wallet-send-gate/" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101417;
+      --surface: #171d21;
+      --surface-2: #20282d;
+      --line: #364249;
+      --text: #f4f7f5;
+      --muted: #b5c0bb;
+      --soft: #87948e;
+      --green: #63e6a6;
+      --cyan: #67d9e8;
+      --amber: #f2c66d;
+      --red: #ff8f8f;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); }
+    a { color: var(--cyan); text-underline-offset: 3px; }
+    button, input, textarea { font: inherit; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+    button { min-height: 42px; border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; background: var(--text); color: #101417; font-weight: 800; cursor: pointer; }
+    button.secondary { background: var(--surface-2); color: var(--text); }
+    button.danger { background: #512b2e; border-color: #925055; color: #fff1f1; }
+    button:disabled { cursor: not-allowed; opacity: .38; }
+    input, textarea { width: 100%; border: 1px solid var(--line); border-radius: 6px; background: #0d1113; color: var(--text); padding: 11px 12px; }
+    textarea { min-height: 78px; resize: vertical; }
+    input[type="checkbox"] { width: 18px; height: 18px; padding: 0; accent-color: var(--green); }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .shell { width: min(1220px, calc(100vw - 28px)); margin: 0 auto; padding: 22px 0 40px; }
+    .topbar { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+    .topbar strong { font-size: 15px; }
+    .status { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 999px; padding: 7px 10px; color: var(--muted); font-size: 13px; font-weight: 800; }
+    .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--soft); }
+    .status.pass::before { background: var(--green); }
+    .status.warn::before { background: var(--amber); }
+    .status.fail::before { background: var(--red); }
+    .intro { padding: 34px 0 22px; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr); gap: 22px; align-items: end; }
+    .eyebrow { color: var(--green); text-transform: uppercase; letter-spacing: .12em; font-size: 12px; font-weight: 900; }
+    h1 { max-width: 780px; margin: 8px 0 12px; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; }
+    h2 { margin: 5px 0 10px; font-size: 21px; letter-spacing: 0; }
+    h3 { margin: 0 0 8px; font-size: 15px; letter-spacing: 0; }
+    p { margin: 0; color: var(--muted); line-height: 1.6; }
+    .warning { border-left: 4px solid var(--amber); background: #262319; padding: 15px 16px; }
+    .warning strong { display: block; margin-bottom: 5px; color: #ffe5ac; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(340px, .72fr); gap: 18px; align-items: start; }
+    .stack { display: grid; gap: 14px; min-width: 0; }
+    .panel { min-width: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 18px; }
+    .panel.danger-panel { border-color: #704348; }
+    .panel.pass-panel { border-color: #39765a; }
+    .panel-head { display: flex; justify-content: space-between; gap: 12px; align-items: start; margin-bottom: 14px; }
+    .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .field { min-width: 0; }
+    .field.full { grid-column: 1 / -1; }
+    label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 13px; font-weight: 800; }
+    .check-row { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 9px; align-items: start; color: var(--muted); line-height: 1.5; }
+    .check-row label { margin: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 14px; }
+    .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+    .fact { min-width: 0; padding: 11px; background: var(--surface-2); }
+    .fact span { display: block; color: var(--soft); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; font-weight: 800; }
+    .fact strong { display: block; margin-top: 5px; overflow-wrap: anywhere; font-size: 13px; }
+    .guard-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 7px; }
+    .guard-list li { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 8px; color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .guard-list strong { color: var(--amber); }
+    .guard-list .pass { color: var(--green); }
+    .guard-list .fail { color: var(--red); }
+    .output { margin: 10px 0 0; min-height: 110px; max-height: 330px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; border: 1px solid var(--line); border-radius: 6px; background: #0d1113; color: #d9e6df; padding: 12px; font-size: 12px; line-height: 1.55; }
+    .method-log { margin: 8px 0 0; padding-left: 20px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .method-log code { color: var(--cyan); }
+    .submitted-link { display: inline-block; margin-top: 10px; overflow-wrap: anywhere; }
+    .footnote { margin-top: 18px; color: var(--soft); font-size: 12px; line-height: 1.6; }
+    @media (max-width: 900px) { .intro, .layout { grid-template-columns: minmax(0, 1fr); } }
+    @media (max-width: 620px) { .shell { width: min(100% - 20px, 1220px); padding-top: 12px; } .topbar, .panel-head { align-items: stretch; flex-direction: column; } .field-grid, .facts { grid-template-columns: minmax(0, 1fr); } h1 { font-size: 36px; } }
+    @media (prefers-reduced-motion: reduce) { * { animation-duration: 0s !important; transition: none !important; } }
+  </style>
+  <script src="./wallet-send-gate.js" integrity="sha384-JbqsIjZYwC20XbCS5YMMSYEi7ZEPGB1ow14Um8yby2dQ43AjSSvVmAUWw3heQ6vZ" crossorigin="anonymous" defer></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <strong>Arc MCP Builder Assistant / guarded write surface</strong>
+      <a href="../../index.html">Back to builder kit</a>
+    </header>
+
+    <section class="intro" aria-labelledby="page-title">
+      <div>
+        <div class="eyebrow">Arc Testnet only / human operated</div>
+        <h1 id="page-title">Arc Testnet Wallet Send Gate</h1>
+        <p>A narrow browser-wallet adapter for manually submitting one reviewed USDC transfer. Disabled by default, non-custodial, and isolated from the local-only payment playground.</p>
+      </div>
+      <div class="warning">
+        <strong>Testnet assets can still be lost.</strong>
+        <p>No custody. No private keys. No autonomous spending. No mainnet fallback. The wallet confirmation dialog is the only signing path.</p>
+      </div>
+    </section>
+
+    <section class="layout" aria-label="Guarded wallet send workspace">
+      <div class="stack">
+        <article class="panel danger-panel" aria-labelledby="enable-title">
+          <div class="panel-head">
+            <div><div class="eyebrow">Gate 1</div><h2 id="enable-title">Explicitly enable reviewed testnet mode</h2></div>
+            <span id="feature-gate-status" class="status fail">disabled</span>
+          </div>
+          <p>The exact query gate <code>?enableArcTestnetSend=reviewed-testnet-only</code> must be present, and this page must be open as a top-level tab rather than inside an embedded frame. Neither condition connects a wallet or authorizes a transaction.</p>
+          <div class="check-row" style="margin-top: 13px;">
+            <input id="risk-acknowledgement" type="checkbox" />
+            <label for="risk-acknowledgement">I understand this page can open my browser wallet and request one Arc Testnet USDC transaction after every guard passes.</label>
+          </div>
+        </article>
+
+        <article class="panel" aria-labelledby="wallet-title">
+          <div class="panel-head">
+            <div><div class="eyebrow">Gate 2</div><h2 id="wallet-title">Connect and prove Arc Testnet</h2></div>
+            <span id="wallet-status" class="status">not connected</span>
+          </div>
+          <div class="facts">
+            <div class="fact"><span>Provider</span><strong id="provider-state">checking</strong></div>
+            <div class="fact"><span>Connected account</span><strong id="account-state">not requested</strong></div>
+            <div class="fact"><span>Observed chain</span><strong id="chain-state">not requested</strong></div>
+            <div class="fact"><span>Required chain</span><strong>5042002 / 0x4cef52</strong></div>
+          </div>
+          <div class="actions">
+            <button type="button" id="connect-wallet">Connect injected wallet</button>
+            <button type="button" id="switch-network" class="secondary">Switch or add Arc Testnet</button>
+          </div>
+        </article>
+
+        <article class="panel" aria-labelledby="intent-title">
+          <div class="panel-head">
+            <div><div class="eyebrow">Gate 3</div><h2 id="intent-title">Freeze exact USDC intent</h2></div>
+            <span id="intent-status" class="status">editable</span>
+          </div>
+          <div class="field-grid">
+            <div class="field full">
+              <label for="recipient">Recipient address</label>
+              <input id="recipient" autocomplete="off" spellcheck="false" placeholder="0x..." />
+            </div>
+            <div class="field">
+              <label for="amount">USDC amount, maximum 1.00</label>
+              <input id="amount" inputmode="decimal" autocomplete="off" value="0.01" />
+            </div>
+            <div class="field">
+              <label for="expiry">Intent expiry</label>
+              <input id="expiry" type="datetime-local" />
+            </div>
+            <div class="field full">
+              <label for="memo">Visible memo</label>
+              <textarea id="memo" maxlength="180">Manual Arc Testnet builder-kit transfer</textarea>
+            </div>
+          </div>
+          <div class="actions">
+            <button type="button" id="freeze-intent" class="secondary">Freeze and review payload</button>
+          </div>
+          <pre id="frozen-payload" class="output" aria-live="polite">No intent frozen.</pre>
+        </article>
+
+        <article class="panel danger-panel" aria-labelledby="send-title">
+          <div class="panel-head">
+            <div><div class="eyebrow">Gate 4</div><h2 id="send-title">Final human confirmation</h2></div>
+            <span id="send-status" class="status fail">blocked</span>
+          </div>
+          <p>Type <code>SEND ARC TESTNET USDC</code>, check the final box, then review the external wallet dialog. One attempt per page load. No automatic retry.</p>
+          <div class="field-grid" style="margin-top: 13px;">
+            <div class="field full">
+              <label for="confirmation-phrase">Exact confirmation phrase</label>
+              <input id="confirmation-phrase" autocomplete="off" spellcheck="false" />
+            </div>
+            <div class="field full check-row">
+              <input id="final-send-confirmation" type="checkbox" />
+              <label for="final-send-confirmation">I re-checked chain, account, token target, recipient, amount, calldata, memo, and expiry.</label>
+            </div>
+          </div>
+          <div class="actions">
+            <button type="button" id="send-transaction" class="danger">Request one wallet transaction</button>
+          </div>
+          <p id="send-result" class="footnote" aria-live="polite">No transaction request has been made.</p>
+          <a id="transaction-link" class="submitted-link" hidden target="_blank" rel="noopener noreferrer">View submitted transaction on ArcScan</a>
+        </article>
+      </div>
+
+      <aside class="stack">
+        <section class="panel pass-panel" aria-labelledby="network-title">
+          <div class="eyebrow">Pinned configuration</div>
+          <h2 id="network-title">No chain or asset selector</h2>
+          <div class="facts">
+            <div class="fact"><span>Network</span><strong>Arc Testnet</strong></div>
+            <div class="fact"><span>Native gas</span><strong>USDC / 18 decimals</strong></div>
+            <div class="fact"><span>Transfer asset</span><strong>USDC / 6 decimals</strong></div>
+            <div class="fact"><span>Token target</span><strong>0x3600000000000000000000000000000000000000</strong></div>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="guards-title">
+          <div class="eyebrow">Live preflight</div>
+          <h2 id="guards-title">Fail-closed guard report</h2>
+          <ul id="guard-list" class="guard-list" aria-live="polite"></ul>
+        </section>
+
+        <section class="panel" aria-labelledby="methods-title">
+          <div class="eyebrow">Request spy</div>
+          <h2 id="methods-title">Wallet method names only</h2>
+          <p>Parameters, proofs, authorization data, and wallet internals are never rendered or logged by this page.</p>
+          <ol id="method-log" class="method-log" aria-live="polite"><li>No wallet methods requested.</li></ol>
+        </section>
+
+        <section class="panel" aria-labelledby="boundary-title">
+          <div class="eyebrow">Boundary</div>
+          <h2 id="boundary-title">Signing, custody, and broadcast</h2>
+          <p>The page builds deterministic ERC-20 calldata and asks the injected wallet to handle approval, signing, and submission. It never receives keys and never claims that a returned hash is confirmed.</p>
+          <p class="footnote">Read the <a href="../../docs/view.html#guarded-wallet-send-runbook.md">operator runbook</a> and <a href="../../docs/view.html#custody-and-mainnet-gates.md">custody/mainnet gates</a> before extending this surface.</p>
+        </section>
+      </aside>
+    </section>
+  </main>
+</body>
+</html>

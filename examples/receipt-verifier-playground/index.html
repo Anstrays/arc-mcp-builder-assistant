@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Receipt Verifier Playground · Arc MCP Builder Assistant</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232563eb'/%3E%3Cstop offset='1' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Ctext x='50%25' y='55%25' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-size='38' font-weight='900' fill='white'%3EA%3C/text%3E%3C/svg%3E" />
+  <meta name="description" content="Local-only receipt review playground for checking Arc payment receipt JSON before any future wallet or transaction-status integration." />
+  <meta name="author" content="Arc MCP Builder Assistant contributors" />
+  <meta name="robots" content="index,follow" />
+  <meta name="theme-color" content="#05060a" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests" />
+  <link rel="canonical" href="https://anstrays.github.io/arc-mcp-builder-assistant/examples/receipt-verifier-playground/" />
+  <meta property="og:title" content="Arc Receipt Verifier Playground" />
+  <meta property="og:description" content="Local-only receipt review for Arc payment JSON: chain, recipient, amount, asset, intent hash, expiry, and transaction hash." />
+  <meta property="og:type" content="website" />
+  <style>
+    :root { color-scheme: dark; --bg:#05060a; --panel:rgba(10,12,24,.84); --panel-2:rgba(255,255,255,.055); --text:#f7f7ff; --muted:#cbd2ff; --soft:#8e95bc; --line:rgba(255,255,255,.14); --blue:#8ea2ff; --cyan:#5eead4; --lime:#d9ff72; --red:#ff8d8d; font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin:0; min-height:100vh; background: radial-gradient(circle at top right, rgba(94,234,212,.22), transparent 36%), radial-gradient(circle at top left, rgba(38,59,255,.76) 0, #080914 34%, var(--bg) 100%); color:var(--text); padding:32px 0; }
+    main { width:min(1180px, calc(100vw - 32px)); margin:0 auto; display:grid; gap:18px; }
+    a { color:inherit; }
+    a:focus-visible, button:focus-visible, textarea:focus-visible { outline:2px solid var(--cyan); outline-offset:3px; border-radius:8px; }
+    .breadcrumb { margin:0 0 4px; font-size:13px; color:var(--soft); }
+    .breadcrumb a { color:var(--muted); text-decoration:underline; text-underline-offset:3px; }
+    .card { border:1px solid var(--line); background:var(--panel); border-radius:24px; padding:24px; box-shadow:0 24px 80px rgba(0,0,0,.35); }
+    .notice { border-color:rgba(94,234,212,.32); background:rgba(94,234,212,.08); }
+    .danger { border-color:rgba(255,141,141,.32); background:rgba(255,141,141,.08); }
+    .eyebrow { color:var(--blue); text-transform:uppercase; letter-spacing:.16em; font-size:12px; font-weight:800; }
+    h1 { margin:8px 0 10px; font-size:clamp(34px, 6vw, 72px); line-height:.95; letter-spacing:-.05em; }
+    h2 { margin:8px 0 12px; font-size:clamp(24px, 3vw, 36px); letter-spacing:-.035em; }
+    p { color:var(--muted); line-height:1.65; }
+    .grid { display:grid; grid-template-columns:minmax(300px, .96fr) minmax(320px, 1.04fr); gap:18px; align-items:start; }
+    main > *, .grid > * { min-width:0; }
+    textarea { width:100%; min-height:420px; border:1px solid var(--line); border-radius:16px; background:rgba(0,0,0,.28); color:#d9fffb; padding:14px; font:13px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; resize:vertical; }
+    .actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:14px; }
+    button { border:0; border-radius:999px; padding:13px 18px; font-weight:900; cursor:pointer; background:var(--text); color:#080914; }
+    button.secondary { background:rgba(255,255,255,.1); color:var(--text); border:1px solid var(--line); }
+    .pill-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+    .pill { border:1px solid var(--line); background:rgba(255,255,255,.06); color:#dce2ff; border-radius:999px; padding:8px 11px; font-size:13px; }
+    .verdict { display:inline-flex; align-items:center; gap:8px; border:1px solid rgba(94,234,212,.3); background:rgba(94,234,212,.08); color:#d9fffb; border-radius:999px; padding:9px 12px; font-weight:900; }
+    .verdict::before { content:""; width:9px; height:9px; border-radius:999px; background:var(--cyan); box-shadow:0 0 18px rgba(94,234,212,.8); }
+    .verdict.fail { border-color:rgba(255,141,141,.42); background:rgba(255,141,141,.1); color:#ffdada; }
+    .verdict.fail::before { background:var(--red); box-shadow:0 0 18px rgba(255,141,141,.7); }
+    .mini-list { margin:12px 0 0; padding-left:18px; color:var(--muted); line-height:1.6; }
+    .mini-list li.pass strong { color:var(--lime); }
+    .mini-list li.fail strong { color:#ffdada; }
+    .json-preview { white-space:pre-wrap; overflow:auto; border:1px solid rgba(255,255,255,.1); border-radius:16px; padding:14px; background:rgba(0,0,0,.28); color:#d9fffb; font-size:13px; line-height:1.55; min-height:220px; }
+    .metric-grid { display:grid; gap:10px; grid-template-columns:repeat(3, minmax(0, 1fr)); margin:14px 0; }
+    .metric { border:1px solid rgba(255,255,255,.1); border-radius:16px; background:var(--panel-2); padding:13px; }
+    .metric span { display:block; color:var(--soft); font-size:12px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; }
+    .metric strong { display:block; margin-top:7px; color:var(--text); overflow-wrap:anywhere; }
+    @media (max-width: 860px) { body { padding:18px 0; } .grid, .metric-grid { grid-template-columns:1fr; } }
+    @media (prefers-reduced-motion: reduce) { * { animation-duration: 0s !important; transition: none !important; } }
+  </style>
+  <script src="./verifier.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="breadcrumb"><a href="../../index.html">&larr; Back to Arc MCP Builder Assistant</a></p>
+    <section class="card" aria-labelledby="receipt-title">
+      <div class="eyebrow">local-only receipt review</div>
+      <h1 id="receipt-title">Receipt Verifier Playground</h1>
+      <p>Paste a simulated Arc payment receipt JSON, inspect normalized fields, and see which checks pass before a future wallet or transaction-status PR exists. This page never connects to a wallet, never calls a backend, and never broadcasts transactions.</p>
+      <div class="pill-row" aria-label="Safety properties">
+        <span class="pill">No wallet connection</span>
+        <span class="pill">No backend calls</span>
+        <span class="pill">No transaction broadcast</span>
+        <span class="pill">Reviewable JSON only</span>
+      </div>
+    </section>
+
+    <section class="grid" aria-label="Receipt verification workspace">
+      <article class="card" aria-labelledby="input-title">
+        <div class="eyebrow">Receipt JSON</div>
+        <h2 id="input-title">Paste or edit receipt</h2>
+        <p>Expected shape: chain ID, recipient, amount, asset, intent hash, expiry, and optional transaction hash. The default sample is intentionally simulated.</p>
+        <textarea id="receipt-json" spellcheck="false" aria-label="Receipt JSON input"></textarea>
+        <div class="actions" aria-label="Receipt verifier controls">
+          <button type="button" id="verify-receipt">Verify receipt</button>
+          <button type="button" id="reset-receipt" class="secondary">Reset sample</button>
+        </div>
+      </article>
+
+      <article class="card notice" aria-labelledby="verdict-title">
+        <div class="eyebrow">Verifier output</div>
+        <h2 id="verdict-title">Local verdict</h2>
+        <p>Status: <span id="verdict-pill" class="verdict">not checked</span></p>
+        <ul id="receipt-check-list" class="mini-list" aria-live="polite"></ul>
+        <h2>Normalized receipt</h2>
+        <pre id="normalized-receipt" class="json-preview" aria-live="polite"></pre>
+      </article>
+    </section>
+
+    <section class="card notice" aria-labelledby="expectations-title">
+      <div class="eyebrow">Arc constants</div>
+      <h2 id="expectations-title">Verifier expectations</h2>
+      <p>These static constants mirror the current local Arc Testnet baseline used elsewhere in the starter kit. Re-check Arc docs/MCP before any real signing, settlement, or explorer-status PR.</p>
+      <div class="metric-grid" aria-label="Arc receipt verification constants">
+        <div class="metric"><span>Expected chain ID</span><strong>5042002 (0x4cef52)</strong></div>
+        <div class="metric"><span>Asset</span><strong>USDC / 6 decimals</strong></div>
+        <div class="metric"><span>Explorer</span><strong>https://testnet.arcscan.app</strong></div>
+      </div>
+    </section>
+
+    <section class="card danger" aria-labelledby="boundary-title">
+      <div class="eyebrow">Trust boundary</div>
+      <h2 id="boundary-title">What this does not prove</h2>
+      <ul class="mini-list">
+        <li>It does not query ArcScan, an RPC node, or a backend verifier.</li>
+        <li>It does not prove finality, token balance changes, or ownership of a wallet.</li>
+        <li>It does not sign, submit, sponsor, or broadcast any transaction.</li>
+        <li>Use the <a href="../../docs/view.html#receipt-verifier-playground.md">receipt verifier notes</a> before extending this into a real testnet-status path.</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

@@ -156,12 +156,20 @@ Environment:
 ARC_TESTNET_RPC_URL="https://rpc.testnet.arc.network"
 ```
 
+Create or import a disposable Arc Testnet account into Foundry's encrypted
+keystore using its interactive hidden prompts. Never put a raw private key in
+an environment variable, command history, repository file, issue, or AI chat.
+
+```bash
+cast wallet import arc-testnet-review
+```
+
 Deploy example:
 
 ```bash
 forge create src/HelloArchitect.sol:HelloArchitect \
   --rpc-url $ARC_TESTNET_RPC_URL \
-  --private-key $PRIVATE_KEY \
+  --account arc-testnet-review \
   --broadcast
 ```
 

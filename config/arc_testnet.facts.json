@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "scope": "arc-testnet-facts",
+  "network": {
+    "name": "Arc Testnet",
+    "chainId": 5042002,
+    "chainIdHex": "0x4cef52",
+    "rpcUrl": "https://rpc.testnet.arc.network",
+    "explorerUrl": "https://testnet.arcscan.app"
+  },
+  "nativeGas": {
+    "symbol": "USDC",
+    "decimals": 18
+  },
+  "erc20Usdc": {
+    "symbol": "USDC",
+    "address": "0x3600000000000000000000000000000000000000",
+    "decimals": 6
+  },
+  "policy": {
+    "mainnetSupported": false,
+    "walletRequired": false,
+    "networkChecksOptIn": true,
+    "recheckBeforePublication": true
+  },
+  "sources": {
+    "connect": "https://docs.arc.io/arc/references/connect-to-arc",
+    "contracts": "https://docs.arc.io/arc/references/contract-addresses",
+    "deploymentModel": "https://docs.arc.io/arc/concepts/deployment-model"
+  }
+}
