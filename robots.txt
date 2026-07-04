@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://anstrays.github.io/arc-mcp-builder-assistant/sitemap.xml
