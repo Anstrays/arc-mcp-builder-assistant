@@ -213,12 +213,12 @@ def _run_script(
 
 def _load_json(path: Path) -> Any:
     if not path.exists():
-        raise McpError(-32603, f"file not found: {path}")
+        raise McpError(ERR_INTERNAL, f"file not found: {path}", retry_hint="fix_input")
     try:
         with path.open("r", encoding="utf-8") as fh:
             return json.load(fh)
     except json.JSONDecodeError as exc:
-        raise McpError(-32603, f"invalid JSON: {exc}") from exc
+        raise McpError(ERR_INTERNAL, f"invalid JSON: {exc}", retry_hint="fix_input", details={"path": str(path)}) from exc
 
 
 def _list_templates() -> list[str]:
@@ -440,7 +440,7 @@ def tool_x402_verify_receipt(params: dict[str, Any]) -> dict[str, Any]:
 
 def tool_wallet_status(params: dict[str, Any]) -> dict[str, Any]:
     """Show wallet guard status summary."""
-    from arc_builder_kit.circle_wallet_sdk import build_wallet_status_summary, prepare_send_intent
+    from arc_builder_kit.circle_wallet_sdk import build_wallet_status_summary
     payload = build_wallet_status_summary()
     env_ok = payload.get("environment", {}).get("readyForManualSdkRun", False)
     return _tool_result(

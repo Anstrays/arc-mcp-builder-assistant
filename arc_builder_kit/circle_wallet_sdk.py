@@ -333,6 +333,9 @@ def prepare_send_intent(
             raise ValueError
         if len(frac) > 6:
             return {"ok": False, "error": "USDC amounts use at most 6 decimal places", "amount": amount}
+        total = int(whole + (frac.ljust(6, "0") if dot else ""))
+        if total <= 0:
+            return {"ok": False, "error": "amount must be greater than zero", "amount": amount}
     except (ValueError, TypeError):
         return {"ok": False, "error": "amount must be a positive decimal string", "amount": amount}
     # Validate network is testnet
