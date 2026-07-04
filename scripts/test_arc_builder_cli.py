@@ -35,12 +35,14 @@ cli = load_cli()
 
 class ParserTests(unittest.TestCase):
     def test_all_subcommands_parse(self) -> None:
-        for command in ("doctor", "validate", "templates", "scaffold", "facts", "manifest", "release-packet", "mcp"):
+        for command in ("doctor", "validate", "templates", "scaffold", "facts", "manifest", "release-packet", "mcp", "wallet"):
             with self.subTest(command=command):
                 if command == "scaffold":
                     cli.build_parser().parse_args([command, "payment-intent-starter", "./out"])
                 elif command == "release-packet":
                     cli.build_parser().parse_args([command, "--output", "./out"])
+                elif command == "wallet":
+                    cli.build_parser().parse_args([command, "sdk-plan", "--json"])
                 else:
                     cli.build_parser().parse_args([command])
 
@@ -120,6 +122,43 @@ class FactsTests(unittest.TestCase):
         self.assertEqual(rc, 0)
         data = json.loads(stdout.getvalue())
         self.assertIn("chainId", data["network"])
+
+
+class WalletTests(unittest.TestCase):
+    def test_wallet_sdk_plan_json(self) -> None:
+        stdout = io.StringIO()
+        args = cli.build_parser().parse_args(["wallet", "sdk-plan", "--json", "--account-type", "SCA", "--count", "2"])
+        with redirect_stdout(stdout):
+            rc = cli.cmd_wallet(args)
+        self.assertEqual(rc, 0)
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual(payload["manifest"]["blockchain"], "ARC-TESTNET")
+        self.assertEqual(payload["plan"]["wallets"]["accountType"], "SCA")
+        self.assertEqual(payload["plan"]["wallets"]["count"], 2)
+        self.assertFalse(payload["manifest"]["safety"]["liveSdkExecution"])
+
+    def test_wallet_env_check_redacts(self) -> None:
+        stdout = io.StringIO()
+        args = cli.build_parser().parse_args(["wallet", "env-check", "--json"])
+        with mock.patch.dict(cli.os.environ, {"CIRCLE_API_KEY": "secret-key", "CIRCLE_ENTITY_SECRET": "secret-entity"}, clear=True):
+            with redirect_stdout(stdout):
+                rc = cli.cmd_wallet(args)
+        self.assertEqual(rc, 0)
+        text = stdout.getvalue()
+        self.assertIn("[REDACTED]", text)
+        self.assertNotIn("secret-key", text)
+        self.assertNotIn("secret-entity", text)
+
+    def test_wallet_sdk_snippet_is_safe(self) -> None:
+        stdout = io.StringIO()
+        args = cli.build_parser().parse_args(["wallet", "sdk-snippet", "--account-type", "EOA", "--count", "1"])
+        with redirect_stdout(stdout):
+            rc = cli.cmd_wallet(args)
+        self.assertEqual(rc, 0)
+        text = stdout.getvalue()
+        self.assertIn('\"ARC-TESTNET\"', text)
+        self.assertIn('os.environ["CIRCLE_API_KEY"]', text)
+        self.assertNotIn("Your API KEY", text)
 
 
 class OrchestratorTests(unittest.TestCase):

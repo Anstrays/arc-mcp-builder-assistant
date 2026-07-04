@@ -45,6 +45,32 @@ circle wallet create --output json
 
 Creates Circle-managed SCA (Smart Contract Account) wallets on all supported chains, including Arc Testnet.
 
+## Developer-Controlled Wallet SDK guard
+
+Circle's Developer-Controlled Wallet SDK can create a wallet set and then create EOA or SCA wallets on `ARC-TESTNET`. The official SDK path requires `CIRCLE_API_KEY` and `CIRCLE_ENTITY_SECRET`, so the builder kit does **not** run it automatically and does **not** store either secret. Instead, `arc-builder wallet` emits a reviewed plan, a redacted environment check, and a copy-paste SDK snippet for a human-controlled local shell.
+
+```bash
+# Review the exact Arc Testnet SDK plan. No SDK calls are made.
+arc-builder wallet sdk-plan --json --account-type SCA --count 1
+
+# Check whether required env vars are present without printing values.
+arc-builder wallet env-check --json
+
+# Print a secret-safe Python snippet for manual execution after review.
+arc-builder wallet sdk-snippet --account-type EOA --count 1
+```
+
+The guarded plan pins:
+
+- Python package: `circle-developer-controlled-wallets`
+- TypeScript package: `@circle-fin/developer-controlled-wallets`
+- blockchain: `ARC-TESTNET`
+- supported account types: `EOA` and `SCA`
+- required local env vars: `CIRCLE_API_KEY`, `CIRCLE_ENTITY_SECRET`
+- safety: no live SDK execution from the repo command, no private keys, no raw signing, no transaction broadcast, no mainnet
+
+A reviewed manual SDK run should still be treated as a sensitive external side effect: export secrets only in a private shell/secret manager, verify `blockchains` is exactly `["ARC-TESTNET"]`, and record wallet IDs/addresses without committing secrets.
+
 ### 4. Fund via faucet (testnet only)
 
 ```bash
