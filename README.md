@@ -319,7 +319,7 @@ Guarded Arc Testnet wallet-send lab (`examples/arc-testnet-wallet-send-gate/`):
 - [`scripts/arc_builder_cli.py`](./scripts/arc_builder_cli.py) — unified CLI for listing templates, scaffolding projects, running validation, printing Arc Testnet facts, building Circle Wallet SDK guard plans, generating release packets, and launching the MCP server.
 - [`scripts/arc_builder_mcp_server.py`](./scripts/arc_builder_mcp_server.py) — stdio MCP server that exposes the CLI operations as JSON-RPC tools for AI coding agents.
 - [`templates/`](./templates/) — dependency-free project starters (`payment-intent-starter`, `x402-agent-starter`, `job-escrow-starter`).
-- [`examples/payment-intent-demo/`](./examples/payment-intent-demo/) — tiny static mockup for the first payment-intent flow, including trust-boundary and review-state UI copy.
+- [`examples/payment-intent-demo/`](./examples/payment-intent-demo/) — interactive demo with **live Circle wallet** integration: real USDC balance on Arc Testnet, on-chain gas estimates, and optional real USDC transfers via Circle CLI.
 
 ## Screenshots
 

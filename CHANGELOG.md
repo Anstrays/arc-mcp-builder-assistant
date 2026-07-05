@@ -10,10 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Feature:** Added `RpcVerifier` to x402 challenge server — verifies X-Payment
   tx hashes on-chain via `eth_getTransactionReceipt` on Arc Testnet.
 - **CLI:** `x402-local-challenge-server` gained `--verifier-mode rpc` flag.
-- **Docs:** Arc MCP setup guide, prompt library (175 lines), agent identity
-  ERC-8004 docs, 404/robots/sitemap pages.
-- **Community:** CODE_OF_CONDUCT, issue templates (bug/feature/config), PR
-  template, `.editorconfig`.
+- **Feature:** Payment Intent Demo now integrates a **live Circle wallet** via Circle CLI:
+  - Real USDC balance display on Arc Testnet (`circle wallet balance`)
+  - Recent transaction history (`circle transaction list`)
+  - On-chain gas estimates for every intent (`circle wallet transfer --estimate`)
+  - Optional real USDC transfers (`REAL_TRANSFER=1` env var, double opt-in)
+  - New REST endpoints: `GET /api/wallet`, `GET /api/transactions`, `GET /api/estimate`
+- **Docs:** Updated `docs/payment-intent-demo.md` with Circle wallet spec, added `examples/payment-intent-demo/README.md`.
 
 ## [0.3.0] — 2026-07-04
 

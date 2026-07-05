@@ -2,76 +2,101 @@
 
 ## Thesis
 
-A safe first version of agentic commerce is not a fully autonomous spending bot. It is an AI agent that can create a structured payment request, while a human user stays in control of approval.
+A safe first version of agentic commerce is not a fully autonomous spending bot. It is an AI agent that can create a structured payment request, while a human user stays in control of approval — backed by a **real Circle agent wallet on Arc Testnet**.
+
+## What's new (v2 — Circle Wallet Integration)
+
+The demo now connects to a **real Circle agent wallet** via the Circle CLI:
+
+| Что было (v1) | Что стало (v2) |
+|---------------|----------------|
+| Mock-баланс: "12.80 USDC" хардкодом | **Реальный баланс** через `circle wallet balance` |
+| Аппров — заглушка "set CIRCLE_API_KEY" | **Реальная оценка газа** через `--estimate` |
+| Нет tx history | **Реальные транзакции** из `circle transaction list` |
+| Нет информации о кошельке | Адрес, chain, USDC token — live с CLI |
+| — | Опционально: реальный USDC transfer при `REAL_TRANSFER=1` |
 
 ## User story
 
-As a user, I want an AI agent to prepare a clear USDC payment request so I can review and approve it manually on Arc.
+As a user, I want an AI agent to prepare a clear USDC payment request, see **the real balance and gas estimate** on my Circle wallet, and review before approving.
 
-## MVP flow
+## MVP flow (v2)
 
 1. User opens demo app.
-2. Agent card explains its purpose.
-3. Agent creates a payment intent:
-   - recipient
-   - amount
-   - asset, e.g. USDC
-   - memo
-   - reason
-   - expiry
-4. User reviews the payment intent and the Arc Testnet read-only status panel:
-   - expected chain ID `5042002` / `0x4cef52`
-   - RPC URL
-   - no wallet connection
-   - no transaction broadcast
-5. User clicks approve.
-6. The separate guarded Arc Testnet lab may request one transaction only after chain gating and manual wallet confirmation.
-7. The local app displays local status; read-only tools can inspect an existing transaction hash.
+2. Page loads **live wallet data** from Circle CLI:
+   - Wallet address
+   - USDC balance (native + ERC-20)
+   - Recent transaction history
+3. User creates a payment intent:
+   - recipient, amount, asset, memo
+   - **Auto-estimate**: backend calls `circle wallet transfer --estimate` — shows gas fee, base fee, priority fee
+4. User reviews estimate in the intent card.
+5. User clicks "Estimate Fee" → **real** gas quote from Circle.
+6. (optional, `REAL_TRANSFER=1`) Click "Send Real USDC" → actual on-chain transfer on Arc Testnet.
 
-## Data model draft
+## Architecture
 
-```ts
-type PaymentIntent = {
-  id: string;
-  agentId?: string;
-  recipient: string;
-  amount: string;
-  asset: 'USDC' | string;
-  memo: string;
-  reason: string;
-  status: 'draft' | 'pending_user_approval' | 'submitted' | 'confirmed' | 'failed' | 'cancelled';
-  txHash?: string;
-  createdAt: string;
-  expiresAt?: string;
-};
+```
+┌────────────┐     HTTP/JSON     ┌──────────────┐     subprocess     ┌────────────┐
+│  index.html │ ◄──────────────► │  server.py   │ ◄────────────────► │ circle CLI │
+│  (vanilla)  │                  │  (stdlib)    │                    │  (agent)   │
+└────────────┘                  └──────────────┘                    └────────────┘
+                                                                          │
+                                                                    ┌──────┴──────┐
+                                                                    │ Arc Testnet │
+                                                                    │  (RPC)      │
+                                                                    └─────────────┘
 ```
 
-## Non-goals for v0
+## API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/wallet` | Wallet address, USDC balance, recent transactions |
+| `GET` | `/api/transactions` | Last 20 transactions from Circle |
+| `GET` | `/api/estimate?to=ADDR&amount=N` | Dry-run gas estimate |
+| `POST` | `/api/intent` | Create payment intent (auto-estimates) |
+| `POST` | `/api/approve` | Estimate or execute transfer |
+| `GET` | `/api/intents` | List all intents |
+| `GET` | `/api/status/<id>` | Single intent status |
+| `GET` | `/api/network` | Arc Testnet info |
+
+## Environment
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CIRCLE_WALLET_ADDR` | `0x0cd9...ea401` | Circle agent wallet address |
+| `CIRCLE_CHAIN` | `ARC-TESTNET` | Blockchain name |
+| `CIRCLE_RPC_URL` | `https://rpc.testnet.arc.network` | RPC endpoint |
+| `CIRCLE_USDC_TOKEN` | `0x3600...0000` | USDC ERC-20 token address |
+| `REAL_TRANSFER` | `0` | Set to `1` to enable real USDC sends |
+| `HOST`, `PORT` | `0.0.0.0:8080` | Server bind |
+
+## Prerequisites
+
+1. **Circle CLI** installed: `npm install -g @circle-fin/cli`
+2. **Logged in** as agent: `circle wallet login <email> --type agent`
+3. **Wallet on Arc Testnet**: `circle wallet create --output json`
+4. **Funded**: Use faucet or Gateway deposit
+
+## Running
+
+```bash
+cd examples/payment-intent-demo/
+python3 server.py
+# → http://localhost:8080
+```
+
+## Non-goals for v2
 
 - No autonomous spending without human approval.
-- No mainnet funds.
-- No custody.
-- No private key handling.
-- No claim of official Arc endorsement.
+- No mainnet funds (Arc Testnet only by default).
+- No private key exposure (all via Circle CLI agent session).
+- Real USDC transfer disabled by default (`REAL_TRANSFER=0`).
 
-## Open questions to verify in Arc docs
+## Safety
 
-- Current Arc Testnet RPC / chain ID.
-- Recommended wallet setup.
-- Recommended USDC/token contract assumptions.
-- Current ERC-8004 agent registration flow.
-- Whether Arc has official SDK examples for payment/agent flows.
-
-## First prototype options
-
-### Option A: static UI mockup
-
-Fastest. Shows the workflow and helps get feedback.
-
-### Option B: local app with mocked transaction
-
-Useful before exact testnet details are verified.
-
-### Option C: testnet-connected app
-
-Best builder signal once current docs are confirmed.
+- All transfers go through `--estimate` first (no cost).
+- Real transfer requires `REAL_TRANSFER=1` **and** `real=true` in request body — double opt-in.
+- Circle agent wallet session expires after ~28 days; re-login with OTP.
+- `circle wallet transfer` sends USDC via Circle's infrastructure — not raw private key signing.
