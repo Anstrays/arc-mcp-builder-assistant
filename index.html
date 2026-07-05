@@ -491,6 +491,12 @@ safety: human approval, no custody, no broadcast by default</code></pre>
             <span class="meta"><span class="mini">Agent jobs</span><span class="mini">Escrow</span><span class="mini">Simulator</span></span>
             <span class="recipe-link">Open simulator →</span>
           </a>
+          <a class="recipe" href="./examples/payment-intent-demo/">
+            <h3>Circle wallet payment demo</h3>
+            <p>Live USDC balance, on-chain gas estimates, and tx history via Circle CLI. Optional real transfers with explicit confirmation.</p>
+            <span class="meta"><span class="mini">Circle Wallet</span><span class="mini">Live USDC</span><span class="mini">Estimate-first</span></span>
+            <span class="recipe-link">Open demo →</span>
+          </a>
           <a class="recipe" href="./examples/arc-agent-treasury-lab/">
             <h3>Arc Agent Treasury Lab</h3>
             <p>Connect local x402 revenue to bounded compute budgets, replay protection, verification loops, and an auditable treasury ledger.</p>
@@ -587,11 +593,11 @@ safety: human approval, no custody, no broadcast by default</code></pre>
           <p class="section-copy">The static builder kit is complete for sharing. Local-only surfaces stay wallet-free, while the isolated Arc Testnet send lab remains disabled until every explicit review gate passes.</p>
         </div>
         <div class="status-grid">
-          <div class="status-item"><span>Complete</span><p>Landing page, docs viewer, recipe links, local playgrounds, refreshed screenshots, and validation pipeline are shipped and green.</p></div>
+          <div class="status-item"><span>Complete</span><p>Landing page, docs viewer, 49 docs, 18 examples, 6 prompt packs, PyPI package, Circle Wallet SDK, RPC fallback chain, and x402 verifier — shipped and green.</p></div>
           <div class="status-item"><span>Measured</span><p>The safe-scope completion contract and dependency-free completion check keep the readiness claim reproducible.</p></div>
-          <div class="status-item"><span>Safe default</span><p>Local-only demos remain wallet-free. The isolated Arc Testnet send lab is disabled on page load and never handles private keys or custody.</p></div>
-          <div class="status-item"><span>Guarded write</span><p>One capped Arc Testnet USDC wallet request is possible only after explicit enablement, chain proof, frozen payload parity, and final human confirmation.</p></div>
-          <div class="status-item"><span>Blocked next</span><p>Custody, autonomous signing, and mainnet remain separate security programs, not flags inside the static site.</p></div>
+          <div class="status-item"><span>Safe default</span><p>Local-only demos remain wallet-free. The payment intent demo connects to Circle CLI for real balance/estimate data but stays estimate-only by default.</p></div>
+          <div class="status-item"><span>RPC resilient</span><p>Automatic fallback chain: primary Arc Testnet RPC → user-specified endpoints via ARC_RPC_FALLBACKS env var. No single point of failure.</p></div>
+          <div class="status-item"><span>Guarded write</span><p>One capped 1.00 USDC Arc Testnet transfer is possible only after explicit enablement, typed confirmation, and final human click.</p></div>
         </div>
       </div>
     </section>

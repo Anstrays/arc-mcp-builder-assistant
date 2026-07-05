@@ -4,9 +4,9 @@ Use this page as the public build-note version of the project status. It is writ
 
 ## Current milestone
 
-**Milestone:** local-first Arc agent-commerce builder kit.
+**Milestone:** Arc Testnet agent-commerce builder kit — CLI, MCP server, Circle wallet SDK, RPC fallback, x402 verifier, and OpenClaw skill package.
 
-This repo now ships a GitHub Pages site, docs, prompts, and local demos that show a safe path from Arc MCP/docs context to review-first payment and job flows.
+This repo ships a GitHub Pages site, docs, prompts, local demos, an installable PyPI package (`arc-builder-kit`), and a live Circle wallet payment demo with real USDC balance and gas estimates on Arc Testnet.
 
 ## What shipped
 
@@ -23,6 +23,14 @@ This repo now ships a GitHub Pages site, docs, prompts, and local demos that sho
 - Arc Testnet operator evidence packet, fail-closed validator, create-only ignored draft generator, and read-only readiness report.
 - Separate disabled-by-default Arc Testnet browser-wallet send lab with frozen USDC payload parity, explicit confirmation, and a one-attempt lock.
 - Phase 4 builder tooling: unified CLI (`scripts/arc_builder_cli.py`), stdio MCP server (`scripts/arc_builder_mcp_server.py`), and dependency-free starter templates under `templates/` for payment-intent, x402-agent, and job-escrow scaffolds.
+- **PyPI package `arc-builder-kit` v0.4.1** — installable CLI + MCP server with `pip install arc-builder-kit`.
+- **Circle Wallet SDK** — guard manifests, read-only USDC balance via `eth_call`, guarded send intents, Circle CLI env readiness checks, and safe Python/TypeScript SDK snippets. All operations: testnet-only, no private keys, no broadcast.
+- **Payment Intent Demo with live Circle wallet** — real USDC balance, on-chain gas estimates, transaction history, and optional real transfers (capped at 1.00 USDC, estimate-only by default).
+- **x402 RpcVerifier** — `arc-builder x402 verify` checks Arc Testnet transaction receipts against payment proof on-chain via RPC.
+- **RPC fallback chain** — automatic primary → env `ARC_RPC_FALLBACKS` → user-specified endpoint failover with `rpc_call()` and `check_arc_rpc_health()`. No single-point-of-failure for Arc Testnet connectivity.
+- **MCP Server v2** — 11 tools, structured errors, streaming-ready JSON-RPC for AI coding agents.
+- **New templates** — marketplace, treasury, x402-verified starter scaffolds.
+- **OpenClaw/Hermes skill package** — reusable skill (`arc-builder-kit`) for AI agents to discover and use the full CLI, MCP, SDK, and validator surface.
 
 ## Safety boundaries
 
@@ -49,6 +57,19 @@ Then open:
 - `http://localhost:8080/examples/job-escrow-simulator/`
 - `http://localhost:8080/examples/arc-testnet-wallet-send-gate/` (disabled state)
 - `http://localhost:8080/docs/view.html#build-log.md`
+
+To run the Circle wallet payment intent demo:
+
+```bash
+python3 examples/payment-intent-demo/server.py
+# → http://localhost:8080 — real USDC balance, estimates, tx history
+```
+
+To check RPC fallback health:
+
+```bash
+python3 -c "from arc_builder_kit.circle_wallet_sdk import check_arc_rpc_health; print(check_arc_rpc_health())"
+```
 
 To run the x402 boundary demo:
 
@@ -89,13 +110,10 @@ Ask: feedback on the safest first Arc Testnet flow — direct payment intent, jo
 
 ## Completion and future work
 
-The current public builder-kit scope is complete according to the
-[safe-scope completion contract](./completion-contract.md). Remaining work is
-optional higher-risk extension work, not a hidden blocker:
+The current builder-kit scope is complete: PyPI package, CLI, MCP server, Circle Wallet SDK, RPC fallback, x402 verifier, payment intent demo, and OpenClaw skill. All 12 original project phases are closed. Remaining work is optional extension, not a hidden blocker:
 
-1. A custody/account-abstraction provider integration with secrets held outside the repo.
-2. A real x402/Circle verifier handoff with secrets held outside the repo.
+1. RPC fallback improvements (additional public endpoints beyond user-specified).
+2. A custody/account-abstraction provider integration with secrets held outside the repo.
 3. Mainnet evaluation only after official Arc mainnet configuration exists and passes a separate review.
 
-Each extension must preserve explicit human approval, Arc-only positioning,
-testnet-first verification, and fail-closed safety gates.
+Each extension must preserve explicit human approval, Arc-only positioning, testnet-first verification, and fail-closed safety gates.
