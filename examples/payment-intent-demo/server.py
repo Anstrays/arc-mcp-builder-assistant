@@ -167,9 +167,13 @@ def _run_circle(args: list[str], timeout: int = 30) -> dict:
         )
 
         if proc.returncode != 0:
+            # Sanitize: truncate and strip potential sensitive output
+            err = (proc.stderr.strip() or proc.stdout.strip() or f"exit {proc.returncode}")
+            if len(err) > 500:
+                err = err[:500] + "…"
             return {
                 "ok": False,
-                "error": proc.stderr.strip() or proc.stdout.strip() or f"exit {proc.returncode}",
+                "error": f"Circle CLI failed: {err}",
             }
 
         # stdout is the JSON response; try to parse it directly
