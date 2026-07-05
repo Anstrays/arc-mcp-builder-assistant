@@ -5,7 +5,7 @@ All notable changes to the Arc MCP Builder Assistant are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.4.0] — 2026-07-05
 
 - **Feature:** Added `RpcVerifier` to x402 challenge server — verifies X-Payment
   tx hashes on-chain via `eth_getTransactionReceipt` on Arc Testnet.
@@ -121,7 +121,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Job escrow simulator.
 - 3 prompts: explain Arc docs, build payment intent, deploy contracts.
 
-[Unreleased]: https://github.com/Anstrays/arc-mcp-builder-assistant/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/Anstrays/arc-mcp-builder-assistant/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/Anstrays/arc-mcp-builder-assistant/releases/tag/v0.4.0
 [0.3.0]: https://github.com/Anstrays/arc-mcp-builder-assistant/releases/tag/v0.3.0
 [0.2.2]: https://github.com/Anstrays/arc-mcp-builder-assistant/releases/tag/v0.2.2
 [0.2.1]: https://github.com/Anstrays/arc-mcp-builder-assistant/releases/tag/v0.2.1
