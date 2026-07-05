@@ -746,7 +746,7 @@ def check_circle_cli(options: Options) -> dict[str, Any]:
             duration_ms=_elapsed_ms(start),
         )
     if result.returncode != 0:
-        err = result.summary_line() or "exit {result.returncode}"
+        err = result.summary_line() or f"exit {result.returncode}"
         return make_check(
             "circle.cli_installed",
             "Circle CLI installed",
