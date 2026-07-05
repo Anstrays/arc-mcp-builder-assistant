@@ -3,525 +3,151 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Arc Payment Intent Demo — Circle Wallet</title>
+  <meta name="description" content="Review Arc Testnet USDC payment intents, Circle wallet balances, and gas estimates." />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'" />
+  <title>Arc Payment Intent Demo</title>
   <style>
     :root {
-      --bg: #06070c;
-      --panel: #0d1020;
-      --panel-2: #11162b;
-      --text: #f7f8ff;
-      --muted: #a9b1d6;
-      --line: rgba(255,255,255,.12);
-      --blue: #6b7cff;
-      --cyan: #5eead4;
-      --lime: #d9ff72;
-      --red: #ff6b6b;
-      --green: #5eea7a;
-      --orange: #ffb347;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      color-scheme: dark;
+      --page: #0b0d10;
+      --surface: #14171b;
+      --surface-2: #1a1f24;
+      --line: #323940;
+      --text: #f5f7f8;
+      --muted: #a7b0b8;
+      --cyan: #57d7d0;
+      --lime: #c9ef72;
+      --amber: #f3bd60;
+      --red: #ff8178;
+      --focus: #86a7ff;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
     }
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      color: var(--text);
-      background: radial-gradient(circle at 10% -10%, rgba(107,124,255,.42), transparent 32rem),
-                  radial-gradient(circle at 90% 0%, rgba(94,234,212,.18), transparent 28rem),
-                  linear-gradient(180deg, #080a14 0%, var(--bg) 42%, #04050a 100%);
-      min-height: 100vh;
-    }
-    .wrap { width: min(900px, calc(100% - 32px)); margin: 0 auto; padding: 40px 0; }
-    h1 { font-size: clamp(28px, 4vw, 48px); letter-spacing: -.05em; margin: 0 0 6px; }
-    .lead { color: var(--muted); line-height: 1.6; margin-bottom: 32px; }
-    .card {
-      border: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.035));
-      border-radius: 24px;
-      padding: 24px;
-      margin-bottom: 20px;
-    }
-    .card h2 { font-size: 18px; margin: 0 0 16px; }
-    .card h2 .icon { margin-right: 8px; }
-    h2.cyan { color: var(--cyan); }
-    h2.lime { color: var(--lime); }
-    h2.blue { color: var(--blue); }
-    h2.orange { color: var(--orange); }
-    label { display: block; color: var(--muted); font-size: 13px; font-weight: 700; margin-bottom: 4px; margin-top: 14px; }
-    input, select, textarea {
-      width: 100%;
-      padding: 12px 14px;
-      border: 1px solid var(--line);
-      background: rgba(0,0,0,.3);
-      border-radius: 12px;
-      color: var(--text);
-      font-size: 15px;
-      font-family: inherit;
-    }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--blue); }
-    .row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line); }
-    .row:last-child { border-bottom: 0; }
-    .label { color: var(--muted); font-size: 13px; }
-    .value { font-weight: 700; font-size: 14px; word-break: break-all; text-align: right; max-width: 60%; }
-    .value.mono { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 12px; }
-    .value.big { font-size: 24px; }
-    .status-badge {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-    .pending { background: rgba(107,124,255,.2); color: var(--blue); }
-    .estimated { background: rgba(255,180,71,.2); color: var(--orange); }
-    .submitted { background: rgba(94,234,212,.15); color: var(--cyan); }
-    .confirmed { background: rgba(94,234,122,.15); color: var(--green); }
-    .failed { background: rgba(255,107,107,.15); color: var(--red); }
-    .actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
-    button {
-      border: 0;
-      border-radius: 999px;
-      padding: 14px 24px;
-      font-weight: 800;
-      cursor: pointer;
-      font-size: 15px;
-      transition: opacity .15s;
-    }
-    button:hover { opacity: .85; }
-    .primary { background: var(--text); color: var(--bg); }
-    .secondary { background: rgba(255,255,255,.1); color: var(--text); }
-    .danger { background: rgba(255,107,107,.15); color: var(--red); }
-    .success-btn { background: rgba(94,234,122,.2); color: var(--green); }
-    button:disabled { opacity: .4; cursor: not-allowed; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .toast {
-      position: fixed; bottom: 24px; right: 24px;
-      background: var(--panel); border: 1px solid var(--line);
-      border-radius: 16px; padding: 16px 20px;
-      max-width: 420px; display: none;
-      box-shadow: 0 20px 60px rgba(0,0,0,.4);
-    }
+    body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--page); color: var(--text); }
+    button, input, textarea { font: inherit; }
+    button { min-height: 40px; border: 1px solid var(--line); border-radius: 6px; padding: 0 14px; cursor: pointer; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+    button:disabled { cursor: not-allowed; opacity: .45; }
+    .primary { background: var(--lime); color: #11170a; border-color: var(--lime); font-weight: 750; }
+    .secondary { background: var(--surface-2); color: var(--text); }
+    .danger { background: #3b2021; color: #ffd7d3; border-color: #70403f; }
+    header { border-bottom: 1px solid var(--line); background: #101318; }
+    .header-inner, main { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
+    .header-inner { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; background: var(--cyan); color: #081211; border-radius: 6px; font-weight: 900; }
+    h1 { margin: 0; font-size: 20px; letter-spacing: 0; }
+    .subtitle { color: var(--muted); font-size: 13px; margin-top: 2px; }
+    main { padding: 24px 0 48px; }
+    .safety-bar { display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 12px 0 20px; color: var(--muted); font-size: 13px; }
+    .safety-bar strong { color: var(--cyan); }
+    .layout { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.35fr); gap: 18px; align-items: start; }
+    .stack { display: grid; gap: 18px; min-width: 0; }
+    section { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); min-width: 0; }
+    .section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+    .section-head h2 { margin: 0; font-size: 15px; letter-spacing: 0; }
+    .section-body { padding: 16px; }
+    .wallet-balance { font-size: 34px; font-weight: 800; color: var(--lime); margin-bottom: 14px; }
+    .detail-list { margin: 0; }
+    .detail-row { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 12px; padding: 9px 0; border-top: 1px solid #252b31; }
+    .detail-row:first-child { border-top: 0; }
+    .detail-row dt { color: var(--muted); }
+    .detail-row dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 12px; }
+    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; }
+    label.full { grid-column: 1 / -1; }
+    input, textarea { width: 100%; min-width: 0; color: var(--text); background: #0f1215; border: 1px solid var(--line); border-radius: 6px; padding: 10px 11px; }
+    textarea { min-height: 72px; resize: vertical; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .list { display: grid; gap: 10px; }
+    .list-item { border: 1px solid #2d343b; border-radius: 6px; padding: 12px; background: #111519; }
+    .list-top { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+    .list-title { font-weight: 750; overflow-wrap: anywhere; }
+    .meta { color: var(--muted); font-size: 12px; margin-top: 5px; overflow-wrap: anywhere; }
+    .badge { display: inline-flex; align-items: center; min-height: 24px; padding: 0 8px; border-radius: 999px; font-size: 11px; font-weight: 800; text-transform: uppercase; white-space: nowrap; background: #283038; color: #dbe2e7; }
+    .badge.estimated, .badge.pending { color: #201400; background: var(--amber); }
+    .badge.submitted, .badge.confirmed { color: #081712; background: var(--cyan); }
+    .badge.failed { color: #240604; background: var(--red); }
+    .estimate { margin-top: 10px; padding: 9px; border-left: 3px solid var(--amber); background: #211c13; color: #f7dfb4; font-size: 12px; }
+    .empty { color: var(--muted); padding: 8px 0; }
+    .toast { position: fixed; right: 20px; bottom: 20px; z-index: 10; max-width: min(420px, calc(100% - 40px)); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; background: #1a2025; box-shadow: 0 10px 32px rgba(0,0,0,.35); display: none; }
     .toast.show { display: block; }
-    .toast.success { border-color: var(--green); }
     .toast.error { border-color: var(--red); }
-    .toast.info { border-color: var(--blue); }
-    .intent-list { margin-top: 10px; }
-    .intent-item {
-      padding: 14px; border: 1px solid var(--line); border-radius: 14px;
-      margin-bottom: 10px; background: rgba(0,0,0,.2);
-    }
-    .intent-item .top {
-      display: flex; justify-content: space-between; align-items: flex-start;
-    }
-    .intent-item .meta { font-size: 13px; color: var(--muted); margin-top: 6px; }
-    .intent-item .estimate-box {
-      margin-top: 8px; padding: 8px 12px;
-      background: rgba(255,180,71,.08); border: 1px solid rgba(255,180,71,.2);
-      border-radius: 8px; font-size: 12px;
-    }
-    .empty { color: var(--muted); text-align: center; padding: 30px; }
-    .wallet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .balance-display { text-align: center; padding: 20px; }
-    .balance-amount { font-size: 36px; font-weight: 800; letter-spacing: -.03em; }
-    .balance-label { color: var(--muted); font-size: 13px; margin-top: 4px; }
-    .balance-usdc { color: var(--cyan); }
-    .tx-item {
-      padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13px;
-    }
-    .tx-item:last-child { border-bottom: 0; }
-    .tx-hash { font-family: monospace; font-size: 11px; color: var(--muted); word-break: break-all; }
-    .tx-amount { font-weight: 700; }
-    .skeleton {
-      background: linear-gradient(90deg, rgba(255,255,255,.04) 25%, rgba(255,255,255,.1) 50%, rgba(255,255,255,.04) 75%);
-      background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; height: 20px;
-    }
-    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    .refresh-btn {
-      background: none; border: 1px solid var(--line); color: var(--muted);
-      padding: 4px 12px; border-radius: 999px; cursor: pointer; font-size: 12px;
-    }
-    .refresh-btn:hover { border-color: var(--blue); color: var(--blue); }
-    .badge-container { display: flex; gap: 6px; flex-wrap: wrap; }
-    @media (max-width: 600px) { .grid-2, .wallet-grid { grid-template-columns: 1fr; } }
+    a { color: var(--cyan); }
+    @media (max-width: 840px) { .layout { grid-template-columns: 1fr; } }
+    @media (max-width: 560px) { .header-inner { align-items: flex-start; padding: 14px 0; flex-direction: column; } .field-grid { grid-template-columns: 1fr; } .detail-row { grid-template-columns: 1fr; gap: 3px; } .detail-row dd { text-align: left; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Arc Payment Intent Demo</h1>
-    <p class="lead">
-      AI agent создаёт USDC payment request → live Circle wallet показывает баланс →
-      человек ревьюит, видит реальную оценку газа и аппрувит.<br/>
-      <span style="color:var(--cyan)">⚡ Circle Wallet:</span> <code style="font-size:13px" id="wallet-addr-display">0x0cd9...ea401</code>
-      &nbsp;<button class="refresh-btn" onclick="loadAll()">⟳ Refresh</button>
-    </p>
-
-    <!-- ── Wallet Card ─────────────────────────────── -->
-    <div class="card">
-      <h2 class="cyan"><span class="icon">👛</span>Circle Wallet — Arc Testnet</h2>
-      <div class="wallet-grid">
-        <div class="balance-display">
-          <div id="balance-amount" class="balance-amount skeleton" style="width:180px;margin:0 auto"></div>
-          <div class="balance-label">USDC Balance</div>
-          <div id="balance-native" style="font-size:12px;color:var(--muted);margin-top:4px"></div>
-        </div>
-        <div>
-          <div class="row"><span class="label">Address</span><span id="wallet-addr" class="value mono skeleton" style="width:100%">&nbsp;</span></div>
-          <div class="row"><span class="label">Chain</span><span id="wallet-chain" class="value skeleton" style="width:80px">&nbsp;</span></div>
-          <div class="row"><span class="label">Mode</span><span id="wallet-mode" class="value skeleton" style="width:100px">&nbsp;</span></div>
-          <div class="row"><span class="label">Balance Load</span><span id="wallet-balance-status" class="value skeleton" style="width:60px">&nbsp;</span></div>
-        </div>
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">A</div>
+        <div><h1>Arc Payment Intent Demo</h1><div class="subtitle">Circle wallet evidence and USDC estimates on Arc Testnet</div></div>
       </div>
+      <button id="refresh-all" class="secondary" type="button">Refresh data</button>
+    </div>
+  </header>
 
-      <h2 class="cyan" style="margin-top:20px;font-size:15px">Recent Transactions</h2>
-      <div id="tx-list" style="margin-top:6px">
-        <div class="skeleton" style="width:100%;height:40px;margin-bottom:6px"></div>
-        <div class="skeleton" style="width:80%;height:40px;margin-bottom:6px"></div>
-        <div class="skeleton" style="width:60%;height:40px"></div>
-      </div>
+  <main>
+    <div class="safety-bar" aria-label="Safety boundaries">
+      <span><strong>Arc Testnet only</strong></span>
+      <span>Estimate-only by default</span>
+      <span>No browser wallet or private-key input</span>
+      <span>Real transfer requires server opt-in, typed confirmation, an explicit click, and stays capped at 1.00 USDC</span>
     </div>
 
-    <!-- ── Create Intent ───────────────────────────── -->
-    <div class="card">
-      <h2 class="lime"><span class="icon">📝</span>Create Payment Intent</h2>
-      <div class="grid-2">
-        <div>
-          <label>Agent Name</label>
-          <input id="agent" value="Research Agent" />
-        </div>
-        <div>
-          <label>Asset</label>
-          <select id="asset"><option>USDC</option><option>EURC</option></select>
-        </div>
-      </div>
-      <div class="grid-2">
-        <div>
-          <label>Recipient Address</label>
-          <input id="recipient" placeholder="0x..." />
-        </div>
-        <div>
-          <label>Amount (USDC)</label>
-          <input id="amount" type="number" step="0.01" value="1.00" />
-        </div>
-      </div>
-      <label>Memo</label>
-      <textarea id="memo" rows="2">Payment for data analysis task</textarea>
-      <div class="actions">
-        <button class="primary" onclick="createIntent()">Create &amp; Estimate</button>
-      </div>
-    </div>
-
-    <!-- ── Payment Intents ─────────────────────────── -->
-    <div class="card">
-      <h2 class="blue"><span class="icon">📋</span>Payment Intents</h2>
-      <div id="intent-list" class="intent-list">
-        <div class="empty">No payment intents yet. Create one above.</div>
-      </div>
-    </div>
-
-    <!-- ── Live Data ───────────────────────────────── -->
-    <div class="card" style="opacity:.7">
-      <h2 class="orange" style="font-size:14px"><span class="icon">📡</span>Live Data — Arc Testnet</h2>
-      <div id="network-info">
-        <div class="skeleton" style="width:100%;height:80px"></div>
-      </div>
-    </div>
-  </div>
-
-  <div id="toast" class="toast"></div>
-
-  <script>
-    const API = '';
-    let loadedIntents = [];
-    let walletData = null;
-
-    // ── helpers ──────────────────────────────────────
-
-    async function api(path, opts = {}) {
-      const resp = await fetch(API + path, {
-        headers: { 'Content-Type': 'application/json' },
-        ...opts,
-      });
-      return resp.json();
-    }
-
-    function showToast(msg, type = 'success') {
-      const el = document.getElementById('toast');
-      el.textContent = msg;
-      el.className = 'toast show ' + type;
-      setTimeout(() => el.classList.remove('show'), 4000);
-    }
-
-    function shortAddr(addr) {
-      if (!addr || addr.length < 12) return addr || '—';
-      return addr.slice(0, 6) + '…' + addr.slice(-4);
-    }
-
-    function statusBadge(status) {
-      const cls = status.replace('pending_user_approval', 'pending');
-      return `<span class="status-badge ${cls}">${status.replace(/_/g, ' ')}</span>`;
-    }
-
-    function formatDate(ts) {
-      if (!ts) return '—';
-      const d = new Date(ts);
-      return d.toLocaleString();
-    }
-
-    // ── Wallet ───────────────────────────────────────
-
-    async function loadWallet() {
-      try {
-        const w = await api('/api/wallet');
-        walletData = w;
-
-        // Balance
-        const balEl = document.getElementById('balance-amount');
-        const nativeEl = document.getElementById('balance-native');
-        const addrEl = document.getElementById('wallet-addr');
-        const chainEl = document.getElementById('wallet-chain');
-        const modeEl = document.getElementById('wallet-mode');
-        const balStatusEl = document.getElementById('wallet-balance-status');
-        const addrDisplay = document.getElementById('wallet-addr-display');
-
-        if (w.balance_ok && w.balances) {
-          const balances = Array.isArray(w.balances) ? w.balances :
-            (w.balances.balances || w.balances.data || []);
-          const usdc6 = balances.find(b =>
-            b.token && b.token.symbol === 'USDC' && b.token.decimals === 6
-          );
-          const usdc18 = balances.find(b =>
-            b.token && b.token.symbol === 'USDC' && b.token.decimals === 18
-          );
-          const displayBal = usdc6 || usdc18 || balances[0];
-          const balAmt = displayBal ? displayBal.amount : '—';
-
-          balEl.className = 'balance-amount balance-usdc';
-          balEl.textContent = '$' + parseFloat(balAmt).toLocaleString(undefined, {
-            minimumFractionDigits: 2, maximumFractionDigits: 4
-          });
-
-          if (usdc6 && usdc18) {
-            nativeEl.textContent = `Native: ${parseFloat(usdc18.amount).toFixed(4)} USDC`;
-          } else if (usdc18) {
-            nativeEl.textContent = `Native: ${parseFloat(usdc18.amount).toFixed(4)} USDC`;
-          } else {
-            nativeEl.textContent = '';
-          }
-          balStatusEl.className = 'value';
-          balStatusEl.textContent = '✅ Live';
-        } else {
-          balEl.className = 'balance-amount';
-          balEl.textContent = '⚠ Error';
-          balStatusEl.className = 'value';
-          balStatusEl.textContent = '❌ ' + (w.balance_error || 'load failed');
-          nativeEl.textContent = '';
-        }
-
-        addrEl.className = 'value mono';
-        addrEl.textContent = w.address || '—';
-        chainEl.className = 'value';
-        chainEl.textContent = w.chain || '—';
-        modeEl.className = 'value';
-        modeEl.textContent = w.real_transfer_enabled ? '🔴 REAL' : '🟡 Estimate only';
-        addrDisplay.textContent = shortAddr(w.address) || '—';
-
-        // Transactions
-        loadTxList(w);
-
-      } catch (e) {
-        document.getElementById('balance-amount').className = 'balance-amount';
-        document.getElementById('balance-amount').textContent = '⚠ Error';
-        document.getElementById('wallet-addr').className = 'value';
-        document.getElementById('wallet-addr').textContent = 'Backend offline';
-        document.getElementById('wallet-addr-display').textContent = 'offline';
-      }
-    }
-
-    function loadTxList(w) {
-      const container = document.getElementById('tx-list');
-      if (!w.tx_ok || !w.recent_transactions) {
-        const txs = w.recent_transactions;
-        if (txs && Array.isArray(txs.transactions || txs)) {
-          const items = txs.transactions || txs;
-          if (items.length === 0) {
-            container.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:10px 0">No transactions yet.</div>';
-            return;
-          }
-          container.innerHTML = items.slice(0, 5).map(tx => {
-            const amt = tx.amount || tx.amountPaid || '—';
-            const state = tx.state || tx.status || '—';
-            const hash = tx.txHash || tx.transactionHash || tx.id || '—';
-            const dir = tx.direction === 'INBOUND' ? '↓' : tx.direction === 'OUTBOUND' ? '↑' : '↔';
-            return `<div class="tx-item">
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <span class="tx-amount">${dir} ${amt} USDC</span>
-                ${statusBadge(state)}
-              </div>
-              <div class="tx-hash">${shortAddr(hash)}</div>
-            </div>`;
-          }).join('');
-          return;
-        }
-        container.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:10px 0">Transaction list unavailable.</div>';
-        return;
-      }
-
-      const txs = w.recent_transactions;
-      const items = txs.transactions || txs;
-      if (!items || items.length === 0) {
-        container.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:10px 0">No transactions yet.</div>';
-        return;
-      }
-      container.innerHTML = items.slice(0, 5).map(tx => {
-        const amt = tx.amount || tx.amountPaid || '—';
-        const state = tx.state || tx.status || '—';
-        const hash = tx.txHash || tx.transactionHash || tx.id || '—';
-        const dir = tx.direction === 'INBOUND' ? '↓' : tx.direction === 'OUTBOUND' ? '↑' : '↔';
-        return `<div class="tx-item">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <span class="tx-amount">${dir} ${amt} USDC</span>
-            ${statusBadge(state)}
+    <div class="layout">
+      <div class="stack">
+        <section aria-labelledby="wallet-heading">
+          <div class="section-head"><h2 id="wallet-heading">Circle wallet</h2><span id="wallet-mode" class="badge">Loading</span></div>
+          <div class="section-body">
+            <div id="balance-amount" class="wallet-balance">--</div>
+            <dl class="detail-list">
+              <div class="detail-row"><dt>Native balance</dt><dd id="balance-native">--</dd></div>
+              <div class="detail-row"><dt>Address</dt><dd id="wallet-addr" class="mono">--</dd></div>
+              <div class="detail-row"><dt>Network</dt><dd id="wallet-chain">--</dd></div>
+              <div class="detail-row"><dt>Data status</dt><dd id="wallet-balance-status">Not loaded</dd></div>
+            </dl>
           </div>
-          <div class="tx-hash">${shortAddr(hash)}</div>
-        </div>`;
-      }).join('');
-    }
+        </section>
 
-    // ── Intents ──────────────────────────────────────
+        <section aria-labelledby="network-heading">
+          <div class="section-head"><h2 id="network-heading">Reviewed network</h2></div>
+          <div id="network-info" class="section-body"><div class="empty">Not loaded.</div></div>
+        </section>
 
-    async function createIntent() {
-      const data = {
-        agent: document.getElementById('agent').value,
-        asset: document.getElementById('asset').value,
-        recipient: document.getElementById('recipient').value,
-        amount: document.getElementById('amount').value,
-        memo: document.getElementById('memo').value,
-      };
+        <section aria-labelledby="transactions-heading">
+          <div class="section-head"><h2 id="transactions-heading">Recent transactions</h2></div>
+          <div id="tx-list" class="section-body list"><div class="empty">Not loaded.</div></div>
+        </section>
+      </div>
 
-      if (!data.recipient || !data.amount || parseFloat(data.amount) <= 0) {
-        showToast('Please fill in recipient and amount', 'error');
-        return;
-      }
-
-      try {
-        const result = await api('/api/intent', {
-          method: 'POST',
-          body: JSON.stringify(data),
-        });
-        showToast(`Intent ${result.id} created${result.estimate ? ' — estimate ready' : ''}`);
-        loadIntents();
-      } catch (e) {
-        showToast('Error: ' + e.message, 'error');
-      }
-    }
-
-    async function approveIntent(id, real = false) {
-      try {
-        const result = await api('/api/approve', {
-          method: 'POST',
-          body: JSON.stringify({ intent_id: id, real }),
-        });
-        if (result.status === 'estimated') {
-          showToast(`Intent ${id}: estimate ready`, 'info');
-        } else if (result.status === 'submitted') {
-          showToast(`Intent ${id}: submitted to Arc Testnet ✅`);
-        } else if (result.status === 'failed') {
-          showToast(`Intent ${id} failed: ${result.error}`, 'error');
-        }
-        loadIntents();
-      } catch (e) {
-        showToast('Error: ' + e.message, 'error');
-      }
-    }
-
-    async function loadIntents() {
-      try {
-        const data = await api('/api/intents');
-        loadedIntents = data;
-        const container = document.getElementById('intent-list');
-        if (data.length === 0) {
-          container.innerHTML = '<div class="empty">No payment intents yet. Create one above.</div>';
-          return;
-        }
-        container.innerHTML = data.map(intent => {
-          const canApprove = intent.status === 'pending_user_approval' || intent.status === 'estimated';
-          const hasEstimate = intent.estimate;
-          return `<div class="intent-item">
-            <div class="top">
-              <div>
-                <strong>${intent.agent}</strong><br/>
-                <div class="meta">
-                  ${intent.amount} ${intent.asset} → ${shortAddr(intent.recipient)}
-                  ${intent.memo ? ' · ' + intent.memo : ''}
-                </div>
-              </div>
-              <div style="text-align:right">
-                ${statusBadge(intent.status)}<br/>
-                <span style="font-size:11px;color:var(--muted)">${formatDate(intent.created_at)}</span>
-              </div>
+      <div class="stack">
+        <section aria-labelledby="create-heading">
+          <div class="section-head"><h2 id="create-heading">Create payment intent</h2></div>
+          <form id="intent-form" class="section-body">
+            <div class="field-grid">
+              <label>Agent name<input id="agent" value="Research Agent" autocomplete="off" /></label>
+              <label>Amount (USDC)<input id="amount" inputmode="decimal" value="1.00" autocomplete="off" /></label>
+              <label class="full">Recipient address<input id="recipient" placeholder="0x..." autocomplete="off" spellcheck="false" /></label>
+              <label class="full">Memo<textarea id="memo">Payment for data analysis task</textarea></label>
             </div>
-            ${hasEstimate ? `<div class="estimate-box">
-              <strong>🧾 Estimate:</strong>
-              ${intent.estimate.networkFeeAmount
-                ? `Gas fee ≈ ${intent.estimate.networkFeeAmount} ${intent.estimate.networkFeeUnit || 'USDC'}`
-                : 'Fee estimate available'}
-              ${intent.estimate.transactionFee
-                ? ` · Total fee: ${intent.estimate.transactionFee}`
-                : ''}
-            </div>` : ''}
-            ${canApprove ? `<div class="actions" style="margin-top:8px">
-              <button class="secondary" style="padding:6px 16px;font-size:13px" onclick="approveIntent('${intent.id}', false)">
-                Estimate Fee
-              </button>
-              ${walletData && walletData.real_transfer_enabled
-                ? `<button class="success-btn" style="padding:6px 16px;font-size:13px" onclick="approveIntent('${intent.id}', true)">
-                  Send Real USDC
-                </button>`
-                : ''}
-            </div>` : ''}
-            ${intent.tx_hash
-              ? `<div class="meta" style="margin-top:6px">
-                  Tx: <span class="tx-hash">${intent.tx_hash}</span>
-                  ${intent.estimate && intent.estimate.explorerUrl
-                    ? ` · <a href="${intent.estimate.explorerUrl}${intent.tx_hash}" target="_blank" style="color:var(--cyan)">View ↗</a>`
-                    : ''}
-                </div>`
-              : ''}
-          </div>`;
-        }).join('');
-      } catch (e) {
-        document.getElementById('intent-list').innerHTML =
-          `<div class="empty">Backend not running. Start with: <code>python3 examples/payment-intent-demo/server.py</code></div>`;
-      }
-    }
+            <div class="actions"><button class="primary" type="submit">Create and estimate</button></div>
+          </form>
+        </section>
 
-    function loadNetworkInfo() {
-      api('/api/network').then(info => {
-        document.getElementById('network-info').innerHTML = `
-          <div class="row"><span class="label">Network</span><span class="value">${info.network}</span></div>
-          <div class="row"><span class="label">Chain ID</span><span class="value">${info.chain_id}</span></div>
-          <div class="row"><span class="label">RPC</span><span class="value mono" style="font-size:12px">${info.rpc_url}</span></div>
-          <div class="row"><span class="label">Wallet</span><span class="value mono" style="font-size:12px">${shortAddr(info.circle_wallet)}</span></div>
-          <div class="row"><span class="label">USDC Token</span><span class="value mono" style="font-size:12px">${shortAddr(info.usdc_token)}</span></div>
-          <div class="row"><span class="label">Explorer</span><span class="value mono" style="font-size:12px"><a href="${info.explorer}" target="_blank" style="color:var(--cyan)">${info.explorer} ↗</a></span></div>
-        `;
-      }).catch(() => {
-        document.getElementById('network-info').textContent = 'Backend offline. Start server.py to see network info.';
-      });
-    }
+        <section aria-labelledby="intents-heading">
+          <div class="section-head"><h2 id="intents-heading">Payment intents</h2></div>
+          <div id="intent-list" class="section-body list"><div class="empty">No payment intents yet.</div></div>
+        </section>
+      </div>
+    </div>
+  </main>
 
-    // ── Init ─────────────────────────────────────────
-
-    async function loadAll() {
-      await Promise.all([
-        loadWallet(),
-        loadIntents(),
-        loadNetworkInfo(),
-      ]);
-    }
-
-    // Auto-refresh wallet + intents every 15s
-    loadAll();
-    setInterval(() => { loadWallet(); loadIntents(); }, 15000);
-  </script>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="./app.js" integrity="sha384-xdBCM8xe1Hx/uzKJ3d53fSrHG78F7QEcoqPiT6QIchw7+sIfFZs7v7yDjW/J6USa" crossorigin="anonymous"></script>
 </body>
 </html>

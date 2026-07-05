@@ -80,7 +80,6 @@ def test_security_headers_and_csp_are_present_and_strict() -> None:
 
 def test_script_tag_has_subresource_integrity_matching_current_source() -> None:
     html = read(HTML)
-    js = read(JS)
     script_match = re.search(
         r'<script[^>]*src="\./wallet-send-gate\.js"[^>]*integrity="(sha384-[A-Za-z0-9+/=]+)"[^>]*>',
         html,

@@ -40,16 +40,6 @@ def observed_versions(root: Path = ROOT) -> dict[str, str]:
             r'^__version__\s*=\s*"([^"]+)"\s*$',
             "package version",
         ),
-        "source_cli": _extract(
-            root / "scripts/arc_builder_cli.py",
-            r'version="%\(prog\)s\s+([^"]+)"',
-            "source CLI version",
-        ),
-        "source_mcp": _extract(
-            root / "scripts/arc_builder_mcp_server.py",
-            r'^SERVER_VERSION\s*=\s*"([^"]+)"\s*$',
-            "source MCP version",
-        ),
     }
 
 

@@ -3,24 +3,18 @@
 
 from __future__ import annotations
 
-import importlib.util
 import tempfile
 import unittest
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-VALIDATOR_PATH = ROOT / "scripts" / "validate_repo.py"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from arc_builder_kit import validate_repo as validator_module  # noqa: E402
 PINNED_SETUP_PYTHON = "a309ff8b426b58ec0e2a45f0f869d46889d02405"
 PINNED_SETUP_NODE = "48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e"
-
-
-def load_validator():
-    spec = importlib.util.spec_from_file_location("repo_validator_under_test", VALIDATOR_PATH)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"Unable to load {VALIDATOR_PATH}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
 
 
 def workflow(permissions: str, trigger: str = "workflow_dispatch:", setup_node_ref: str = PINNED_SETUP_NODE) -> str:
@@ -44,7 +38,9 @@ jobs:
 
 class WorkflowSecurityTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.validator = load_validator()
+        self.validator = validator_module
+        original_root = self.validator.ROOT
+        self.addCleanup(setattr, self.validator, "ROOT", original_root)
         self.temp = tempfile.TemporaryDirectory(prefix=".arc-test-", dir=ROOT)
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
@@ -89,6 +85,10 @@ class WorkflowSecurityTests(unittest.TestCase):
         self.write(
             ".github/workflows/publish-pypi.yml",
             (ROOT / ".github/workflows/publish-pypi.yml").read_text(encoding="utf-8"),
+        )
+        self.write(
+            ".github/workflows/ci.yml",
+            (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8"),
         )
 
     def test_current_runtime_and_permission_contract_passes(self) -> None:
@@ -225,6 +225,46 @@ class WorkflowSecurityTests(unittest.TestCase):
         )
         self.write(path, changed)
         with self.assertRaisesRegex(SystemExit, "missing active Doctor summary marker"):
+            self.validator.validate_workflow_security()
+
+    def test_ci_rejects_fail_open_script_tests(self) -> None:
+        path = ".github/workflows/ci.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace(
+            "python scripts/test_all.py",
+            "python scripts/test_all.py || true",
+        )
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "forbidden fail-open"):
+            self.validator.validate_workflow_security()
+
+    def test_ci_rejects_continue_on_error_lint(self) -> None:
+        path = ".github/workflows/ci.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace(
+            "      - name: Run ruff check",
+            "      - name: Run ruff check\n        continue-on-error: true",
+        )
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "forbidden fail-open"):
+            self.validator.validate_workflow_security()
+
+    def test_ci_rejects_unpinned_actions(self) -> None:
+        path = ".github/workflows/ci.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace(
+            "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+            "actions/upload-artifact@v4",
+        )
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "full commit SHA"):
+            self.validator.validate_workflow_security()
+
+    def test_ci_rejects_non_isolated_build(self) -> None:
+        path = ".github/workflows/ci.yml"
+        changed = (self.root / path).read_text(encoding="utf-8").replace(
+            "python -m build",
+            "python -m build --no-isolation",
+        )
+        self.write(path, changed)
+        with self.assertRaisesRegex(SystemExit, "forbidden fail-open"):
             self.validator.validate_workflow_security()
 
     def test_pypi_publish_requires_job_scoped_oidc(self) -> None:

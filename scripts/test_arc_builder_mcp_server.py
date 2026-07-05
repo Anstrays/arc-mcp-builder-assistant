@@ -6,27 +6,18 @@ Standard-library unittest only. No network calls by default.
 
 from __future__ import annotations
 
-import importlib.util
-import json
 import subprocess
+import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
-MODULE_PATH = ROOT / "scripts" / "arc_builder_mcp_server.py"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
-
-def load_server():
-    spec = importlib.util.spec_from_file_location("arc_builder_mcp_server_under_test", MODULE_PATH)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"unable to load {MODULE_PATH}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-server = load_server()
+from arc_builder_kit import mcp_server as server  # noqa: E402
 
 
 def rpc_request(method: str, params: dict | None = None, req_id: int = 1):
@@ -57,13 +48,14 @@ class ToolsListTests(unittest.TestCase):
             "validate_repo",
             "get_arc_testnet_facts",
             "x402_manifest",
+            "x402_paid_request",
             "x402_fetch_challenge",
             "x402_verify_receipt",
             "generate_release_packet",
             "list_examples",
         }
         self.assertEqual(names, expected)
-        self.assertEqual(len(names), 10)
+        self.assertEqual(len(names), 11)
 
 
 class ToolCallTests(unittest.TestCase):
@@ -89,32 +81,36 @@ class ToolCallTests(unittest.TestCase):
         self.assertIn("server.py", str(mocked.call_args[0][0][1]))
 
     def test_validate_repo(self) -> None:
-        completed = mock.Mock(returncode=0, stdout="ok", stderr="")
-        with mock.patch.object(subprocess, "run", return_value=completed) as mocked:
+        with mock.patch.object(server, "validate_main", return_value=None) as mocked:
             req = rpc_request("tools/call", {"name": "validate_repo", "arguments": {}})
             resp = server.handle_request(req)
         self.assertNotIn("error", resp)
         self.assertTrue(resp["result"]["structuredContent"]["ok"])
-        self.assertIn("validate_repo.py", str(mocked.call_args[0][0][1]))
+        mocked.assert_called_once_with()
 
     def test_arc_builder_doctor(self) -> None:
-        completed = mock.Mock(returncode=0, stdout='{"status":"pass"}', stderr="")
-        with mock.patch.object(subprocess, "run", return_value=completed) as mocked:
+        def doctor(args):
+            print('{"status":"pass"}')
+            return 0
+
+        with mock.patch.object(server, "doctor_main", side_effect=doctor) as mocked:
             req = rpc_request("tools/call", {"name": "arc_builder_doctor", "arguments": {}})
             resp = server.handle_request(req)
         self.assertNotIn("error", resp)
         self.assertEqual(resp["result"]["structuredContent"]["report"]["status"], "pass")
-        self.assertIn("--json", mocked.call_args[0][0])
+        self.assertIn("--json", mocked.call_args.args[0])
 
     def test_generate_release_packet(self) -> None:
-        completed = mock.Mock(returncode=0, stdout="generated", stderr="")
-        with mock.patch.object(subprocess, "run", return_value=completed) as mocked:
-            req = rpc_request("tools/call", {"name": "generate_release_packet", "arguments": {"force": True}})
-            resp = server.handle_request(req)
+        with tempfile.TemporaryDirectory() as temp:
+            with mock.patch.object(server, "release_packet_main", return_value=0) as mocked:
+                req = rpc_request(
+                    "tools/call",
+                    {"name": "generate_release_packet", "arguments": {"output": temp}},
+                )
+                resp = server.handle_request(req)
         self.assertNotIn("error", resp)
         self.assertTrue(resp["result"]["structuredContent"]["ok"])
-        self.assertIn("generate_arc_release_packet.py", str(mocked.call_args[0][0][1]))
-        self.assertIn("--out", mocked.call_args[0][0])
+        self.assertIn("--out", mocked.call_args.args[0])
 
     def test_list_examples(self) -> None:
         req = rpc_request("tools/call", {"name": "list_examples", "arguments": {}})

@@ -72,11 +72,10 @@ class ResourceBuildTests(unittest.TestCase):
 
     def test_source_and_package_entry_points_share_release_version(self) -> None:
         _version = re.search(r'__version__\s*=\s*"([^"]+)"', (PACKAGE_SOURCE / "__init__.py").read_text()).group(1)
-        source_cli = (ROOT / "scripts/arc_builder_cli.py").read_text(encoding="utf-8")
-        source_mcp = (ROOT / "scripts/arc_builder_mcp_server.py").read_text(encoding="utf-8")
         pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-        for text in (source_cli, source_mcp, pyproject):
-            self.assertIn(_version, text)
+        self.assertIn(f'version = "{_version}"', pyproject)
+        self.assertIn("from arc_builder_kit.cli import main", (ROOT / "scripts/arc_builder_cli.py").read_text(encoding="utf-8"))
+        self.assertIn("from arc_builder_kit.mcp_server import main", (ROOT / "scripts/arc_builder_mcp_server.py").read_text(encoding="utf-8"))
         self.assertIn('requires-python = ">=3.10"', pyproject)
         self.assertNotIn('"Programming Language :: Python :: 3.9"', pyproject)
 

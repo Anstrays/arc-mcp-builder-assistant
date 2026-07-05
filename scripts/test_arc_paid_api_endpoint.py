@@ -15,7 +15,7 @@ SERVER_PATH = ROOT / "examples" / "arc-paid-api-endpoint" / "server.py"
 DOC = ROOT / "docs" / "arc-paid-api-endpoint.md"
 README = ROOT / "README.md"
 VIEWER = ROOT / "docs" / "viewer.js"
-VALIDATOR = ROOT / "scripts" / "validate_repo.py"
+VALIDATOR = ROOT / "arc_builder_kit" / "validate_repo.py"
 
 PAY_TO = "0x1111111111111111111111111111111111111111"
 TX_HASH = "0x" + "a" * 64

@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from arc_builder_kit import x402_client as x402
+from arc_builder_kit import x402_client as x402  # noqa: E402
 
 PAY_TO = "0x1111111111111111111111111111111111111111"
 FROM = "0x2222222222222222222222222222222222222222"

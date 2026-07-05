@@ -14,7 +14,6 @@ import os
 import re
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from pathlib import Path
 from urllib.parse import urlparse
 
 NETWORK = "arc-testnet"

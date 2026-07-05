@@ -26,7 +26,7 @@ python3 server.py
 | Режим | Описание | Включение |
 |-------|----------|-----------|
 | 🟡 **Estimate only** (default) | Оценка газа через `--estimate`, никаких реальных транзакций | `REAL_TRANSFER=0` |
-| 🔴 **Real transfers** | Реальные USDC transfers на Arc Testnet | `REAL_TRANSFER=1` |
+| 🔴 **Real transfers** | Реальные USDC transfers на Arc Testnet; требуют ручной фразы `SEND ARC TESTNET USDC` | `REAL_TRANSFER=1` |
 
 ## API
 
@@ -45,9 +45,12 @@ python3 server.py
 | `CIRCLE_CHAIN` | `ARC-TESTNET` | Blockchain |
 | `CIRCLE_RPC_URL` | `https://rpc.testnet.arc.network` | RPC |
 | `REAL_TRANSFER` | `0` | `1` = разрешить реальные переводы |
+| `HOST`, `PORT` | `127.0.0.1:8080` | Только локальный bind; внешний адрес блокируется |
 
 ## Prerequisites
 
 - Python 3.10+
 - Circle CLI: `npm install -g @circle-fin/cli`
 - Agent wallet на Arc Testnet с USDC
+
+Реальная отправка остаётся выключенной по умолчанию. Даже при `REAL_TRANSFER=1` страница требует отдельный клик и точную фразу `SEND ARC TESTNET USDC`; backend повторно проверяет её, ограничивает сумму до `1.00 USDC` и допускает одну попытку на intent.

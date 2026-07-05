@@ -143,7 +143,7 @@ def main() -> None:
     server = HTTPServer(("127.0.0.1", PORT), VerifiedAPIHandler)
     print(f"[x402-verified-api] x402 Verified API prototype on http://127.0.0.1:{PORT}")
     print(f"[x402-verified-api] PAY_TO: {PAY_TO}, Amount: {AMOUNT_USDC} USDC")
-    print(f"[x402-verified-api] Endpoints: GET /protected")
+    print("[x402-verified-api] Endpoints: GET /protected")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

@@ -6,11 +6,11 @@ Standard-library unittest only. No network calls.
 
 from __future__ import annotations
 
-import importlib.util
 import io
 import json
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
@@ -18,24 +18,15 @@ from pathlib import Path
 from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
-MODULE_PATH = ROOT / "scripts" / "arc_builder_cli.py"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
-
-def load_cli():
-    spec = importlib.util.spec_from_file_location("arc_builder_cli_under_test", MODULE_PATH)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"unable to load {MODULE_PATH}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-cli = load_cli()
+from arc_builder_kit import cli  # noqa: E402
 
 
 class ParserTests(unittest.TestCase):
     def test_all_subcommands_parse(self) -> None:
-        for command in ("doctor", "validate", "templates", "scaffold", "facts", "manifest", "release-packet", "mcp", "wallet"):
+        for command in ("doctor", "validate", "templates", "scaffold", "facts", "manifest", "release-packet", "mcp", "x402", "wallet"):
             with self.subTest(command=command):
                 if command == "scaffold":
                     cli.build_parser().parse_args([command, "payment-intent-starter", "./out"])
@@ -43,6 +34,8 @@ class ParserTests(unittest.TestCase):
                     cli.build_parser().parse_args([command, "--output", "./out"])
                 elif command == "wallet":
                     cli.build_parser().parse_args([command, "sdk-plan", "--json"])
+                elif command == "x402":
+                    cli.build_parser().parse_args([command, "challenge", "https://example.test"])
                 else:
                     cli.build_parser().parse_args([command])
 
@@ -163,21 +156,16 @@ class WalletTests(unittest.TestCase):
 
 class OrchestratorTests(unittest.TestCase):
     def test_doctor_runs_as_script(self) -> None:
-        completed = mock.Mock(returncode=0, stdout='{"status":"pass"}', stderr="")
-        with mock.patch.object(subprocess, "run", return_value=completed) as mocked:
+        with mock.patch.object(cli, "doctor_main", return_value=0) as mocked:
             rc = cli.cmd_doctor(cli.build_parser().parse_args(["doctor"]))
         self.assertEqual(rc, 0)
-        mocked.assert_called_once()
-        self.assertIn("arc_builder_doctor.py", str(mocked.call_args[0][0][1]))
-        self.assertIn("--json", mocked.call_args[0][0])
+        mocked.assert_called_once_with(["--json"])
 
     def test_validate_runs_as_script(self) -> None:
-        completed = mock.Mock(returncode=0, stdout="validation passed", stderr="")
-        with mock.patch.object(subprocess, "run", return_value=completed) as mocked:
+        with mock.patch.object(cli, "validate_main", return_value=None) as mocked:
             rc = cli.cmd_validate(cli.build_parser().parse_args(["validate"]))
         self.assertEqual(rc, 0)
         mocked.assert_called_once()
-        self.assertIn("validate_repo.py", str(mocked.call_args[0][0][1]))
 
     def test_manifest_runs_x402_server(self) -> None:
         completed = mock.Mock(returncode=0, stdout="{}", stderr="")
@@ -189,13 +177,11 @@ class OrchestratorTests(unittest.TestCase):
         self.assertIn("--print-manifest", mocked.call_args[0][0])
 
     def test_release_packet_runs_generator(self) -> None:
-        completed = mock.Mock(returncode=0, stdout="generated", stderr="")
-        with mock.patch.object(subprocess, "run", return_value=completed) as mocked:
+        with mock.patch.object(cli, "release_packet_main", return_value=0) as mocked:
             rc = cli.cmd_release_packet(cli.build_parser().parse_args(["release-packet", "--output", "./out"]))
         self.assertEqual(rc, 0)
         mocked.assert_called_once()
-        self.assertIn("generate_arc_release_packet.py", str(mocked.call_args[0][0][1]))
-        self.assertIn("--out", mocked.call_args[0][0])
+        self.assertIn("--out", mocked.call_args.args[0])
 
 
 if __name__ == "__main__":

@@ -121,7 +121,7 @@ class MarketplaceHandler(BaseHTTPRequestHandler):
 def main() -> None:
     server = HTTPServer(("127.0.0.1", PORT), MarketplaceHandler)
     print(f"[marketplace] Arc Agent Marketplace demo on http://127.0.0.1:{PORT}")
-    print(f"[marketplace] Endpoints: GET /intents, GET /intent/<id>, POST /fulfill")
+    print("[marketplace] Endpoints: GET /intents, GET /intent/<id>, POST /fulfill")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

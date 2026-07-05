@@ -12,7 +12,7 @@ DOC = ROOT / "docs/transaction-status-playground.md"
 README = ROOT / "README.md"
 INDEX = ROOT / "index.html"
 VIEWER = ROOT / "docs/viewer.js"
-VALIDATOR = ROOT / "scripts/validate_repo.py"
+VALIDATOR = ROOT / "arc_builder_kit/validate_repo.py"
 SITEMAP = ROOT / "sitemap.xml"
 
 

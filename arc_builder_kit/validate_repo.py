@@ -39,6 +39,7 @@ INSTALLED_REQUIRED_FILES = (
     "templates/payment-intent-starter/index.html",
     "templates/x402-agent-starter/server.py",
     "templates/job-escrow-starter/index.html",
+    "examples/payment-intent-demo/app.js",
     "examples/payment-intent-receipt-matcher/index.html",
     "examples/arc-testnet-wallet-send-gate/live-infrastructure-policy.example.json",
     "examples/x402-local-challenge-server/.env.example",
@@ -50,6 +51,7 @@ WORKFLOW_FILES = (
     ".github/workflows/pages.yml",
     ".github/workflows/readiness-monitor.yml",
 )
+CI_WORKFLOW_FILE = ".github/workflows/ci.yml"
 REQUIRED_FILES = [
     "README.md",
     "index.html",
@@ -74,6 +76,7 @@ REQUIRED_FILES = [
     "arc_builder_kit/mcp_server.py",
     "config/arc_testnet.facts.json",
     ".github/workflows/validate.yml",
+    ".github/workflows/ci.yml",
     ".github/workflows/pages.yml",
     ".github/workflows/publish-pypi.yml",
     ".github/dependabot.yml",
@@ -102,6 +105,7 @@ REQUIRED_FILES = [
     "docs/x402-mcp-manifest.md",
     "docs/x402-demo-transcript.md",
     "docs/arc-production-deployment.md",
+    "docs/arc-paid-api-endpoint.md",
     "docs/prompt-library.md",
     "docs/arc-builder-readiness-checklist.md",
     "docs/completion-contract.md",
@@ -136,6 +140,7 @@ REQUIRED_FILES = [
     "prompts/wire-arc-testnet-status.md",
     "prompts/agentic-maintainer-loop.md",
     "examples/payment-intent-demo/index.html",
+    "examples/payment-intent-demo/app.js",
     "examples/payment-intent-playground/index.html",
     "examples/payment-intent-playground/playground.js",
     "examples/receipt-verifier-playground/index.html",
@@ -171,6 +176,7 @@ REQUIRED_FILES = [
     "scripts/validate_arc_testnet_facts.py",
     "scripts/test_arc_testnet_facts.py",
     "examples/x402-local-challenge-server/server.py",
+    "examples/arc-paid-api-endpoint/server.py",
     "scripts/check_arc_testnet_status.py",
     "scripts/check_completion.py",
     "scripts/live_arc_gateway_smoke.py",
@@ -178,6 +184,7 @@ REQUIRED_FILES = [
     "scripts/scan_for_secrets.py",
     "scripts/serve_local.py",
     "scripts/test_arc_production_deployment.py",
+    "scripts/test_arc_paid_api_endpoint.py",
     "scripts/test_arc_testnet_status_helper.py",
     "scripts/test_completion_contract.py",
     "scripts/test_public_claims.py",
@@ -289,11 +296,10 @@ REDUCED_MOTION_MEDIA_RE = re.compile(
     re.IGNORECASE,
 )
 DEMO_SAFETY_MARKERS = (
-    "does not connect to a wallet",
-    "broadcast transactions",
-    "talk to any backend",
-    "human keeps approval control",
-    "controls are intentionally disabled",
+    "arc testnet only",
+    "estimate-only by default",
+    "no browser wallet or private-key input",
+    "real transfer requires server opt-in, typed confirmation, an explicit click, and stays capped at 1.00 usdc",
 )
 
 SECRET_PATTERNS = [
@@ -340,6 +346,22 @@ SECRET_SCAN_SKIP = {
     Path("scripts/validate_repo.py"),
     Path("scripts/scan_for_secrets.py"),
 }
+
+LOCAL_ARTIFACT_DIRS = {
+    ".git",
+    ".hermes",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "venv",
+}
+
+
+def _is_local_artifact(path: Path) -> bool:
+    return any(part in LOCAL_ARTIFACT_DIRS or part.startswith(".arc-test-") for part in path.parts)
 
 # script type values that are inert (no JavaScript execution).
 INERT_SCRIPT_TYPES = {
@@ -497,6 +519,54 @@ def validate_workflow_security() -> None:
                 f"{sorted(expected)}; observed {sorted(observed)}"
             )
 
+    ci_text = (ROOT / CI_WORKFLOW_FILE).read_text(encoding="utf-8")
+    ci_active_lines = [
+        line.strip().removeprefix("- ").lstrip()
+        for line in ci_text.splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    ]
+    if parsed_permissions(CI_WORKFLOW_FILE, ci_text) != {("contents", "read")}:
+        fail(f"{CI_WORKFLOW_FILE}: workflow permissions must be exactly contents: read")
+    for forbidden in (
+        "continue-on-error:",
+        "|| true",
+        "--no-isolation",
+        "pull_request_target:",
+        "workflow_run:",
+        "peaceiris/actions-gh-pages",
+        "secrets.",
+    ):
+        if forbidden in ci_text:
+            fail(f"{CI_WORKFLOW_FILE}: forbidden fail-open or privileged marker: {forbidden}")
+    ci_actions: set[str] = set()
+    for line in ci_text.splitlines():
+        stripped = line.strip().removeprefix("- ").lstrip()
+        if not stripped.startswith("uses:"):
+            continue
+        action = stripped.removeprefix("uses:").split("#", 1)[0].strip()
+        if not action_pin.fullmatch(action):
+            fail(f"{CI_WORKFLOW_FILE}: action must use a full commit SHA: {action}")
+        ci_actions.add(action.split("@", 1)[0])
+    for action in (
+        "actions/checkout",
+        "actions/setup-python",
+        "actions/setup-node",
+        "actions/upload-artifact",
+    ):
+        if action not in ci_actions:
+            fail(f"{CI_WORKFLOW_FILE}: missing required action: {action}")
+    for marker in (
+        'python-version: ["3.10", "3.11", "3.12"]',
+        'node-version: "22"',
+        'python -m pip install -e ".[dev]"',
+        "python -m unittest discover -s tests -v",
+        "python scripts/test_all.py",
+        "python -m ruff check --output-format=github .",
+        "python -m build",
+    ):
+        if not any(marker in line for line in ci_active_lines):
+            fail(f"{CI_WORKFLOW_FILE}: missing active fail-closed CI marker: {marker}")
+
     validate = (ROOT / WORKFLOW_FILES[0]).read_text(encoding="utf-8")
     validate_active_lines = [
         line.strip().removeprefix("- ").lstrip()
@@ -596,7 +666,7 @@ def validate_pypi_publish_workflow() -> None:
 
 def validate_no_secrets() -> None:
     for path in ROOT.rglob("*"):
-        if ".git" in path.parts or not path.is_file():
+        if _is_local_artifact(path) or not path.is_file():
             continue
         relative = path.relative_to(ROOT)
         if relative in SECRET_SCAN_SKIP:
@@ -616,7 +686,7 @@ def validate_no_secrets() -> None:
 def validate_public_text_integrity() -> None:
     """Reject common UTF-8/Windows-1252 decoding damage in public text files."""
     for path in ROOT.rglob("*"):
-        if ".git" in path.parts or ".hermes" in path.parts or not path.is_file():
+        if _is_local_artifact(path) or not path.is_file():
             continue
         if path.suffix.lower() not in TEXT_SUFFIXES_TO_SECRET_SCAN:
             continue

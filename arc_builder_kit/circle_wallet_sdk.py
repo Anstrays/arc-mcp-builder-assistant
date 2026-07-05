@@ -12,10 +12,14 @@ import json
 import os
 import re
 from typing import Mapping, cast
+from urllib import request as urllib_request
+from urllib.parse import urlsplit
 
 ARC_TESTNET_BLOCKCHAIN = "ARC-TESTNET"
 ARC_TESTNET_CHAIN_ID = 5_042_002
 ARC_TESTNET_CHAIN_ID_HEX = "0x4cef52"
+ARC_TESTNET_RPC_URL = "https://rpc.testnet.arc.network"
+ARC_TESTNET_USDC_ADDRESS = "0x3600000000000000000000000000000000000000"
 SDK_PYTHON_PACKAGE = "circle-developer-controlled-wallets"
 SDK_TYPESCRIPT_PACKAGE = "@circle-fin/developer-controlled-wallets"
 REQUIRED_ENVIRONMENT = ("CIRCLE_API_KEY", "CIRCLE_ENTITY_SECRET")
@@ -24,6 +28,7 @@ ACCOUNT_TYPES = ("EOA", "SCA")
 MAX_WALLET_COUNT = 50
 DEFAULT_WALLET_SET_NAME = "arc-agent-wallets"
 _NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_. -]{0,62}$")
+_EVM_ADDRESS_RE = re.compile(r"^0x[a-fA-F0-9]{40}$")
 
 
 def _validate_account_type(account_type: str) -> str:
@@ -233,7 +238,7 @@ print(json.dumps(json.loads(wallets.model_dump_json()), indent=2))
 
 def build_wallet_status_summary() -> dict[str, object]:
     """Return a combined wallet guard status summary."""
-    import os
+
     env_state = summarize_environment(os.environ)
     return {
         "manifest": build_sdk_guard_manifest(),
@@ -252,37 +257,56 @@ def build_wallet_status_summary() -> dict[str, object]:
 def get_usdc_balance(
     address: str,
     *,
-    rpc_url: str = "https://rpc.testnet.arc.network",
+    rpc_url: str | None = None,
+    usdc_address: str | None = None,
+    env: Mapping[str, str] | None = None,
     timeout: float = 30,
 ) -> dict[str, object]:
     """Read-only: check USDC balance of an address on Arc Testnet via eth_call."""
-    import json
-    from urllib import request as urllib_request
 
-    if not isinstance(address, str) or not address.startswith("0x") or len(address) != 42:
+    if not isinstance(address, str) or not _EVM_ADDRESS_RE.fullmatch(address):
         return {"ok": False, "error": "invalid EVM address", "address": address}
+    source = os.environ if env is None else env
+    resolved_rpc = rpc_url or source.get("CIRCLE_RPC_URL") or ARC_TESTNET_RPC_URL
+    resolved_usdc = usdc_address or source.get("CIRCLE_USDC_TOKEN") or ARC_TESTNET_USDC_ADDRESS
+    parsed_rpc = urlsplit(resolved_rpc)
+    local_http = parsed_rpc.scheme == "http" and parsed_rpc.hostname in {"127.0.0.1", "localhost", "::1"}
+    if (
+        not parsed_rpc.hostname
+        or (parsed_rpc.scheme != "https" and not local_http)
+        or parsed_rpc.username
+        or parsed_rpc.password
+        or parsed_rpc.query
+        or parsed_rpc.fragment
+    ):
+        return {"ok": False, "error": "RPC URL must use HTTPS or local HTTP without credentials or query data", "address": address}
+    if not isinstance(resolved_usdc, str) or not _EVM_ADDRESS_RE.fullmatch(resolved_usdc):
+        return {"ok": False, "error": "invalid USDC token address", "address": address}
+    if int(resolved_usdc[2:], 16) == 0:
+        return {"ok": False, "error": "USDC token address must not be the zero address", "address": address}
+    if isinstance(timeout, bool) or not isinstance(timeout, (int, float)) or timeout <= 0:
+        return {"ok": False, "error": "timeout must be positive", "address": address}
 
     # balanceOf(address) selector = keccak256("balanceOf(address)")[:4] = 0x70a08231
     # padded address (32 bytes, left-padded with zeros)
     padded = "0x" + "0" * 24 + address[2:]
     data = f"0x70a08231{padded[2:]}"
 
-    payload = json.dumps({
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "eth_call",
-        "params": [{"to": "0x3600000000000000000000000000000000000000", "data": data}, "latest"],
-    }).encode("utf-8")
-
     try:
-        req = urllib_request.Request(
-            rpc_url,
-            data=payload,
-            headers={"Content-Type": "application/json"},
-            method="POST",
+        chain_response = _rpc_call(resolved_rpc, "eth_chainId", [], timeout)
+        observed_chain = chain_response.get("result")
+        if not isinstance(observed_chain, str) or observed_chain.lower() != ARC_TESTNET_CHAIN_ID_HEX:
+            return {
+                "ok": False,
+                "error": f"RPC chain mismatch: expected {ARC_TESTNET_CHAIN_ID_HEX}, got {observed_chain!r}",
+                "address": address,
+            }
+        response = _rpc_call(
+            resolved_rpc,
+            "eth_call",
+            [{"to": resolved_usdc, "data": data}, "latest"],
+            timeout,
         )
-        with urllib_request.urlopen(req, timeout=timeout) as resp:
-            response = json.loads(resp.read().decode("utf-8"))
     except Exception as exc:
         return {"ok": False, "error": f"rpc call failed: {exc}", "address": address}
 
@@ -310,9 +334,35 @@ def get_usdc_balance(
         "decimals": 6,
         "network": "ARC-TESTNET",
         "chainId": ARC_TESTNET_CHAIN_ID,
-        "rpcUrl": rpc_url,
+        "rpcUrl": resolved_rpc,
+        "tokenAddress": resolved_usdc,
         "safety": {"readOnlyRpc": True, "noBroadcast": True, "noKeys": True},
     }
+
+
+def _rpc_call(
+    rpc_url: str,
+    method: str,
+    params: list[object],
+    timeout: float,
+) -> dict[str, object]:
+    payload = json.dumps(
+        {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
+    ).encode("utf-8")
+    request = urllib_request.Request(
+        rpc_url,
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib_request.urlopen(request, timeout=timeout) as response:
+        raw = response.read(1_000_001)
+    if len(raw) > 1_000_000:
+        raise ValueError("RPC response exceeds the 1 MB safety limit")
+    parsed = json.loads(raw.decode("utf-8"))
+    if not isinstance(parsed, dict):
+        raise ValueError("RPC response must be a JSON object")
+    return parsed
 
 
 def prepare_send_intent(
@@ -377,6 +427,8 @@ __all__ = [
     "ARC_TESTNET_BLOCKCHAIN",
     "ARC_TESTNET_CHAIN_ID",
     "ARC_TESTNET_CHAIN_ID_HEX",
+    "ARC_TESTNET_RPC_URL",
+    "ARC_TESTNET_USDC_ADDRESS",
     "MAX_WALLET_COUNT",
     "REQUIRED_ENVIRONMENT",
     "build_sdk_guard_manifest",

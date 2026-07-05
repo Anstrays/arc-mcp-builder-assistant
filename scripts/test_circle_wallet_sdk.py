@@ -7,12 +7,21 @@ import json
 import sys
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from arc_builder_kit import circle_wallet_sdk as sdk
+from arc_builder_kit import circle_wallet_sdk as sdk  # noqa: E402
+
+
+def rpc_response(payload: dict[str, object]) -> mock.MagicMock:
+    response = mock.MagicMock()
+    response.read.return_value = json.dumps(payload).encode("utf-8")
+    response.__enter__.return_value = response
+    response.__exit__.return_value = False
+    return response
 
 
 class CircleWalletSdkManifestTests(unittest.TestCase):
@@ -85,6 +94,43 @@ class CircleWalletSdkManifestTests(unittest.TestCase):
         )
         for marker in forbidden_literals:
             self.assertNotIn(marker, snippet)
+
+    def test_balance_uses_configured_rpc_and_token_after_chain_proof(self) -> None:
+        address = "0x1111111111111111111111111111111111111111"
+        token = "0x2222222222222222222222222222222222222222"
+        responses = [
+            rpc_response({"jsonrpc": "2.0", "id": 1, "result": "0x4cef52"}),
+            rpc_response({"jsonrpc": "2.0", "id": 1, "result": "0xf4240"}),
+        ]
+        with mock.patch.object(sdk.urllib_request, "urlopen", side_effect=responses) as opened:
+            result = sdk.get_usdc_balance(
+                address,
+                env={"CIRCLE_RPC_URL": "https://rpc.example.test", "CIRCLE_USDC_TOKEN": token},
+            )
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["balanceUSDC"], "1.000000")
+        self.assertEqual(result["tokenAddress"], token)
+        self.assertEqual(opened.call_count, 2)
+        balance_payload = json.loads(opened.call_args_list[1].args[0].data)
+        self.assertEqual(balance_payload["method"], "eth_call")
+        self.assertEqual(balance_payload["params"][0]["to"], token)
+
+    def test_balance_rejects_wrong_chain_before_eth_call(self) -> None:
+        response = rpc_response({"jsonrpc": "2.0", "id": 1, "result": "0x1"})
+        with mock.patch.object(sdk.urllib_request, "urlopen", return_value=response) as opened:
+            result = sdk.get_usdc_balance("0x1111111111111111111111111111111111111111")
+        self.assertFalse(result["ok"])
+        self.assertIn("chain mismatch", result["error"])
+        self.assertEqual(opened.call_count, 1)
+
+    def test_balance_rejects_unsafe_rpc_and_token_configuration(self) -> None:
+        address = "0x1111111111111111111111111111111111111111"
+        unsafe_rpc = sdk.get_usdc_balance(address, rpc_url="http://rpc.example.test")
+        self.assertFalse(unsafe_rpc["ok"])
+        self.assertIn("HTTPS or local HTTP", unsafe_rpc["error"])
+        zero_token = sdk.get_usdc_balance(address, usdc_address="0x" + "0" * 40)
+        self.assertFalse(zero_token["ok"])
+        self.assertIn("zero address", zero_token["error"])
 
 
 if __name__ == "__main__":

@@ -93,7 +93,7 @@ facts, starter templates, and local examples needed by the CLI and stdio MCP
 server. After publication, install it in an isolated environment:
 
 ```bash
-python3 -m pip install arc-builder-kit==0.2.0
+python3 -m pip install "arc-builder-kit>=0.4.1"
 arc-builder --version
 arc-builder templates
 arc-builder validate
@@ -231,6 +231,9 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 | `CIRCLE_API_KEY` | Circle Wallet SDK guard | empty | Optional manual SDK-run secret. Keep in a private shell/secret manager. |
 | `CIRCLE_ENTITY_SECRET` | Circle Wallet SDK guard | empty | Optional manual SDK-run secret. Never commit or print it. |
 | `CIRCLE_WALLET_SET_ID` | Circle Wallet SDK guard | empty | Optional existing wallet-set identifier for local operator notes. |
+| `CIRCLE_RPC_URL` | Read-only balance / payment demo | `https://rpc.testnet.arc.network` | HTTPS or localhost only; the balance helper proves chain id `0x4cef52` before `eth_call`. |
+| `CIRCLE_USDC_TOKEN` | Read-only balance / payment demo | `0x3600...0000` | Configurable reviewed Arc Testnet USDC interface; must be a non-zero EVM address. |
+| `REAL_TRANSFER` | Payment Intent Demo | `0` | `1` exposes the manual Arc Testnet send action; typed confirmation and an explicit click are still required. |
 
 ## Troubleshooting
 
@@ -244,6 +247,8 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 - **Live smoke rejects a URL:** use a valid HTTP/HTTPS URL without embedded credentials. A live `ARC_LIVE_X_PAYMENT` proof requires HTTPS.
 - **Config exits with `Invalid x402 demo configuration`:** keep `X402_DEMO_NETWORK=arc-testnet`, `X402_DEMO_ASSET=USDC`, `X402_DEMO_MAINNET_ENABLED=false`, a positive 6-decimal-or-less amount, and a non-zero 42-character EVM `X402_DEMO_PAY_TO`.
 - **A secret was pasted by mistake:** remove it from `.env` or shell history as needed, rotate the secret, and do not commit it. The repo scans common credential shapes during validation.
+- **Payment Intent Demo rejects `HOST`:** the wallet-backed server is intentionally localhost-only; use `127.0.0.1`, `localhost`, or `::1` rather than exposing its transfer endpoint.
+- **Payment Intent Demo blocks a send:** real Arc Testnet sends require `REAL_TRANSFER=1`, the exact phrase `SEND ARC TESTNET USDC`, one explicit button click, an amount no greater than `1.00 USDC`, and an unused per-intent one-shot lock. Estimate mode remains the default.
 
 Guarded Arc Testnet wallet-send lab (`examples/arc-testnet-wallet-send-gate/`):
 
@@ -350,7 +355,7 @@ For the shortest reviewer-facing checkpoint, see [`docs/current-readiness-report
 - x402 local challenge boundary with machine-readable manifest, JSON-RPC/MCP-style stdio helpers, `.env.example`, local transcript, and production deployment runbook.
 - Agent commerce starter-kit examples: components, flows, identity profile preview, and review packet exporter.
 - Committed screenshots for the landing page, docs viewer, payment-intent playground, and job escrow simulator.
-- Phase 4 builder tooling plus wallet guards: unified CLI (`scripts/arc_builder_cli.py`) with `wallet sdk-plan/env-check/sdk-snippet`, stdio MCP server (`scripts/arc_builder_mcp_server.py`) with 8 JSON-RPC tools (including release-packet and example-listing), and dependency-free project starter templates under `templates/`.
+- Phase 4 builder tooling plus wallet guards: canonical package CLI with compatibility wrappers under `scripts/`, an 11-tool stdio MCP server, and dependency-free project starter templates under `templates/`.
 
 ### Safe default
 

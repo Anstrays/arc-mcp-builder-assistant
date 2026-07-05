@@ -32,7 +32,7 @@ As a user, I want an AI agent to prepare a clear USDC payment request, see **the
    - **Auto-estimate**: backend calls `circle wallet transfer --estimate` — shows gas fee, base fee, priority fee
 4. User reviews estimate in the intent card.
 5. User clicks "Estimate Fee" → **real** gas quote from Circle.
-6. (optional, `REAL_TRANSFER=1`) Click "Send Real USDC" → actual on-chain transfer on Arc Testnet.
+6. (optional, `REAL_TRANSFER=1`) Click "Send Arc Testnet USDC" and type `SEND ARC TESTNET USDC` before the backend can request one transfer.
 
 ## Architecture
 
@@ -70,7 +70,7 @@ As a user, I want an AI agent to prepare a clear USDC payment request, see **the
 | `CIRCLE_RPC_URL` | `https://rpc.testnet.arc.network` | RPC endpoint |
 | `CIRCLE_USDC_TOKEN` | `0x3600...0000` | USDC ERC-20 token address |
 | `REAL_TRANSFER` | `0` | Set to `1` to enable real USDC sends |
-| `HOST`, `PORT` | `0.0.0.0:8080` | Server bind |
+| `HOST`, `PORT` | `127.0.0.1:8080` | Local-only server bind; external binds are rejected |
 
 ## Prerequisites
 
@@ -97,6 +97,7 @@ python3 server.py
 ## Safety
 
 - All transfers go through `--estimate` first (no cost).
-- Real transfer requires `REAL_TRANSFER=1` **and** `real=true` in request body — double opt-in.
+- Real transfer requires `REAL_TRANSFER=1`, `real=true`, the exact `SEND ARC TESTNET USDC` confirmation phrase, an explicit click, a maximum amount of `1.00 USDC`, and one send attempt per intent.
+- The backend rejects external bind addresses, wildcard CORS, oversized JSON bodies, non-USDC assets, invalid recipients, and non-Arc chain configuration.
 - Circle agent wallet session expires after ~28 days; re-login with OTP.
 - `circle wallet transfer` sends USDC via Circle's infrastructure — not raw private key signing.

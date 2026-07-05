@@ -12,7 +12,7 @@ DOC = ROOT / "docs/receipt-verifier-playground.md"
 README = ROOT / "README.md"
 INDEX = ROOT / "index.html"
 VIEWER = ROOT / "docs/viewer.js"
-VALIDATOR = ROOT / "scripts/validate_repo.py"
+VALIDATOR = ROOT / "arc_builder_kit/validate_repo.py"
 
 
 def read(path: Path) -> str:

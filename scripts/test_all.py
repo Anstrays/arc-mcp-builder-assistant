@@ -26,6 +26,7 @@ CHECKS = [
     "scripts/test_arc_builder_doctor.py",
     "scripts/test_arc_release_packet.py",
     "scripts/test_arc_testnet_facts.py",
+    "scripts/test_payment_intent_demo.py",
     "scripts/test_payment_intent_playground.py",
     "scripts/test_x402_boundary.py",
     "scripts/test_x402_client.py",

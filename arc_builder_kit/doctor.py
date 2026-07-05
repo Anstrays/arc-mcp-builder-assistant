@@ -19,6 +19,7 @@ import argparse
 import http.client as http_client
 import html
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -27,7 +28,6 @@ import time
 from contextlib import redirect_stdout
 from datetime import datetime, timezone
 from io import StringIO
-from pathlib import Path
 from typing import Any, Callable, Iterable
 from urllib import error as urllib_error
 from urllib import request as urllib_request
@@ -755,11 +755,6 @@ def check_circle_cli(options: Options) -> dict[str, Any]:
             source=cli_path,
             duration_ms=_elapsed_ms(start),
         )
-    # Parse to get session info
-    try:
-        status_data = json.loads(result.stdout)
-    except (ValueError, TypeError):
-        status_data = {}
     return make_check(
         "circle.cli_installed",
         "Circle CLI installed",
@@ -901,7 +896,6 @@ def check_circle_balance(options: Options) -> dict[str, Any]:
             duration_ms=_elapsed_ms(start),
         )
     # Use default wallet address from env or constant
-    import os
     addr = os.environ.get("CIRCLE_WALLET_ADDR", DEFAULT_ARC_WALLET)
     result = run_child(
         [cli_path, "wallet", "balance", "--address", addr, "--chain", "ARC-TESTNET", "--output", "json"],

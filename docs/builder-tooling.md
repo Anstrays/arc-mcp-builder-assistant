@@ -11,11 +11,11 @@ Phase 4 of the Arc MCP Builder Assistant ships unified command-line and MCP inte
 
 ## Install from PyPI
 
-Release `0.2.0` requires Python 3.10+ and packages the CLI, MCP server, reviewed Arc Testnet facts,
+Release `0.4.1` requires Python 3.10+ and packages the CLI, MCP server, reviewed Arc Testnet facts,
 starter templates, and local examples into one self-contained wheel:
 
 ```bash
-python3 -m pip install arc-builder-kit==0.2.0
+python3 -m pip install "arc-builder-kit>=0.4.1"
 arc-builder --version
 arc-builder templates
 arc-builder validate
@@ -60,7 +60,7 @@ first release, configure a pending GitHub publisher in the PyPI account:
 
 Create the GitHub environment `pypi` and require maintainer approval before
 deployment. After the release-fix PR is merged, publish a non-prerelease GitHub
-Release from the exact `v0.2.0` tag on `main`. The release event runs the full
+Release from the exact `v0.4.1` tag on `main`. The release event runs the full
 suite, verifies all version surfaces, builds wheel/sdist, runs `twine check`,
 and publishes through a short-lived OIDC credential.
 
@@ -85,7 +85,8 @@ Commands:
 | `facts` | Print reviewed Arc Testnet facts. |
 | `manifest` | Print the local x402 paid-agent manifest. |
 | `release-packet [--output <dir>] [--force]` | Generate a maintainer release packet. |
-| `wallet sdk-plan/env-check/sdk-snippet` | Build Circle Wallet SDK guard plans for Arc Testnet without live SDK execution. |
+| `x402 challenge/verify` | Inspect an x402 challenge or verify Arc Testnet receipt evidence read-only. |
+| `wallet sdk-plan/status/balance/send/env-check/sdk-snippet` | Build guarded wallet plans, perform opt-in read-only balance checks, or prepare a non-broadcasting send intent. |
 | `mcp` | Start the Arc Builder MCP server. |
 
 Examples:
@@ -145,6 +146,8 @@ python3 scripts/arc_builder_cli.py mcp
 | `get_arc_testnet_facts` | Return reviewed Arc Testnet facts. |
 | `x402_manifest` | Return the local x402 paid-agent manifest. |
 | `x402_paid_request` | Fetch a 402 challenge or verify an Arc Testnet transaction hash proof read-only. |
+| `x402_fetch_challenge` | Fetch and normalize a 402 challenge without creating a payment. |
+| `x402_verify_receipt` | Check Arc Testnet USDC receipt evidence through read-only RPC. |
 | `generate_release_packet` | Generate a local maintainer release packet. |
 | `list_examples` | List available browser-facing examples. |
 

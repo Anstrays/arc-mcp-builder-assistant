@@ -5,6 +5,19 @@ All notable changes to the Arc MCP Builder Assistant are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] — 2026-07-05
+
+### Fixed
+- Made CI fail closed: script tests and Ruff failures now fail the job, builds use isolation, and all actions are SHA-pinned.
+- Replaced stale 0.2.x CLI/MCP copies and tests with wrappers and coverage for the canonical package API.
+- Restored the full repository validator and added regression checks for the hardened CI workflow.
+- Removed the undeclared `httpx` runtime dependency from `ArcDocsClient` while preserving its async API.
+- Made Arc Testnet balance checks configurable and chain-proven before `eth_call`.
+- Hardened the Payment Intent Demo with localhost-only binding, bounded input, same-origin responses, typed send confirmation, external SRI JavaScript, and injection-safe DOM rendering.
+
+### Changed
+- Refreshed package/install documentation and rebuilt the Payment Intent Demo as a compact operational interface.
+
 ## [0.4.0] — 2026-07-05
 
 - **Feature:** Added `RpcVerifier` to x402 challenge server — verifies X-Payment
@@ -121,7 +134,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Job escrow simulator.
 - 3 prompts: explain Arc docs, build payment intent, deploy contracts.
 
-[Unreleased]: https://github.com/Anstrays/arc-mcp-builder-assistant/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/Anstrays/arc-mcp-builder-assistant/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/Anstrays/arc-mcp-builder-assistant/releases/tag/v0.4.1
 [0.4.0]: https://github.com/Anstrays/arc-mcp-builder-assistant/releases/tag/v0.4.0
 [0.3.0]: https://github.com/Anstrays/arc-mcp-builder-assistant/releases/tag/v0.3.0
 [0.2.2]: https://github.com/Anstrays/arc-mcp-builder-assistant/releases/tag/v0.2.2

@@ -19,6 +19,8 @@ Supported tools:
 - get_arc_testnet_facts
 - x402_manifest
 - x402_paid_request
+- x402_fetch_challenge
+- x402_verify_receipt
 - generate_release_packet
 - list_examples
 

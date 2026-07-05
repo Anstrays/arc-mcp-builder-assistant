@@ -29,7 +29,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass, field
-from typing import Any, Mapping, Sequence
+from typing import Any
 from urllib import error as urllib_error
 from urllib import request as urllib_request
 
