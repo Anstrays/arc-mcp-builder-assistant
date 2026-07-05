@@ -11,7 +11,8 @@ from __future__ import annotations
 import json
 import os
 import re
-from typing import Mapping, cast
+import time
+from typing import Any, Mapping, cast
 from urllib import request as urllib_request
 from urllib.parse import urlsplit
 
@@ -29,6 +30,91 @@ MAX_WALLET_COUNT = 50
 DEFAULT_WALLET_SET_NAME = "arc-agent-wallets"
 _NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_. -]{0,62}$")
 _EVM_ADDRESS_RE = re.compile(r"^0x[a-fA-F0-9]{40}$")
+
+# ── RPC fallback chain ─────────────────────────────────────────────
+
+ARC_RPC_FALLBACKS: tuple[str, ...] = ()  # Add URLs via ARC_RPC_FALLBACKS env var
+RPC_CALL_TIMEOUT = 15
+_RPC_RETRY_DELAY = 0.5  # seconds between fallback retries
+
+
+def _is_valid_http_url(url: str) -> bool:
+    """Check if a URL is a valid HTTP/HTTPS RPC endpoint."""
+    parsed = urlsplit(url)
+    return parsed.scheme in ("http", "https") and bool(parsed.hostname)
+
+
+def rpc_call(method: str, params: list[Any] | None = None, *, rpc_urls: list[str] | None = None, timeout: int = RPC_CALL_TIMEOUT) -> dict[str, Any]:
+    """Make an RPC call with automatic fallback across endpoints.
+
+    Tries endpoints in order: explicit `rpc_urls` → ARC_RPC_FALLBACKS → env `ARC_RPC_FALLBACKS` → primary Arc Testnet.
+    Returns ``{"ok": True, "result": ...}`` or ``{"ok": False, "error": ...}``.
+    """
+    if rpc_urls is None:
+        rpc_urls = []
+        # Add user-specified fallbacks from env
+        env_fallbacks = os.environ.get("ARC_RPC_FALLBACKS", "")
+        if env_fallbacks:
+            rpc_urls.extend(url.strip() for url in env_fallbacks.split(",") if url.strip() and _is_valid_http_url(url.strip()))
+        rpc_urls.extend(ARC_RPC_FALLBACKS)
+    rpc_urls.insert(0, ARC_TESTNET_RPC_URL)
+
+    last_error = ""
+    for i, url in enumerate(rpc_urls):
+        if not _is_valid_http_url(url):
+            continue
+        try:
+            payload = json.dumps({
+                "jsonrpc": "2.0", "id": 1,
+                "method": method,
+                "params": params or [],
+            }).encode("utf-8")
+            req = urllib_request.Request(
+                url,
+                data=payload,
+                headers={"Content-Type": "application/json", "Accept": "application/json"},
+                method="POST",
+            )
+            with urllib_request.urlopen(req, timeout=timeout) as resp:
+                response = json.loads(resp.read().decode("utf-8"))
+            if "error" in response:
+                last_error = response.get("error", {}).get("message", "RPC error")
+                continue
+            source = "primary" if i == 0 else f"fallback-{i}"
+            return {"ok": True, "result": response.get("result"), "source": source, "endpoint": url}
+        except Exception as exc:
+            last_error = f"{url}: {exc}"
+            if i < len(rpc_urls) - 1:
+                time.sleep(_RPC_RETRY_DELAY)
+            continue
+    return {"ok": False, "error": f"all RPC endpoints failed: {last_error}"}
+
+
+def check_arc_rpc_health(rpc_urls: list[str] | None = None, timeout: int = RPC_CALL_TIMEOUT) -> dict[str, Any]:
+    """Quick health check: call eth_chainId on Arc Testnet.
+
+    Returns ``{"ok": True, "chainId": 5042002, "chainIdHex": "0x4cef52", "endpoint": url, ...}``
+    or ``{"ok": False, "error": ...}``.
+    """
+    result = rpc_call("eth_chainId", timeout=timeout)
+    if not result.get("ok"):
+        return result
+    chain_hex = result.get("result")
+    if not isinstance(chain_hex, str):
+        return {"ok": False, "error": f"unexpected chain ID response: {chain_hex!r}"}
+    try:
+        chain_dec = int(chain_hex, 16)
+    except (ValueError, TypeError):
+        return {"ok": False, "error": f"could not decode chain ID hex: {chain_hex!r}"}
+    if chain_dec != ARC_TESTNET_CHAIN_ID:
+        return {"ok": False, "error": f"wrong chain {chain_dec} ({chain_hex}), expected {ARC_TESTNET_CHAIN_ID} ({ARC_TESTNET_CHAIN_ID_HEX})"}
+    return {
+        "ok": True,
+        "chainId": chain_dec,
+        "chainIdHex": chain_hex,
+        "endpoint": result.get("endpoint"),
+        "source": result.get("source"),
+    }
 
 
 def _validate_account_type(account_type: str) -> str:
@@ -293,14 +379,9 @@ def get_usdc_balance(
     data = f"0x70a08231{padded[2:]}"
 
     try:
-        chain_response = _rpc_call(resolved_rpc, "eth_chainId", [], timeout)
-        observed_chain = chain_response.get("result")
-        if not isinstance(observed_chain, str) or observed_chain.lower() != ARC_TESTNET_CHAIN_ID_HEX:
-            return {
-                "ok": False,
-                "error": f"RPC chain mismatch: expected {ARC_TESTNET_CHAIN_ID_HEX}, got {observed_chain!r}",
-                "address": address,
-            }
+        health = check_arc_rpc_health(timeout=int(timeout))
+        if not health.get("ok"):
+            return {"ok": False, "error": f"RPC health check failed: {health.get('error')}", "address": address}
         response = _rpc_call(
             resolved_rpc,
             "eth_call",
@@ -424,6 +505,7 @@ def prepare_send_intent(
 
 __all__ = [
     "ACCOUNT_TYPES",
+    "ARC_RPC_FALLBACKS",
     "ARC_TESTNET_BLOCKCHAIN",
     "ARC_TESTNET_CHAIN_ID",
     "ARC_TESTNET_CHAIN_ID_HEX",
@@ -431,11 +513,14 @@ __all__ = [
     "ARC_TESTNET_USDC_ADDRESS",
     "MAX_WALLET_COUNT",
     "REQUIRED_ENVIRONMENT",
+    "RPC_CALL_TIMEOUT",
     "build_sdk_guard_manifest",
     "build_wallet_creation_plan",
     "build_wallet_status_summary",
+    "check_arc_rpc_health",
     "generate_python_sdk_snippet",
     "get_usdc_balance",
     "prepare_send_intent",
+    "rpc_call",
     "summarize_environment",
 ]
