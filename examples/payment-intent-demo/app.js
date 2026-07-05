@@ -115,8 +115,7 @@
       }
 
       if (w.tx_ok && w.recent_transactions) {
-        var txs = Array.isArray(w.recent_transactions) ? w.recent_transactions : [w.recent_transactions];
-        renderTxList(txs);
+        // Transactions are rendered by refreshTx() — avoid race
       }
     }).catch(function (e) {
       walletBalStatus.textContent = "Error: " + e.message;

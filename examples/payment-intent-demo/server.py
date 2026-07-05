@@ -308,8 +308,19 @@ class PaymentIntentHandler(SimpleHTTPRequestHandler):
 
     def _handle_estimate(self) -> None:
         """Estimate fee for a transfer via Circle CLI."""
-        recipient = self._query_param("to") or "0xRecipientAddressPlaceholder"
-        amount = self._query_param("amount") or "1.0"
+        recipient = self._query_param("to") or ""
+        amount = self._query_param("amount") or ""
+
+        if recipient and not EVM_ADDRESS_RE.fullmatch(recipient):
+            self._send_json(json_response({"ok": False, "error": "recipient must be a valid EVM address", "recipient": recipient[:100]}))
+            return
+        if amount and not USDC_AMOUNT_RE.fullmatch(amount):
+            self._send_json(json_response({"ok": False, "error": "amount must be a positive USDC decimal", "amount": amount[:20]}))
+            return
+        if not recipient:
+            recipient = "0xRecipientAddressPlaceholder"
+        if not amount:
+            amount = "1.0"
 
         result = _run_circle([
             "wallet", "transfer", recipient,
