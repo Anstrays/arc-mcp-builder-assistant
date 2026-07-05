@@ -50,6 +50,9 @@ MIN_NODE_MAJOR = 18
 EXPECTED_CHAIN_ID_DECIMAL = 5042002
 EXPECTED_CHAIN_ID_HEX = "0x4cef52"
 
+CIRCLE_CMD = "circle"
+DEFAULT_ARC_WALLET = "0x0cd9b933302d90bfe295471deac7f4eafd9ea401"
+
 CANONICAL_BASE_URL = "https://anstrays.github.io/arc-mcp-builder-assistant/"
 ALLOWED_PUBLIC_HOST = "anstrays.github.io"
 
@@ -256,12 +259,14 @@ class Options:
         full: bool = False,
         include_arc_rpc: bool = False,
         include_public_site: bool = False,
+        include_circle_wallet: bool = False,
         strict: bool = False,
         network_timeout: int = DEFAULT_NETWORK_TIMEOUT,
     ) -> None:
         self.full = full
         self.include_arc_rpc = include_arc_rpc
         self.include_public_site = include_public_site
+        self.include_circle_wallet = include_circle_wallet
         self.strict = strict
         self.network_timeout = max(1, min(MAX_NETWORK_TIMEOUT, int(network_timeout)))
 
@@ -710,6 +715,250 @@ def check_public_site(options: Options) -> list[dict[str, Any]]:
     ]
 
 
+# ── Circle CLI checks ─────────────────────────────────────────────
+
+
+def _circle_cli_path() -> str | None:
+    """Find the ``circle`` CLI binary."""
+    return shutil.which(CIRCLE_CMD)
+
+
+def check_circle_cli(options: Options) -> dict[str, Any]:
+    """Check whether Circle CLI is installed."""
+    start = time.monotonic()
+    cli_path = _circle_cli_path()
+    if not cli_path:
+        return make_check(
+            "circle.cli_installed",
+            "Circle CLI installed",
+            STATUS_SKIP,
+            "circle CLI not found on PATH. Install: npm install -g @circle-fin/cli",
+            duration_ms=_elapsed_ms(start),
+        )
+    result = run_child([cli_path, "wallet", "status", "--output", "json"], 15)
+    if result.timed_out:
+        return make_check(
+            "circle.cli_installed",
+            "Circle CLI installed",
+            STATUS_WARN,
+            "circle CLI found but status check timed out",
+            source=cli_path,
+            duration_ms=_elapsed_ms(start),
+        )
+    if result.returncode != 0:
+        err = result.summary_line() or "exit {result.returncode}"
+        return make_check(
+            "circle.cli_installed",
+            "Circle CLI installed",
+            STATUS_SKIP,
+            f"circle CLI found but not logged in: {err}",
+            source=cli_path,
+            duration_ms=_elapsed_ms(start),
+        )
+    # Parse to get session info
+    try:
+        status_data = json.loads(result.stdout)
+    except (ValueError, TypeError):
+        status_data = {}
+    return make_check(
+        "circle.cli_installed",
+        "Circle CLI installed",
+        STATUS_PASS,
+        f"circle CLI ({cli_path})",
+        source=cli_path,
+        duration_ms=_elapsed_ms(start),
+    )
+
+
+def check_circle_session(options: Options) -> dict[str, Any]:
+    """Check Circle CLI session status and expiry."""
+    start = time.monotonic()
+    cli_path = _circle_cli_path()
+    if not cli_path:
+        return make_check(
+            "circle.session",
+            "Circle CLI session",
+            STATUS_SKIP,
+            "circle CLI not available",
+            duration_ms=_elapsed_ms(start),
+        )
+    result = run_child([cli_path, "wallet", "status", "--output", "json"], 15)
+    if result.timed_out or result.returncode != 0:
+        return make_check(
+            "circle.session",
+            "Circle CLI session",
+            STATUS_SKIP,
+            "not logged in or session expired",
+            duration_ms=_elapsed_ms(start),
+        )
+    try:
+        data = json.loads(result.stdout)
+        data_obj = data.get("data", data)
+        email = data_obj.get("email", "unknown")
+        # Status is nested under testnet/mainnet
+        testnet = data_obj.get("testnet", {})
+        mainnet = data_obj.get("mainnet", {})
+        testnet_status = testnet.get("tokenStatus", "UNKNOWN")
+        mainnet_status = mainnet.get("tokenStatus", "UNKNOWN")
+        testnet_expiry = testnet.get("expiresIn", "")
+        mainnet_expiry = mainnet.get("expiresIn", "")
+        is_valid = testnet_status.upper() == "VALID" or mainnet_status.upper() == "VALID"
+        parts = [f"Email: {email}"]
+        if testnet_status:
+            parts.append(f"Testnet: {testnet_status}")
+            if testnet_expiry:
+                parts.append(f"expires {testnet_expiry}")
+        if mainnet_status:
+            parts.append(f"Mainnet: {mainnet_status}")
+            if mainnet_expiry:
+                parts.append(f"expires {mainnet_expiry}")
+        detail = " · ".join(parts)
+    except (ValueError, TypeError, AttributeError):
+        email = "unknown"
+        is_valid = False
+        detail = "could not parse session status"
+    return make_check(
+        "circle.session",
+        "Circle CLI session",
+        STATUS_PASS if is_valid else STATUS_WARN,
+        detail,
+        duration_ms=_elapsed_ms(start),
+    )
+
+
+def check_circle_wallet(options: Options) -> dict[str, Any]:
+    """Check Circle agent wallet on Arc Testnet."""
+    start = time.monotonic()
+    cli_path = _circle_cli_path()
+    if not cli_path:
+        return make_check(
+            "circle.wallet",
+            "Circle wallet (Arc Testnet)",
+            STATUS_SKIP,
+            "circle CLI not available",
+            duration_ms=_elapsed_ms(start),
+        )
+    result = run_child(
+        [cli_path, "wallet", "list", "--chain", "ARC-TESTNET", "--type", "agent", "--output", "json"],
+        15,
+    )
+    if result.timed_out:
+        return make_check(
+            "circle.wallet",
+            "Circle wallet (Arc Testnet)",
+            STATUS_WARN,
+            "wallet list timed out",
+            duration_ms=_elapsed_ms(start),
+        )
+    if result.returncode != 0:
+        return make_check(
+            "circle.wallet",
+            "Circle wallet (Arc Testnet)",
+            STATUS_SKIP,
+            f"wallet list failed: {result.summary_line()}",
+            duration_ms=_elapsed_ms(start),
+        )
+    try:
+        data = json.loads(result.stdout)
+        wallets = data.get("data", {}).get("wallets", data.get("wallets", []))
+        if not wallets:
+            return make_check(
+                "circle.wallet",
+                "Circle wallet (Arc Testnet)",
+                STATUS_WARN,
+                "no agent wallets found on ARC-TESTNET",
+                duration_ms=_elapsed_ms(start),
+            )
+        addr = wallets[0].get("address", "?")
+        created = wallets[0].get("createDate", "?")
+        return make_check(
+            "circle.wallet",
+            "Circle wallet (Arc Testnet)",
+            STATUS_PASS,
+            f"Agent wallet {addr} (created {created})",
+            duration_ms=_elapsed_ms(start),
+        )
+    except (ValueError, TypeError, KeyError, IndexError) as exc:
+        return make_check(
+            "circle.wallet",
+            "Circle wallet (Arc Testnet)",
+            STATUS_WARN,
+            f"could not parse wallet list: {exc}",
+            duration_ms=_elapsed_ms(start),
+        )
+
+
+def check_circle_balance(options: Options) -> dict[str, Any]:
+    """Check USDC balance on Arc Testnet."""
+    start = time.monotonic()
+    cli_path = _circle_cli_path()
+    if not cli_path:
+        return make_check(
+            "circle.balance",
+            "USDC balance (Arc Testnet)",
+            STATUS_SKIP,
+            "circle CLI not available",
+            duration_ms=_elapsed_ms(start),
+        )
+    # Use default wallet address from env or constant
+    import os
+    addr = os.environ.get("CIRCLE_WALLET_ADDR", DEFAULT_ARC_WALLET)
+    result = run_child(
+        [cli_path, "wallet", "balance", "--address", addr, "--chain", "ARC-TESTNET", "--output", "json"],
+        15,
+    )
+    if result.timed_out:
+        return make_check(
+            "circle.balance",
+            "USDC balance (Arc Testnet)",
+            STATUS_WARN,
+            f"balance check timed out for {addr}",
+            duration_ms=_elapsed_ms(start),
+        )
+    if result.returncode != 0:
+        return make_check(
+            "circle.balance",
+            "USDC balance (Arc Testnet)",
+            STATUS_WARN,
+            f"balance check failed: {result.summary_line()}",
+            duration_ms=_elapsed_ms(start),
+        )
+    try:
+        data = json.loads(result.stdout)
+        balances = data.get("data", {}).get("balances", data.get("balances", []))
+        if not balances:
+            return make_check(
+                "circle.balance",
+                "USDC balance (Arc Testnet)",
+                STATUS_WARN,
+                f"no balances returned for {addr}",
+                duration_ms=_elapsed_ms(start),
+            )
+        # Prefer 6-decimal USDC (ERC-20), fallback to native
+        usdc_entry = next(
+            (b for b in balances if b.get("token", {}).get("symbol") == "USDC"
+             and b.get("token", {}).get("decimals") == 6),
+            balances[0],
+        )
+        amount = usdc_entry.get("amount", "0")
+        token_name = usdc_entry.get("token", {}).get("symbol", "USDC")
+        return make_check(
+            "circle.balance",
+            "USDC balance (Arc Testnet)",
+            STATUS_PASS,
+            f"{amount} {token_name} · Wallet: {addr}",
+            duration_ms=_elapsed_ms(start),
+        )
+    except (ValueError, TypeError, KeyError, IndexError) as exc:
+        return make_check(
+            "circle.balance",
+            "USDC balance (Arc Testnet)",
+            STATUS_WARN,
+            f"could not parse balance: {exc}",
+            duration_ms=_elapsed_ms(start),
+        )
+
+
 # --- assembly -----------------------------------------------------------------
 
 _DEFAULT_CHECKS: tuple[Callable[[Options], dict[str, Any]], ...] = (
@@ -741,6 +990,11 @@ def collect_checks(options: Options) -> list[dict[str, Any]]:
         checks.append(check_arc_testnet_status(options))
     if options.include_public_site:
         checks.extend(check_public_site(options))
+    if options.include_circle_wallet:
+        checks.append(check_circle_cli(options))
+        checks.append(check_circle_session(options))
+        checks.append(check_circle_wallet(options))
+        checks.append(check_circle_balance(options))
     for check in checks:
         if check["status"] not in VALID_STATUSES:
             raise ValueError(f"check {check.get('id')} produced invalid status")
@@ -768,9 +1022,10 @@ def build_report(options: Options) -> dict[str, Any]:
         "overallStatus": overall_status(checks),
         "generatedAt": _generated_at(),
         "mode": {
-            "localOnly": not (options.include_arc_rpc or options.include_public_site),
+            "localOnly": not (options.include_arc_rpc or options.include_public_site or options.include_circle_wallet),
             "arcRpcIncluded": options.include_arc_rpc,
             "publicSiteIncluded": options.include_public_site,
+            "circleWalletIncluded": options.include_circle_wallet,
             "full": options.full,
             "strict": options.strict,
         },
@@ -900,6 +1155,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="opt in to read-only GET checks of the public GitHub Pages site",
     )
     parser.add_argument(
+        "--include-circle-wallet",
+        action="store_true",
+        help="opt in to live Circle CLI checks (wallet, balance, session)",
+    )
+    parser.add_argument(
         "--strict",
         action="store_true",
         help="treat an unavailable requested optional network check as a failure",
@@ -919,6 +1179,7 @@ def main(argv: list[str] | None = None) -> int:
         full=args.full,
         include_arc_rpc=args.include_arc_rpc,
         include_public_site=args.include_public_site,
+        include_circle_wallet=args.include_circle_wallet,
         strict=args.strict,
         network_timeout=args.network_timeout,
     )

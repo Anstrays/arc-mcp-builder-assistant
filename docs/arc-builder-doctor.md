@@ -29,6 +29,12 @@ python3 scripts/arc_builder_doctor.py --include-arc-rpc
 # Opt-in, read-only public GitHub Pages health check.
 python3 scripts/arc_builder_doctor.py --include-public-site
 
+# Opt-in, live Circle CLI checks (wallet, balance, session).
+python3 scripts/arc_builder_doctor.py --include-circle-wallet
+
+# All opt-in checks at once.
+python3 scripts/arc_builder_doctor.py --include-arc-rpc --include-public-site --include-circle-wallet
+
 # Treat unavailable *requested* optional checks as failures.
 python3 scripts/arc_builder_doctor.py --include-arc-rpc --strict
 ```

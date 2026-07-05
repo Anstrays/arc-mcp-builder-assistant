@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Feature:** Added `RpcVerifier` to x402 challenge server — verifies X-Payment
   tx hashes on-chain via `eth_getTransactionReceipt` on Arc Testnet.
 - **CLI:** `x402-local-challenge-server` gained `--verifier-mode rpc` flag.
+- **Doctor:** Added `--include-circle-wallet` flag to `arc-builder doctor` — checks Circle CLI
+  presence, agent session (email + expiry), wallet on Arc Testnet, and USDC balance via Circle CLI.
 - **Feature:** Payment Intent Demo now integrates a **live Circle wallet** via Circle CLI:
   - Real USDC balance display on Arc Testnet (`circle wallet balance`)
   - Recent transaction history (`circle transaction list`)

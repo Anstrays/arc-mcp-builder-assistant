@@ -104,6 +104,8 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         flags.append("--include-arc-rpc")
     if args.include_public_site:
         flags.append("--include-public-site")
+    if args.include_circle_wallet:
+        flags.append("--include-circle-wallet")
     return doctor_main(flags)
 
 
@@ -299,6 +301,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--include-public-site",
         action="store_true",
         help="Opt-in public GitHub Pages health check.",
+    )
+    doctor.add_argument(
+        "--include-circle-wallet",
+        action="store_true",
+        help="Opt-in live Circle CLI checks (wallet, balance, session).",
     )
 
     sub.add_parser("validate", help="Run repository validation.")
