@@ -268,7 +268,7 @@ def cmd_wallet(args: argparse.Namespace) -> int:
         payload = circle_wallet_sdk.prepare_send_intent(
             to_address=args.to_address,
             amount=args.amount,
-            network=getattr(args, "network", "ARC-TESTNET"),
+            network=args.network,
         )
         if not payload.get("ok"):
             print(f"error: {payload.get('error', 'unknown')}", file=sys.stderr)

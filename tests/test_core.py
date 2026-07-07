@@ -61,6 +61,9 @@ class McpServerTests(unittest.TestCase):
             "x402_paid_request",
             "x402_fetch_challenge",
             "x402_verify_receipt",
+            "wallet_status",
+            "wallet_prepare_send",
+            "wallet_balance",
         }
         self.assertEqual(set(TOOLS), expected)
 

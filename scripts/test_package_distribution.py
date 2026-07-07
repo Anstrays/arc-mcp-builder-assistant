@@ -207,7 +207,10 @@ class InstalledLayoutTests(unittest.TestCase):
         self.assertIn("x402_paid_request", tool_names)
         self.assertIn("x402_fetch_challenge", tool_names)
         self.assertIn("x402_verify_receipt", tool_names)
-        self.assertEqual(len(tool_names), 11)
+        self.assertIn("wallet_status", tool_names)
+        self.assertIn("wallet_balance", tool_names)
+        self.assertIn("wallet_prepare_send", tool_names)
+        self.assertEqual(len(tool_names), 14)
 
     def test_mainnet_override_remains_blocked(self) -> None:
         env = self.env.copy()
