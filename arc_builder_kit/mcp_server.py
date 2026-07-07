@@ -760,7 +760,7 @@ def main() -> int:
                 continue
             request = json.loads(line)
         except json.JSONDecodeError as exc:
-            response = _json_error(None, McpError(ERR_PARSE, f"parse error", details={"error": str(exc)}, retry_hint="fix_input"))
+            response = _json_error(None, McpError(ERR_PARSE, "parse error", details={"error": str(exc)}, retry_hint="fix_input"))
             print(json.dumps(response), flush=True)
             continue
         if not isinstance(request, dict):
