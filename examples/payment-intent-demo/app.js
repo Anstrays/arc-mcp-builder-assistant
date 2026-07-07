@@ -1,266 +1,277 @@
-// Arc Payment Intent Demo — frontend
-// Interacts with the Python backend (server.py) via /api/* endpoints.
-// No external dependencies, no secrets, ESTIMATE-ONLY by default.
+'use strict';
 
-(function () {
-  "use strict";
+const ARC_EXPLORER_ORIGIN = 'https://testnet.arcscan.app';
+const SEND_CONFIRMATION = 'SEND ARC TESTNET USDC';
+const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/;
+const AMOUNT_RE = /^(?:0|[1-9][0-9]*)(?:\.[0-9]{1,6})?$/;
+const STATUS_CLASSES = new Set(['pending', 'estimated', 'submitted', 'confirmed', 'failed']);
 
-  // ── DOM refs ──
-  const $ = (sel) => document.querySelector(sel);
+let walletData = null;
 
-  const walletModeBadge  = $("#wallet-mode");
-  const balanceAmount    = $("#balance-amount");
-  const balanceNative    = $("#balance-native");
-  const walletAddr       = $("#wallet-addr");
-  const walletChain      = $("#wallet-chain");
-  const walletBalStatus  = $("#wallet-balance-status");
-  const networkInfo      = $("#network-info");
-  const txList           = $("#tx-list");
-  const intentList       = $("#intent-list");
-  const intentForm       = $("#intent-form");
-  const toastEl          = $("#toast");
-  const refreshBtn       = $("#refresh-all");
+function element(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = String(text);
+  return node;
+}
 
-  // ── toast ──
-  let toastTimer;
-
-  function showToast(msg, error) {
-    if (toastTimer) clearTimeout(toastTimer);
-    toastEl.textContent = msg;
-    toastEl.className = "toast show" + (error ? " error" : "");
-    toastTimer = setTimeout(function () {
-      toastEl.className = "toast";
-    }, 4500);
+async function api(path, options = {}) {
+  const response = await fetch(path, {
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
+    ...options,
+  });
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new Error(payload.error || `Request failed with HTTP ${response.status}`);
   }
+  return payload;
+}
 
-  function hideToast() {
-    if (toastTimer) clearTimeout(toastTimer);
-    toastEl.className = "toast";
-  }
+function showToast(message, type = '') {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = `toast show${type ? ` ${type}` : ''}`;
+  window.setTimeout(() => { toast.className = 'toast'; }, 4000);
+}
 
-  // ── API helpers ──
-  function apiGet(path) {
-    return fetch(path).then(function (r) {
-      if (!r.ok) throw new Error(r.status + " " + r.statusText);
-      return r.json();
-    });
-  }
+function shortAddress(value) {
+  if (typeof value !== 'string' || value.length < 12) return value || '--';
+  return `${value.slice(0, 6)}...${value.slice(-4)}`;
+}
 
-  function apiPost(path, body) {
-    return fetch(path, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    }).then(function (r) {
-      return r.json().then(function (data) {
-        if (!r.ok) throw new Error(data.error || r.statusText);
-        return data;
-      });
-    });
-  }
+function badge(status) {
+  const normalized = String(status || 'unknown').toLowerCase().replaceAll('_', '-');
+  const style = normalized === 'pending-user-approval' ? 'pending' : normalized;
+  const node = element('span', 'badge', normalized.replaceAll('-', ' '));
+  if (STATUS_CLASSES.has(style)) node.classList.add(style);
+  return node;
+}
 
-  // ── format helpers ──
-  function fmtAddr(a) {
-    if (a && a.length > 12) return a.slice(0, 6) + "…" + a.slice(-4);
-    return a || "--";
-  }
+function detailRow(label, value, className = '') {
+  const row = element('div', 'detail-row');
+  row.append(element('dt', '', label), element('dd', className, value));
+  return row;
+}
 
-  function escapeHtml(s) {
-    var d = document.createElement("div");
-    d.appendChild(document.createTextNode(s));
-    return d.innerHTML;
-  }
+function parseBalances(wallet) {
+  const raw = wallet.balances;
+  const balances = Array.isArray(raw) ? raw : (raw?.balances || raw?.data || []);
+  if (!Array.isArray(balances)) return { display: null, native: null };
+  const erc20 = balances.find((entry) => entry?.token?.symbol === 'USDC' && entry?.token?.decimals === 6);
+  const native = balances.find((entry) => entry?.token?.symbol === 'USDC' && entry?.token?.decimals === 18);
+  return { display: erc20 || native || balances[0] || null, native };
+}
 
-  function badgeClass(status) {
-    switch (status) {
-      case "estimated":        return "estimated";
-      case "pending_user_approval": return "pending";
-      case "submitted":        return "submitted";
-      case "confirmed":        return "confirmed";
-      case "failed":           return "failed";
-      default:                 return "";
+async function loadWallet() {
+  const balance = document.getElementById('balance-amount');
+  const native = document.getElementById('balance-native');
+  const status = document.getElementById('wallet-balance-status');
+  try {
+    const wallet = await api('/api/wallet');
+    walletData = wallet;
+    const parsed = parseBalances(wallet);
+    if (wallet.balance_ok && parsed.display) {
+      const amount = Number.parseFloat(parsed.display.amount);
+      balance.textContent = Number.isFinite(amount) ? `${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })} USDC` : '--';
+      native.textContent = parsed.native ? `${parsed.native.amount} USDC` : 'Not reported';
+      status.textContent = 'Live Circle CLI response';
+    } else {
+      balance.textContent = 'Unavailable';
+      native.textContent = 'Not reported';
+      status.textContent = wallet.balance_error || 'Balance unavailable';
     }
+    document.getElementById('wallet-addr').textContent = wallet.address || '--';
+    document.getElementById('wallet-chain').textContent = wallet.chain || '--';
+    const mode = document.getElementById('wallet-mode');
+    mode.textContent = wallet.real_transfer_enabled ? 'Send enabled' : 'Estimate only';
+    mode.className = wallet.real_transfer_enabled ? 'badge failed' : 'badge estimated';
+    renderTransactions(wallet.recent_transactions, wallet.tx_ok);
+  } catch (error) {
+    walletData = null;
+    balance.textContent = 'Backend offline';
+    native.textContent = '--';
+    status.textContent = error.message;
+    document.getElementById('wallet-mode').textContent = 'Offline';
+    renderTransactions(null, false);
   }
+}
 
-  // ── wallet ──
-  function refreshWallet() {
-    walletModeBadge.textContent = "Loading";
-    walletModeBadge.className = "badge";
-    balanceAmount.textContent = "--";
-    balanceNative.textContent = "--";
-    walletAddr.textContent = "--";
-    walletChain.textContent = "--";
-    walletBalStatus.textContent = "Loading…";
+function renderTransactions(raw, ok) {
+  const container = document.getElementById('tx-list');
+  container.replaceChildren();
+  const items = Array.isArray(raw) ? raw : (raw?.transactions || []);
+  if (!ok || !Array.isArray(items) || items.length === 0) {
+    container.append(element('div', 'empty', ok ? 'No transactions reported.' : 'Transaction history unavailable.'));
+    return;
+  }
+  for (const transaction of items.slice(0, 5)) {
+    const item = element('article', 'list-item');
+    const top = element('div', 'list-top');
+    const amount = transaction.amount || transaction.amountPaid || '--';
+    top.append(element('div', 'list-title', `${amount} USDC`), badge(transaction.state || transaction.status));
+    item.append(top, element('div', 'meta mono', shortAddress(transaction.txHash || transaction.transactionHash || transaction.id)));
+    container.append(item);
+  }
+}
 
-    apiGet("/api/wallet").then(function (w) {
-      walletAddr.textContent = fmtAddr(w.address);
-      walletChain.textContent = w.chain;
-      walletBalStatus.textContent = w.real_transfer_enabled ? "Real transfers ENABLED" : "Estimate-only";
-
-      if (w.balance_ok && w.balances) {
-        var bals = Array.isArray(w.balances) ? w.balances : [w.balances];
-        var total = 0;
-        var nativeBal = "0";
-        bals.forEach(function (b) {
-          var amt = parseFloat(b.balance || "0");
-          total += amt;
-          if ((b.tokenSymbol || "").toUpperCase() === "USDC" || (b.tokenAddress || "").toLowerCase() === "0x3600000000000000000000000000000000000000") {
-            nativeBal = b.balance || "0";
-          }
-        });
-        balanceAmount.textContent = total.toFixed(2) + " USDC";
-        balanceNative.textContent = nativeBal + " USDC";
-      } else {
-        balanceAmount.textContent = w.balance_error || "Unavailable";
-      }
-
-      if (w.tx_ok && w.recent_transactions) {
-        // Transactions are rendered by refreshTx() — avoid race
-      }
-    }).catch(function (e) {
-      walletBalStatus.textContent = "Error: " + e.message;
-      balanceAmount.textContent = "—";
-      showToast("Wallet fetch failed: " + e.message, true);
+async function createIntent(event) {
+  event.preventDefault();
+  const recipient = document.getElementById('recipient').value.trim();
+  const amount = document.getElementById('amount').value.trim();
+  if (!ADDRESS_RE.test(recipient)) {
+    showToast('Enter a valid 42-character EVM recipient address.', 'error');
+    return;
+  }
+  if (!AMOUNT_RE.test(amount) || Number(amount) <= 0) {
+    showToast('Enter a positive USDC amount with at most 6 decimals.', 'error');
+    return;
+  }
+  try {
+    const intent = await api('/api/intent', {
+      method: 'POST',
+      body: JSON.stringify({
+        agent: document.getElementById('agent').value.trim(),
+        asset: 'USDC',
+        recipient,
+        amount,
+        memo: document.getElementById('memo').value.trim(),
+      }),
     });
+    showToast(`Intent ${intent.id} created.`);
+    await loadIntents();
+  } catch (error) {
+    showToast(error.message, 'error');
   }
+}
 
-  // ── transactions ──
-  function refreshTx() {
-    txList.innerHTML = '<div class="empty">Loading…</div>';
-    apiGet("/api/transactions").then(function (txs) {
-      renderTxList(Array.isArray(txs) ? txs : [txs]);
-    }).catch(function (e) {
-      txList.innerHTML = '<div class="empty">Unavailable</div>';
-    });
+function safeExplorerHref(base, hash) {
+  try {
+    const url = new URL(hash, base.endsWith('/') ? base : `${base}/`);
+    return url.origin === ARC_EXPLORER_ORIGIN ? url.href : '';
+  } catch {
+    return '';
   }
+}
 
-  function renderTxList(txs) {
-    if (!txs || !txs.length) {
-      txList.innerHTML = '<div class="empty">No transactions.</div>';
+function intentActions(intent) {
+  const actions = element('div', 'actions');
+  const estimate = element('button', 'secondary', 'Estimate fee');
+  estimate.type = 'button';
+  estimate.dataset.intentId = intent.id;
+  estimate.dataset.real = 'false';
+  actions.append(estimate);
+  if (walletData?.real_transfer_enabled) {
+    const send = element('button', 'danger', 'Send Arc Testnet USDC');
+    send.type = 'button';
+    send.dataset.intentId = intent.id;
+    send.dataset.real = 'true';
+    actions.append(send);
+  }
+  return actions;
+}
+
+function renderIntent(intent) {
+  const item = element('article', 'list-item');
+  const top = element('div', 'list-top');
+  const title = element('div');
+  title.append(
+    element('div', 'list-title', `${intent.amount} ${intent.asset} to ${shortAddress(intent.recipient)}`),
+    element('div', 'meta', `${intent.agent || 'Payment Agent'}${intent.memo ? ` | ${intent.memo}` : ''}`),
+  );
+  top.append(title, badge(intent.status));
+  item.append(top);
+  if (intent.estimate) {
+    const fee = intent.estimate.networkFeeAmount || intent.estimate.transactionFee || 'available';
+    item.append(element('div', 'estimate', `Gas estimate: ${fee}`));
+  }
+  if (intent.status === 'pending_user_approval' || intent.status === 'estimated') {
+    item.append(intentActions(intent));
+  }
+  if (intent.tx_hash) {
+    const href = safeExplorerHref(intent.estimate?.explorerUrl || `${ARC_EXPLORER_ORIGIN}/tx/`, intent.tx_hash);
+    const metadata = element('div', 'meta mono', `Transaction: ${intent.tx_hash}`);
+    if (href) {
+      const link = element('a', '', ' View on ArcScan');
+      link.href = href;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      metadata.append(link);
+    }
+    item.append(metadata);
+  }
+  return item;
+}
+
+async function loadIntents() {
+  const container = document.getElementById('intent-list');
+  try {
+    const intents = await api('/api/intents');
+    container.replaceChildren();
+    if (!Array.isArray(intents) || intents.length === 0) {
+      container.append(element('div', 'empty', 'No payment intents yet.'));
       return;
     }
-    txList.innerHTML = txs.slice(0, 5).map(function (tx) {
-      var date = tx.timestamp || tx.createdAt || "";
-      return '<div class="list-item">' +
-        '<div class="list-top">' +
-          '<span class="list-title">' +
-            (tx.from ? escapeHtml(fmtAddr(tx.from)) + " → " : "") +
-            (tx.to ? escapeHtml(fmtAddr(tx.to)) : "") +
-          '</span>' +
-          '<span class="badge">' + escapeHtml(tx.status || "unknown") + '</span>' +
-        '</div>' +
-        '<div class="meta">' +
-          (tx.amount ? escapeHtml(tx.amount + " " + (tx.tokenSymbol || "USDC")) + " · " : "") +
-          (tx.txHash ? escapeHtml("tx: " + fmtAddr(tx.txHash)) + " · " : "") +
-          escapeHtml(date) +
-        '</div>' +
-      '</div>';
-    }).join("");
+    for (const intent of intents) container.append(renderIntent(intent));
+  } catch (error) {
+    container.replaceChildren(element('div', 'empty', `Intents unavailable: ${error.message}`));
   }
+}
 
-  // ── network ──
-  function refreshNetwork() {
-    networkInfo.innerHTML = '<div class="empty">Loading…</div>';
-    apiGet("/api/network").then(function (n) {
-      networkInfo.innerHTML =
-        '<dl class="detail-list">' +
-          '<div class="detail-row"><dt>Network</dt><dd>' + escapeHtml(n.network) + '</dd></div>' +
-          '<div class="detail-row"><dt>Chain ID</dt><dd>' + n.chain_id + '</dd></div>' +
-          '<div class="detail-row"><dt>RPC</dt><dd class="mono">' + escapeHtml(n.rpc_url) + '</dd></div>' +
-          '<div class="detail-row"><dt>Explorer</dt><dd><a href="' + escapeHtml(n.explorer) + '" rel="noopener noreferrer">' + escapeHtml(n.explorer) + '</a></dd></div>' +
-          '<div class="detail-row"><dt>Wallet</dt><dd class="mono">' + escapeHtml(fmtAddr(n.circle_wallet)) + '</dd></div>' +
-          '<div class="detail-row"><dt>USDC Token</dt><dd class="mono">' + escapeHtml(fmtAddr(n.usdc_token)) + '</dd></div>' +
-        '</dl>';
-    }).catch(function () {
-      networkInfo.innerHTML = '<div class="empty">Unavailable.</div>';
-    });
-  }
-
-  // ── intents ──
-  function refreshIntents() {
-    apiGet("/api/intents").then(function (intents) {
-      renderIntents(Array.isArray(intents) ? intents : []);
-    }).catch(function () {
-      intentList.innerHTML = '<div class="empty">Unavailable.</div>';
-    });
-  }
-
-  function renderIntents(intents) {
-    if (!intents || !intents.length) {
-      intentList.innerHTML = '<div class="empty">No payment intents yet.</div>';
+async function approveIntent(intentId, real) {
+  let confirmation = '';
+  if (real) {
+    confirmation = window.prompt(`Type ${SEND_CONFIRMATION} to request one Arc Testnet transfer.`) || '';
+    if (confirmation !== SEND_CONFIRMATION) {
+      showToast('Transfer cancelled: confirmation phrase did not match.', 'error');
       return;
     }
-    intentList.innerHTML = intents.map(function (i) {
-      var badge = badgeClass(i.status);
-      var estimateBlock = "";
-      if (i.estimate) {
-        estimateBlock = '<div class="estimate">' +
-          '<strong>Estimate:</strong> ' + escapeHtml(JSON.stringify(i.estimate)) +
-        '</div>';
-      }
-      return '<div class="list-item">' +
-        '<div class="list-top">' +
-          '<span class="list-title">' + escapeHtml(i.agent || "Unknown") + ' — ' + escapeHtml(i.amount || "0") + ' USDC</span>' +
-          '<span class="badge ' + badge + '">' + escapeHtml(i.status || "unknown") + '</span>' +
-        '</div>' +
-        '<div class="meta">' +
-          'ID: ' + escapeHtml(i.id) + ' · To: ' + escapeHtml(fmtAddr(i.recipient)) +
-          (i.memo ? ' · ' + escapeHtml(i.memo.slice(0, 60)) : '') +
-          (i.created_at ? ' · Created: ' + escapeHtml(i.created_at) : '') +
-        '</div>' +
-        estimateBlock +
-      '</div>';
-    }).join("");
   }
-
-  // ── create intent ──
-  function handleCreateIntent(e) {
-    e.preventDefault();
-    var agent = $("#agent").value.trim() || "Payment Agent";
-    var amount = $("#amount").value.trim();
-    var recipient = $("#recipient").value.trim();
-    var memo = $("#memo").value.trim();
-
-    if (!recipient || !amount) {
-      showToast("Recipient and amount are required.", true);
-      return;
-    }
-
-    hideToast();
-    var btn = intentForm.querySelector("button[type=submit]");
-    var origText = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = "Creating…";
-
-    apiPost("/api/intent", {
-      agent: agent,
-      amount: amount,
-      recipient: recipient,
-      memo: memo,
-      asset: "USDC",
-    }).then(function (intent) {
-      showToast("Intent created: " + intent.id);
-      refreshIntents();
-      btn.disabled = false;
-      btn.textContent = origText;
-    }).catch(function (e) {
-      showToast("Error: " + e.message, true);
-      btn.disabled = false;
-      btn.textContent = origText;
+  try {
+    const result = await api('/api/approve', {
+      method: 'POST',
+      body: JSON.stringify({ intent_id: intentId, real, confirmation }),
     });
+    showToast(result.message || `Intent ${intentId}: ${result.status}`);
+    await Promise.all([loadWallet(), loadIntents()]);
+  } catch (error) {
+    showToast(error.message, 'error');
   }
+}
 
-  // ── refresh all ──
-  function refreshAll() {
-    refreshWallet();
-    refreshNetwork();
-    refreshTx();
-    refreshIntents();
+async function loadNetworkInfo() {
+  const container = document.getElementById('network-info');
+  try {
+    const info = await api('/api/network');
+    const list = element('dl', 'detail-list');
+    list.append(
+      detailRow('Network', info.network),
+      detailRow('Chain ID', info.chain_id),
+      detailRow('RPC', info.rpc_url, 'mono'),
+      detailRow('USDC token', info.usdc_token, 'mono'),
+      detailRow('Wallet', info.circle_wallet, 'mono'),
+    );
+    container.replaceChildren(list);
+  } catch (error) {
+    container.replaceChildren(element('div', 'empty', `Network data unavailable: ${error.message}`));
   }
+}
 
-  // ── init ──
-  intentForm.addEventListener("submit", handleCreateIntent);
-  refreshBtn.addEventListener("click", refreshAll);
+async function loadAll() {
+  document.getElementById('refresh-all').disabled = true;
+  try {
+    await Promise.all([loadWallet(), loadIntents(), loadNetworkInfo()]);
+  } finally {
+    document.getElementById('refresh-all').disabled = false;
+  }
+}
 
-  refreshAll();
-})();
+document.getElementById('refresh-all').addEventListener('click', loadAll);
+document.getElementById('intent-form').addEventListener('submit', createIntent);
+document.getElementById('intent-list').addEventListener('click', (event) => {
+  const button = event.target.closest('button[data-intent-id]');
+  if (!button) return;
+  approveIntent(button.dataset.intentId, button.dataset.real === 'true');
+});
+
+loadAll();

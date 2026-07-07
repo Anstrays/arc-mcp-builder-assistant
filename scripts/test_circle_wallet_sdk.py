@@ -120,7 +120,7 @@ class CircleWalletSdkManifestTests(unittest.TestCase):
         with mock.patch.object(sdk.urllib_request, "urlopen", return_value=response) as opened:
             result = sdk.get_usdc_balance("0x1111111111111111111111111111111111111111")
         self.assertFalse(result["ok"])
-        self.assertIn("wrong chain", result["error"])
+        self.assertIn("chain mismatch", result["error"])
         self.assertEqual(opened.call_count, 1)
 
     def test_balance_rejects_unsafe_rpc_and_token_configuration(self) -> None:

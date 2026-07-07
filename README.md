@@ -102,7 +102,18 @@ arc-builder wallet sdk-plan --json
 arc-builder-mcp-server
 ```
 
-`arc-builder validate` checks the full repository when run from a clone and\nchecks installed package integrity when run from a wheel. Default commands make\nzero network calls. The only network-enabled doctor flags are explicit,\nread-only opt-ins; no command accepts private keys, signs, or broadcasts.\nThe `arc-builder x402` helper is also read-only: `challenge` fetches a 402\npayment challenge for human review, and `verify` checks a supplied Arc Testnet\ntransaction hash against receipt evidence before retrying the protected\nresource. It never accepts private keys and never signs or broadcasts.\nThe `arc-builder wallet` helper is also guard-only: it builds a Circle\nDeveloper-Controlled Wallet SDK plan pinned to `ARC-TESTNET`, checks required\nenvironment variables with values redacted, prints a manual SDK snippet\nwithout running the SDK, signing, or broadcasting, and checks USDC balance\nvia read-only `eth_call` with automatic RPC fallback across primary and\nuser-specified endpoints.
+`arc-builder validate` checks the full repository when run from a clone and
+checks installed package integrity when run from a wheel. Default commands make
+zero network calls. The only network-enabled doctor flags are explicit,
+read-only opt-ins; no command accepts private keys, signs, or broadcasts.
+The `arc-builder x402` helper is also read-only: `challenge` fetches a 402
+payment challenge for human review, and `verify` checks a supplied Arc Testnet
+transaction hash against receipt evidence before retrying the protected
+resource. It never accepts private keys and never signs or broadcasts.
+The `arc-builder wallet` helper is also guard-only: it builds a Circle
+Developer-Controlled Wallet SDK plan pinned to `ARC-TESTNET`, checks required
+environment variables with values redacted, and prints a manual SDK snippet
+without running the SDK, signing, or broadcasting.
 
 Maintainers publish through the release-only Trusted Publishing workflow in
 `.github/workflows/publish-pypi.yml`; no long-lived PyPI token is stored in the
@@ -345,10 +356,6 @@ For the shortest reviewer-facing checkpoint, see [`docs/current-readiness-report
 - Agent commerce starter-kit examples: components, flows, identity profile preview, and review packet exporter.
 - Committed screenshots for the landing page, docs viewer, payment-intent playground, and job escrow simulator.
 - Phase 4 builder tooling plus wallet guards: canonical package CLI with compatibility wrappers under `scripts/`, an 11-tool stdio MCP server, and dependency-free project starter templates under `templates/`.
-- Circle Wallet SDK: guard manifests, read-only USDC balance via eth_call, guarded send intents, env readiness checks, RPC fallback chain (primary → user-specified failover).
-- Payment Intent Demo: interactive Circle wallet integration with real USDC balance, on-chain gas estimates, transaction history, and optional capped real transfers.
-- x402 RpcVerifier: `arc-builder x402 verify` checks transaction receipts against payment proof on-chain.
-- OpenClaw/Hermes skill package: reusable `arc-builder-kit` skill for AI agent tooling discovery.
 
 ### Safe default
 
