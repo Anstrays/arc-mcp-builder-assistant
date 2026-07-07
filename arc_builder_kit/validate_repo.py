@@ -39,6 +39,7 @@ INSTALLED_REQUIRED_FILES = (
     "templates/payment-intent-starter/index.html",
     "templates/x402-agent-starter/server.py",
     "templates/job-escrow-starter/index.html",
+    "examples/payment-intent-demo/app.js",
     "examples/payment-intent-receipt-matcher/index.html",
     "examples/arc-testnet-wallet-send-gate/live-infrastructure-policy.example.json",
     "examples/x402-local-challenge-server/.env.example",
