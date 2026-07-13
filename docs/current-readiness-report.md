@@ -63,7 +63,7 @@ Expected safe result:
   before a local protected response is returned.
 - Fail-closed operator evidence validation, create-only ignored draft generation, and read-only readiness reporting.
 - [Arc Builder Doctor](./arc-builder-doctor.md): one dependency-free command that orchestrates the existing local checks into a single structured `pass/warn/fail` report, with zero network calls by default and opt-in read-only Arc Testnet RPC / public-site checks that never connect a wallet, sign, or broadcast.
-- Phase 4 builder tooling plus Circle Wallet SDK guard planning: canonical package CLI with compatibility wrappers under `scripts/`, an 11-tool stdio MCP server, and dependency-free starter templates for scaffolding review-first Arc agent surfaces.
+- Phase 4 builder tooling plus Circle Wallet SDK guard planning: canonical package CLI with compatibility wrappers under `scripts/`, a 14-tool stdio MCP server, and dependency-free starter templates for scaffolding review-first Arc agent surfaces.
 - Arc Builder Doctor can emit a Markdown report for PR/release review and CI summaries.
 - [Release packet generator](../scripts/generate_arc_release_packet.py): one dependency-free command that builds a local maintainer-facing packet (`arc-builder-doctor.md`, `arc-testnet-facts.md`, `readiness-checklist.md`, `examples-index.md`, `release-packet.json`) in `.arc-release-packet/`. Zero network calls, no wallet/signing/broadcast/custody/mainnet/secrets/storage.
 - [Agentic maintainer loop](./agentic-maintainer-loop.md): a scoped operating model for coding agents that ties edits to deterministic checks, event-driven maintenance, regression-test feedback, and human approval gates for sensitive actions.

@@ -114,14 +114,101 @@ class CircleWalletSdkManifestTests(unittest.TestCase):
         balance_payload = json.loads(opened.call_args_list[1].args[0].data)
         self.assertEqual(balance_payload["method"], "eth_call")
         self.assertEqual(balance_payload["params"][0]["to"], token)
+        self.assertEqual(opened.call_args_list[0].args[0].full_url, "https://rpc.example.test")
+        self.assertEqual(opened.call_args_list[1].args[0].full_url, "https://rpc.example.test")
 
     def test_balance_rejects_wrong_chain_before_eth_call(self) -> None:
         response = rpc_response({"jsonrpc": "2.0", "id": 1, "result": "0x1"})
         with mock.patch.object(sdk.urllib_request, "urlopen", return_value=response) as opened:
             result = sdk.get_usdc_balance("0x1111111111111111111111111111111111111111")
         self.assertFalse(result["ok"])
-        self.assertIn("chain mismatch", result["error"])
+        self.assertIn("wrong chain", result["error"])
         self.assertEqual(opened.call_count, 1)
+
+    def test_rpc_call_falls_back_after_primary_transport_failure(self) -> None:
+        fallback = rpc_response({"jsonrpc": "2.0", "id": 1, "result": "0x123"})
+        with mock.patch.object(
+            sdk.urllib_request,
+            "urlopen",
+            side_effect=[OSError("primary unavailable"), fallback],
+        ) as opened:
+            result = sdk.rpc_call(
+                "eth_blockNumber",
+                env={"ARC_RPC_FALLBACKS": "https://fallback.example.test"},
+            )
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["result"], "0x123")
+        self.assertEqual(result["source"], "fallback-1")
+        self.assertEqual(result["endpoint"], "https://fallback.example.test")
+        self.assertEqual(opened.call_count, 2)
+        self.assertEqual(opened.call_args_list[0].args[0].full_url, sdk.ARC_TESTNET_RPC_URL)
+        self.assertEqual(
+            opened.call_args_list[1].args[0].full_url,
+            "https://fallback.example.test",
+        )
+
+    def test_rpc_call_rejects_write_methods_without_network_access(self) -> None:
+        with mock.patch.object(sdk.urllib_request, "urlopen") as opened:
+            result = sdk.rpc_call("eth_sendTransaction", [{"to": "0x" + "1" * 40}])
+        self.assertFalse(result["ok"])
+        self.assertIn("read-only allowlist", result["error"])
+        opened.assert_not_called()
+
+    def test_rpc_call_rejects_unsafe_fallback_configuration(self) -> None:
+        with mock.patch.object(sdk.urllib_request, "urlopen") as opened:
+            result = sdk.rpc_call(
+                "eth_chainId",
+                rpc_urls=["https://user:secret@rpc.example.test"],
+            )
+        self.assertFalse(result["ok"])
+        self.assertIn("without credentials", result["error"])
+        opened.assert_not_called()
+
+        control_character = sdk.rpc_call(
+            "eth_chainId",
+            rpc_urls=["https://rpc.example.test\n.invalid"],
+        )
+        self.assertFalse(control_character["ok"])
+        self.assertIn("control characters", control_character["error"])
+
+    def test_health_check_uses_caller_order_and_proves_arc_testnet(self) -> None:
+        response = rpc_response({"jsonrpc": "2.0", "id": 1, "result": "0x4cef52"})
+        with mock.patch.object(sdk.urllib_request, "urlopen", return_value=response) as opened:
+            result = sdk.check_arc_rpc_health(
+                rpc_urls=["https://reviewed.example.test"],
+            )
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["chainId"], 5_042_002)
+        self.assertEqual(result["endpoint"], "https://reviewed.example.test")
+        self.assertEqual(opened.call_args.args[0].full_url, "https://reviewed.example.test")
+
+    def test_balance_fallback_binds_chain_proof_and_eth_call_to_same_endpoint(self) -> None:
+        responses = [
+            OSError("configured primary unavailable"),
+            rpc_response({"jsonrpc": "2.0", "id": 1, "result": "0x4cef52"}),
+            rpc_response({"jsonrpc": "2.0", "id": 1, "result": "0xf4240"}),
+        ]
+        env = {
+            "CIRCLE_RPC_URL": "https://primary.example.test",
+            "ARC_RPC_FALLBACKS": "https://fallback.example.test",
+        }
+        with mock.patch.object(sdk.urllib_request, "urlopen", side_effect=responses) as opened:
+            result = sdk.get_usdc_balance(
+                "0x1111111111111111111111111111111111111111",
+                env=env,
+            )
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["rpcUrl"], "https://fallback.example.test")
+        self.assertEqual(result["rpcSource"], "fallback-1")
+        self.assertEqual(opened.call_count, 3)
+        self.assertEqual(
+            [call.args[0].full_url for call in opened.call_args_list],
+            [
+                "https://primary.example.test",
+                "https://fallback.example.test",
+                "https://fallback.example.test",
+            ],
+        )
 
     def test_balance_rejects_unsafe_rpc_and_token_configuration(self) -> None:
         address = "0x1111111111111111111111111111111111111111"

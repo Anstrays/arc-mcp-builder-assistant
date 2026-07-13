@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 import os
 import re
-from typing import Mapping, cast
+from typing import Any, Mapping, Sequence, cast
 from urllib import request as urllib_request
 from urllib.parse import urlsplit
 
@@ -27,8 +27,174 @@ OPTIONAL_ENVIRONMENT = ("CIRCLE_WALLET_SET_ID", "CIRCLE_API_BASE_URL")
 ACCOUNT_TYPES = ("EOA", "SCA")
 MAX_WALLET_COUNT = 50
 DEFAULT_WALLET_SET_NAME = "arc-agent-wallets"
+ARC_RPC_FALLBACKS: tuple[str, ...] = ()
+RPC_CALL_TIMEOUT = 15
+MAX_RPC_RESPONSE_BYTES = 1_000_000
+READ_ONLY_RPC_METHODS = frozenset(
+    {
+        "eth_blockNumber",
+        "eth_call",
+        "eth_chainId",
+        "eth_estimateGas",
+        "eth_gasPrice",
+        "eth_getBalance",
+        "eth_getBlockByNumber",
+        "eth_getCode",
+        "eth_getLogs",
+        "eth_getTransactionByHash",
+        "eth_getTransactionReceipt",
+        "eth_maxPriorityFeePerGas",
+        "net_version",
+        "web3_clientVersion",
+    }
+)
 _NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_. -]{0,62}$")
 _EVM_ADDRESS_RE = re.compile(r"^0x[a-fA-F0-9]{40}$")
+
+
+def _rpc_url_error(url: object) -> str | None:
+    if not isinstance(url, str) or not url.strip():
+        return "RPC URL must be a non-empty string"
+    if any(ord(character) < 32 or ord(character) == 127 for character in url):
+        return "RPC URL must not contain control characters"
+    try:
+        parsed = urlsplit(url.strip())
+        local_http = parsed.scheme == "http" and parsed.hostname in {
+            "127.0.0.1",
+            "localhost",
+            "::1",
+        }
+        if (
+            not parsed.hostname
+            or (parsed.scheme != "https" and not local_http)
+            or parsed.username
+            or parsed.password
+            or parsed.query
+            or parsed.fragment
+        ):
+            return "RPC URL must use HTTPS or local HTTP without credentials or query data"
+    except ValueError:
+        return "RPC URL is malformed"
+    return None
+
+
+def _resolve_rpc_urls(
+    rpc_urls: Sequence[str] | None,
+    env: Mapping[str, str] | None,
+) -> tuple[str, ...]:
+    source = os.environ if env is None else env
+    if rpc_urls is None:
+        raw_urls: list[object] = [ARC_TESTNET_RPC_URL]
+        raw_urls.extend(
+            value.strip()
+            for value in source.get("ARC_RPC_FALLBACKS", "").split(",")
+            if value.strip()
+        )
+        raw_urls.extend(ARC_RPC_FALLBACKS)
+    else:
+        raw_urls = list(rpc_urls)
+
+    if not raw_urls:
+        raise ValueError("at least one RPC URL is required")
+
+    resolved: list[str] = []
+    for raw_url in raw_urls:
+        error = _rpc_url_error(raw_url)
+        if error:
+            raise ValueError(error)
+        url = cast(str, raw_url).strip()
+        if url not in resolved:
+            resolved.append(url)
+    return tuple(resolved)
+
+
+def rpc_call(
+    method: str,
+    params: list[Any] | None = None,
+    *,
+    rpc_urls: Sequence[str] | None = None,
+    env: Mapping[str, str] | None = None,
+    timeout: float = RPC_CALL_TIMEOUT,
+) -> dict[str, Any]:
+    """Run a bounded read-only RPC call with sequential endpoint fallback."""
+
+    if method not in READ_ONLY_RPC_METHODS:
+        return {"ok": False, "error": f"RPC method is not in the read-only allowlist: {method!r}"}
+    if params is not None and not isinstance(params, list):
+        return {"ok": False, "error": "RPC params must be a list"}
+    if isinstance(timeout, bool) or not isinstance(timeout, (int, float)) or timeout <= 0:
+        return {"ok": False, "error": "timeout must be positive"}
+    try:
+        endpoints = _resolve_rpc_urls(rpc_urls, env)
+    except ValueError as exc:
+        return {"ok": False, "error": str(exc)}
+
+    errors: list[str] = []
+    for index, endpoint in enumerate(endpoints):
+        try:
+            response = _rpc_call(endpoint, method, params or [], timeout)
+            if "error" in response:
+                rpc_error = response.get("error")
+                if isinstance(rpc_error, Mapping):
+                    detail = rpc_error.get("message", "RPC error")
+                else:
+                    detail = rpc_error or "RPC error"
+                errors.append(f"{endpoint}: {detail}")
+                continue
+            return {
+                "ok": True,
+                "result": response.get("result"),
+                "endpoint": endpoint,
+                "source": "primary" if index == 0 else f"fallback-{index}",
+            }
+        except Exception as exc:
+            errors.append(f"{endpoint}: {exc}")
+    return {
+        "ok": False,
+        "error": "all RPC endpoints failed: " + "; ".join(errors),
+        "attempted": len(endpoints),
+    }
+
+
+def check_arc_rpc_health(
+    rpc_urls: Sequence[str] | None = None,
+    *,
+    env: Mapping[str, str] | None = None,
+    timeout: float = RPC_CALL_TIMEOUT,
+) -> dict[str, Any]:
+    """Prove that a selected read-only RPC endpoint is Arc Testnet."""
+
+    result = rpc_call(
+        "eth_chainId",
+        rpc_urls=rpc_urls,
+        env=env,
+        timeout=timeout,
+    )
+    if not result.get("ok"):
+        return result
+    chain_hex = result.get("result")
+    if not isinstance(chain_hex, str):
+        return {"ok": False, "error": f"unexpected chain ID response: {chain_hex!r}"}
+    try:
+        chain_id = int(chain_hex, 16)
+    except ValueError:
+        return {"ok": False, "error": f"could not decode chain ID hex: {chain_hex!r}"}
+    if chain_id != ARC_TESTNET_CHAIN_ID:
+        return {
+            "ok": False,
+            "error": (
+                f"wrong chain {chain_id} ({chain_hex}), expected "
+                f"{ARC_TESTNET_CHAIN_ID} ({ARC_TESTNET_CHAIN_ID_HEX})"
+            ),
+            "endpoint": result.get("endpoint"),
+        }
+    return {
+        "ok": True,
+        "chainId": chain_id,
+        "chainIdHex": chain_hex.lower(),
+        "endpoint": result.get("endpoint"),
+        "source": result.get("source"),
+    }
 
 
 def _validate_account_type(account_type: str) -> str:
@@ -267,19 +433,8 @@ def get_usdc_balance(
     if not isinstance(address, str) or not _EVM_ADDRESS_RE.fullmatch(address):
         return {"ok": False, "error": "invalid EVM address", "address": address}
     source = os.environ if env is None else env
-    resolved_rpc = rpc_url or source.get("CIRCLE_RPC_URL") or ARC_TESTNET_RPC_URL
+    configured_rpc = rpc_url or source.get("CIRCLE_RPC_URL")
     resolved_usdc = usdc_address or source.get("CIRCLE_USDC_TOKEN") or ARC_TESTNET_USDC_ADDRESS
-    parsed_rpc = urlsplit(resolved_rpc)
-    local_http = parsed_rpc.scheme == "http" and parsed_rpc.hostname in {"127.0.0.1", "localhost", "::1"}
-    if (
-        not parsed_rpc.hostname
-        or (parsed_rpc.scheme != "https" and not local_http)
-        or parsed_rpc.username
-        or parsed_rpc.password
-        or parsed_rpc.query
-        or parsed_rpc.fragment
-    ):
-        return {"ok": False, "error": "RPC URL must use HTTPS or local HTTP without credentials or query data", "address": address}
     if not isinstance(resolved_usdc, str) or not _EVM_ADDRESS_RE.fullmatch(resolved_usdc):
         return {"ok": False, "error": "invalid USDC token address", "address": address}
     if int(resolved_usdc[2:], 16) == 0:
@@ -292,17 +447,37 @@ def get_usdc_balance(
     padded = "0x" + "0" * 24 + address[2:]
     data = f"0x70a08231{padded[2:]}"
 
+    rpc_candidates: list[str] | None = None
+    if configured_rpc:
+        rpc_candidates = [configured_rpc]
+        rpc_candidates.extend(
+            value.strip()
+            for value in source.get("ARC_RPC_FALLBACKS", "").split(",")
+            if value.strip()
+        )
+        rpc_candidates.extend(ARC_RPC_FALLBACKS)
+
     try:
-        chain_response = _rpc_call(resolved_rpc, "eth_chainId", [], timeout)
-        observed_chain = chain_response.get("result")
-        if not isinstance(observed_chain, str) or observed_chain.lower() != ARC_TESTNET_CHAIN_ID_HEX:
+        health = check_arc_rpc_health(
+            rpc_urls=rpc_candidates,
+            env=source,
+            timeout=timeout,
+        )
+        if not health.get("ok"):
             return {
                 "ok": False,
-                "error": f"RPC chain mismatch: expected {ARC_TESTNET_CHAIN_ID_HEX}, got {observed_chain!r}",
+                "error": f"RPC health check failed: {health.get('error')}",
+                "address": address,
+            }
+        selected_rpc = health.get("endpoint")
+        if not isinstance(selected_rpc, str):
+            return {
+                "ok": False,
+                "error": "RPC health check did not return a selected endpoint",
                 "address": address,
             }
         response = _rpc_call(
-            resolved_rpc,
+            selected_rpc,
             "eth_call",
             [{"to": resolved_usdc, "data": data}, "latest"],
             timeout,
@@ -334,7 +509,8 @@ def get_usdc_balance(
         "decimals": 6,
         "network": "ARC-TESTNET",
         "chainId": ARC_TESTNET_CHAIN_ID,
-        "rpcUrl": resolved_rpc,
+        "rpcUrl": selected_rpc,
+        "rpcSource": health.get("source"),
         "tokenAddress": resolved_usdc,
         "safety": {"readOnlyRpc": True, "noBroadcast": True, "noKeys": True},
     }
@@ -356,8 +532,8 @@ def _rpc_call(
         method="POST",
     )
     with urllib_request.urlopen(request, timeout=timeout) as response:
-        raw = response.read(1_000_001)
-    if len(raw) > 1_000_000:
+        raw = response.read(MAX_RPC_RESPONSE_BYTES + 1)
+    if len(raw) > MAX_RPC_RESPONSE_BYTES:
         raise ValueError("RPC response exceeds the 1 MB safety limit")
     parsed = json.loads(raw.decode("utf-8"))
     if not isinstance(parsed, dict):
@@ -427,18 +603,24 @@ def prepare_send_intent(
 
 __all__ = [
     "ACCOUNT_TYPES",
+    "ARC_RPC_FALLBACKS",
     "ARC_TESTNET_BLOCKCHAIN",
     "ARC_TESTNET_CHAIN_ID",
     "ARC_TESTNET_CHAIN_ID_HEX",
     "ARC_TESTNET_RPC_URL",
     "ARC_TESTNET_USDC_ADDRESS",
     "MAX_WALLET_COUNT",
+    "MAX_RPC_RESPONSE_BYTES",
+    "READ_ONLY_RPC_METHODS",
     "REQUIRED_ENVIRONMENT",
+    "RPC_CALL_TIMEOUT",
     "build_sdk_guard_manifest",
     "build_wallet_creation_plan",
     "build_wallet_status_summary",
+    "check_arc_rpc_health",
     "generate_python_sdk_snippet",
     "get_usdc_balance",
     "prepare_send_intent",
+    "rpc_call",
     "summarize_environment",
 ]

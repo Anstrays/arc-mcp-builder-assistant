@@ -1,0 +1,4 @@
+interface:
+  display_name: "Arc Builder Kit"
+  short_description: "Build guarded Arc Testnet agent-commerce tools"
+  default_prompt: "Use $arc-builder-kit to validate and extend an Arc Testnet agent-commerce prototype safely."

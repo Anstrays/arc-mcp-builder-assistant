@@ -131,6 +131,7 @@ REQUIRED_FILES = [
     "docs/arc-house-submission.md",
     "docs/builder-tooling.md",
     "docs/build-log.md",
+    "skills/arc-builder-kit/SKILL.md",
     "docs/view.html",
     "docs/viewer.js",
     "prompts/explain-arc-docs.md",

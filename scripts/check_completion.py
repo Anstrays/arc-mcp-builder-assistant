@@ -56,6 +56,7 @@ REQUIRED_SURFACES = (
     "scripts/test_arc_testnet_facts.py",
     "docs/arc-builder-doctor.md",
     "docs/release-checklist.md",
+    "skills/arc-builder-kit/SKILL.md",
     "scripts/generate_operator_evidence_draft.py",
     "scripts/report_operator_evidence.py",
     "scripts/validate_operator_evidence.py",
@@ -77,6 +78,18 @@ def check_required_surfaces() -> int:
     for surface in ("README.md", "index.html", "docs/viewer.js"):
         if "completion-contract.md" not in read(surface):
             fail(f"{surface} does not link the completion contract")
+    skill = read("skills/arc-builder-kit/SKILL.md")
+    for marker in (
+        "name: arc-builder-kit",
+        "## Quickstart",
+        "## MCP Server",
+        "14 tools",
+        "## RPC Fallback",
+        "## Safety Boundaries",
+        "No real wallet connection, signing, broadcast, custody operation, or mainnet action",
+    ):
+        if marker not in skill:
+            fail(f"Arc Builder skill is missing required marker: {marker}")
     return len(REQUIRED_SURFACES)
 
 

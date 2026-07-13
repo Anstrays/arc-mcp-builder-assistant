@@ -27,10 +27,10 @@ This repo ships a GitHub Pages site, docs, prompts, local demos, an installable 
 - **Circle Wallet SDK** — guard manifests, read-only USDC balance via `eth_call`, guarded send intents, Circle CLI env readiness checks, and safe Python/TypeScript SDK snippets. All operations: testnet-only, no private keys, no broadcast.
 - **Payment Intent Demo with live Circle wallet** — real USDC balance, on-chain gas estimates, transaction history, and optional real transfers (capped at 1.00 USDC, estimate-only by default).
 - **x402 RpcVerifier** — `arc-builder x402 verify` checks Arc Testnet transaction receipts against payment proof on-chain via RPC.
-- **RPC fallback chain** — automatic primary → env `ARC_RPC_FALLBACKS` → user-specified endpoint failover with `rpc_call()` and `check_arc_rpc_health()`. No single-point-of-failure for Arc Testnet connectivity.
-- **MCP Server v2** — 11 tools, structured errors, streaming-ready JSON-RPC for AI coding agents.
+- **RPC fallback chain** — bounded read-only primary → env `ARC_RPC_FALLBACKS` failover with `rpc_call()` and `check_arc_rpc_health()`, plus caller-defined ordered endpoint lists. Every selected endpoint must prove Arc Testnet before a balance read.
+- **MCP Server v2** — 14 tools, structured errors, streaming-ready JSON-RPC for AI coding agents.
 - **New templates** — marketplace, treasury, x402-verified starter scaffolds.
-- **OpenClaw/Hermes skill package** — reusable skill (`arc-builder-kit`) for AI agents to discover and use the full CLI, MCP, SDK, and validator surface.
+- **OpenClaw/Hermes skill package** — reusable [`arc-builder-kit` skill](../skills/arc-builder-kit/SKILL.md) for AI agents to discover and use the full CLI, MCP, SDK, and validator surface.
 
 ## Safety boundaries
 

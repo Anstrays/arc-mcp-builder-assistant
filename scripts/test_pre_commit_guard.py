@@ -59,6 +59,8 @@ class PathPolicyTests(unittest.TestCase):
         self.assertIn("arc-builder-managed-hook:v1", hook)
         self.assertIn("scripts/pre_commit_guard.py", hook)
         self.assertIn("scripts/scan_for_secrets.py", hook)
+        self.assertIn("for candidate in python3 python", hook)
+        self.assertIn("sys.version_info < (3, 10)", hook)
         self.assertNotIn("graphify ", hook)
         self.assertNotIn("curl ", hook)
 

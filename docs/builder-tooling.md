@@ -150,6 +150,9 @@ python3 scripts/arc_builder_cli.py mcp
 | `x402_verify_receipt` | Check Arc Testnet USDC receipt evidence through read-only RPC. |
 | `generate_release_packet` | Generate a local maintainer release packet. |
 | `list_examples` | List available browser-facing examples. |
+| `wallet_status` | Return Circle wallet guard and redacted environment readiness. |
+| `wallet_balance` | Read an Arc Testnet USDC balance after chain proof. |
+| `wallet_prepare_send` | Prepare a pending-human-approval send intent without signing or broadcast. |
 
 All tools return `content` (human-readable) and `structuredContent` (JSON). The server advertises safety flags at initialization: local-only default, no wallet, no signing, no broadcast, testnet-only, no secrets.
 

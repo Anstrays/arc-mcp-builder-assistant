@@ -233,6 +233,7 @@ Copy [`.env.example`](./.env.example) to `.env` only for local experiments. `.en
 | `CIRCLE_WALLET_SET_ID` | Circle Wallet SDK guard | empty | Optional existing wallet-set identifier for local operator notes. |
 | `CIRCLE_RPC_URL` | Read-only balance / payment demo | `https://rpc.testnet.arc.network` | HTTPS or localhost only; the balance helper proves chain id `0x4cef52` before `eth_call`. |
 | `CIRCLE_USDC_TOKEN` | Read-only balance / payment demo | `0x3600...0000` | Configurable reviewed Arc Testnet USDC interface; must be a non-zero EVM address. |
+| `ARC_RPC_FALLBACKS` | Read-only RPC helpers | empty | Optional comma-separated, operator-reviewed HTTPS or loopback endpoints; no guessed or mainnet URLs. |
 | `REAL_TRANSFER` | Payment Intent Demo | `0` | `1` exposes the manual Arc Testnet send action; typed confirmation and an explicit click are still required. |
 
 ## Troubleshooting
@@ -355,7 +356,7 @@ For the shortest reviewer-facing checkpoint, see [`docs/current-readiness-report
 - x402 local challenge boundary with machine-readable manifest, JSON-RPC/MCP-style stdio helpers, `.env.example`, local transcript, and production deployment runbook.
 - Agent commerce starter-kit examples: components, flows, identity profile preview, and review packet exporter.
 - Committed screenshots for the landing page, docs viewer, payment-intent playground, and job escrow simulator.
-- Phase 4 builder tooling plus wallet guards: canonical package CLI with compatibility wrappers under `scripts/`, an 11-tool stdio MCP server, and dependency-free project starter templates under `templates/`.
+- Phase 4 builder tooling plus wallet guards: canonical package CLI with compatibility wrappers under `scripts/`, a 14-tool stdio MCP server, and dependency-free project starter templates under `templates/`.
 
 ### Safe default
 
@@ -448,6 +449,7 @@ The architecture is intentionally small and explicit:
 | `docs/` | Arc setup, payment/agent workflows, safety contracts, runbooks, readiness, and completion evidence. |
 | `examples/` | Static local playgrounds, the loopback-only x402 challenge/MCP demo, and the separate guarded Arc Testnet wallet-send lab. |
 | `prompts/` | Copy-ready Arc docs/MCP prompts for AI coding tools. |
+| `skills/arc-builder-kit/` | OpenClaw/Hermes skill for the shipped CLI, MCP, wallet guards, RPC fallback, x402 verifier, and payment-intent workflows. |
 | `scripts/test_*.py` | Focused dependency-free regression tests. |
 | `scripts/test_all.py`, `scripts/validate_repo.py`, `scripts/check_completion.py` | Canonical suite, repository invariants, and measurable completion check. |
 | `.github/` | Least-privilege validation and Pages deployment workflows plus contribution templates. |
