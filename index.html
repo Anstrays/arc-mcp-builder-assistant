@@ -120,6 +120,7 @@
     .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 28px; }
     .hero-badges { display: flex; gap: 9px; flex-wrap: wrap; margin: 0 0 20px; }
     .badge { border: 1px solid rgba(15,23,42,.1); background: rgba(255,255,255,.68); color: #1e293b; border-radius: 999px; padding: 8px 11px; font-size: 13px; font-weight: 800; }
+    .badge.new { border-color: rgba(124,58,237,.25); background: rgba(124,58,237,.1); color: var(--violet); }
     .preview { border: 1px solid var(--line); border-radius: 32px; background: rgba(255,255,255,.72); box-shadow: var(--shadow); overflow: hidden; }
     .preview-head { display: flex; justify-content: space-between; gap: 14px; padding: 18px; border-bottom: 1px solid var(--line); background: rgba(248,250,252,.78); }
     .dots { display: inline-flex; gap: 7px; align-items: center; }
@@ -197,6 +198,52 @@
     .status-item { display: grid; grid-template-columns: 120px 1fr; gap: 18px; align-items: start; border: 1px solid var(--line); background: rgba(255,255,255,.66); border-radius: 20px; padding: 16px; }
     .status-item span { color: var(--blue); font-weight: 950; }
     .status-item p { margin: 0; color: var(--muted); line-height: 1.6; }
+    /* New interactive components */
+    .cli-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+    .terminal { border: 1px solid rgba(15,23,42,.09); background: #08111f; color: #dbeafe; border-radius: 20px; padding: 18px; overflow: auto; line-height: 1.55; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .terminal .prompt { color: #67e8f9; }
+    .terminal .output { color: #a5f3fc; margin: 8px 0; }
+    .terminal .comment { color: #64748b; }
+    .feature-list { display: grid; gap: 12px; }
+    .feature-item { display: flex; gap: 12px; align-items: start; padding: 14px; border: 1px solid rgba(15,23,42,.08); background: rgba(255,255,255,.55); border-radius: 16px; }
+    .feature-icon { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, var(--blue), var(--cyan)); color: #fff; font-weight: 950; flex-shrink: 0; }
+    .feature-item h4 { margin: 0 0 4px; font-size: 15px; }
+    .feature-item p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .stats-banner { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 24px 0; }
+    .stat-card { border: 1px solid var(--line); background: rgba(255,255,255,.7); border-radius: 20px; padding: 18px; text-align: center; }
+    .stat-card .number { font-size: 32px; font-weight: 950; letter-spacing: -.04em; color: var(--blue); }
+    .stat-card .label { color: var(--muted); font-size: 13px; font-weight: 800; margin-top: 6px; }
+    .interactive-demo { border: 1px solid var(--line); border-radius: 24px; background: rgba(255,255,255,.72); overflow: hidden; }
+    .demo-tabs { display: flex; border-bottom: 1px solid var(--line); }
+    .demo-tab { flex: 1; padding: 14px; text-align: center; background: none; border: none; font-weight: 800; font-size: 14px; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; text-decoration: none; display: block; }
+    .demo-tab:hover { color: var(--blue); background: rgba(37,99,235,.04); }
+    .demo-tab.active { color: var(--blue); border-bottom-color: var(--blue); background: rgba(37,99,235,.06); }
+    .demo-content { padding: 20px; display: none; }
+    .demo-content.active { display: block; }
+    .demo-content pre { margin: 0; }
+    /* CSS-only tabs using radio buttons */
+    .css-tabs { display: flex; flex-wrap: wrap; }
+    .css-tabs input[type="radio"] { position: absolute; opacity: 0; }
+    .css-tabs .tab-label { flex: 1; padding: 14px; text-align: center; font-weight: 800; font-size: 14px; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; background: none; }
+    .css-tabs .tab-label:hover { color: var(--blue); background: rgba(37,99,235,.04); }
+    .css-tabs input[type="radio"]:checked + .tab-label { color: var(--blue); border-bottom-color: var(--blue); background: rgba(37,99,235,.06); }
+    .css-tabs .tab-panel { display: none; width: 100%; padding: 20px; border-top: 1px solid var(--line); }
+    .css-tabs input[type="radio"]:checked + .tab-label + .tab-panel { display: block; }
+    .code-block { border: 1px solid rgba(15,23,42,.09); background: #08111f; color: #dbeafe; border-radius: 16px; padding: 16px; overflow: auto; line-height: 1.6; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .code-block .comment { color: #64748b; }
+    .code-block .keyword { color: #f472b6; }
+    .code-block .string { color: #a5f3fc; }
+    .code-block .function { color: #67e8f9; }
+    .version-badge { display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(22,163,74,.25); background: rgba(22,163,74,.1); color: var(--green); border-radius: 999px; padding: 6px 10px; font-size: 12px; font-weight: 800; }
+    .integration-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 16px; }
+    .integration-card { border: 1px solid var(--line); background: rgba(255,255,255,.66); border-radius: 18px; padding: 16px; }
+    .integration-card h4 { margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+    .integration-card p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .pulse { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+    @media (max-width: 980px) {
+      .cli-demo, .stats-banner, .integration-grid { grid-template-columns: 1fr; }
+    }
     footer { padding: 44px 0; border-top: 1px solid var(--line); color: var(--muted); }
     .footer-row { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; justify-content: space-between; }
     .footer-links { display: inline-flex; gap: 16px; flex-wrap: wrap; font-weight: 800; }
@@ -261,6 +308,7 @@
       <div class="links">
         <a href="#workflows">Workflows</a>
         <a href="#playground">Playground</a>
+        <a href="#tooling">Tooling</a>
         <a href="#analytics">Analytics</a>
         <a href="#playbooks">Playbooks</a>
         <a href="#docs">Docs</a>
@@ -281,10 +329,12 @@
             <span class="badge">Open source</span>
             <span class="badge">No private keys</span>
             <span class="badge">Human approval</span>
+            <span class="badge new">v0.4.1</span>
+            <span class="version-badge"><span class="pulse" style="width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block"></span> PyPI</span>
           </div>
           <div class="eyebrow">Arc agent builder kit</div>
           <h1>Build Arc-ready MCP agents from prompt to verified runtime.</h1>
-          <p class="lead">A practical workspace for turning Arc docs context into reviewable agent plans, USDC payment flows, x402 boundaries, local-first playgrounds, and a separate guarded Arc Testnet wallet handoff.</p>
+          <p class="lead">A practical workspace for turning Arc docs context into reviewable agent plans, USDC payment flows, x402 boundaries, local-first playgrounds, and a separate guarded Arc Testnet wallet handoff. Now with CLI, MCP server, and starter templates.</p>
           <div class="actions">
             <a class="button blue" href="./examples/payment-intent-playground/">Open payment playground</a>
             <a class="button" href="./examples/arc-testnet-wallet-send-gate/">Guarded wallet lab</a>
@@ -298,7 +348,7 @@
             <div class="metric"><span>Examples</span><strong>18</strong></div>
             <div class="metric"><span>Docs</span><strong>49</strong></div>
             <div class="metric"><span>Prompt packs</span><strong>6</strong></div>
-            <div class="metric"><span>Wallet/RPC</span><strong>Guarded</strong></div>
+            <div class="metric"><span>MCP Tools</span><strong>14</strong></div>
           </div>
         </div>
         <aside class="preview" aria-label="Arc builder preview">
@@ -421,6 +471,176 @@ safety: human approval, no custody, no broadcast by default</code></pre>
             </div>
           </div>
         </div>
+        <div class="interactive-demo" style="margin-top: 18px;">
+          <div class="css-tabs" role="tablist" aria-label="Code examples">
+            <input type="radio" name="demo-tabs" id="tab-cli-radio" checked>
+            <label class="tab-label" for="tab-cli-radio" role="tab">CLI Usage</label>
+            <div class="tab-panel" role="tabpanel">
+              <pre class="code-block"><span class="comment"># Install from PyPI</span>
+pip install arc-builder-kit
+
+<span class="comment"># List available templates</span>
+arc-builder templates
+
+<span class="comment"># Scaffold a new project</span>
+arc-builder scaffold payment-intent-starter my-agent
+
+<span class="comment"># Run diagnostics</span>
+arc-builder doctor --include-circle-wallet
+
+<span class="comment"># Generate release packet</span>
+arc-builder release-packet --force</pre>
+            </div>
+
+            <input type="radio" name="demo-tabs" id="tab-mcp-radio">
+            <label class="tab-label" for="tab-mcp-radio" role="tab">MCP Server</label>
+            <div class="tab-panel" role="tabpanel">
+              <pre class="code-block"><span class="comment"># Start MCP server (stdio)</span>
+arc-builder-mcp-server
+
+<span class="comment"># Example: tools/list request</span>
+<span class="keyword">{"jsonrpc":"2.0","id":1,"method":"tools/list"}</span>
+
+<span class="comment"># Example: tools/call for scaffold</span>
+<span class="keyword">{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{
+  "name":"scaffold_project",
+  "arguments":{"template":"payment-intent-starter","output_dir":"./my-agent"}
+}}</span></pre>
+            </div>
+
+            <input type="radio" name="demo-tabs" id="tab-template-radio">
+            <label class="tab-label" for="tab-template-radio" role="tab">Template</label>
+            <div class="tab-panel" role="tabpanel">
+              <pre class="code-block"><span class="comment"># templates/payment-intent-starter/server.py</span>
+<span class="keyword">from</span> http.server <span class="keyword">import</span> HTTPServer, BaseHTTPRequestHandler
+<span class="keyword">import</span> json
+
+<span class="keyword">class</span> <span class="function">PaymentHandler</span>(BaseHTTPRequestHandler):
+    <span class="keyword">def</span> <span class="function">do_GET</span>(self):
+        self.send_response(<span class="string">200</span>)
+        self.send_header(<span class="string">"Content-Type"</span>, <span class="string">"application/json"</span>)
+        self.end_headers()
+        self.wfile.write(json.dumps({
+            <span class="string">"status"</span>: <span class="string">"ready"</span>,
+            <span class="string">"chain"</span>: <span class="string">"ARC-TESTNET"</span>,
+            <span class="string">"token"</span>: <span class="string">"USDC"</span>
+        }).encode())
+
+<span class="comment"># Run: python3 server.py</span></pre>
+            </div>
+
+            <input type="radio" name="demo-tabs" id="tab-sdk-radio">
+            <label class="tab-label" for="tab-sdk-radio" role="tab">Circle SDK</label>
+            <div class="tab-panel" role="tabpanel">
+              <pre class="code-block"><span class="comment"># arc_builder_kit/circle_wallet_sdk.py</span>
+<span class="keyword">from</span> arc_builder_kit <span class="keyword">import</span> CircleWalletClient
+
+<span class="comment"># Read-only balance check</span>
+client = CircleWalletClient()
+balance = client.get_balance(
+    address=<span class="string">"0x0cd9...ea401"</span>,
+    chain=<span class="string">"ARC-TESTNET"</span>
+)
+<span class="function">print</span>(balance[<span class="string">"data"</span>][<span class="string">"balances"</span>])
+
+<span class="comment"># Gas estimate (no cost, no side effects)</span>
+estimate = client.estimate_transfer(
+    to=<span class="string">"0x..."</span>,
+    amount=<span class="string">"1.00"</span>,
+    token=<span class="string">"USDC"</span>
+)</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tooling">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">02.5 · Builder Tooling</div>
+            <h2 class="section-title">CLI, MCP server, and starter templates — dependency-free.</h2>
+          </div>
+          <p class="section-copy">Python stdlib only. No npm install, no external SDKs. Install from PyPI or run directly from the repo.</p>
+        </div>
+        <div class="cli-demo">
+          <div class="terminal">
+            <span class="prompt">$</span> pip install arc-builder-kit
+            <span class="output">Successfully installed arc-builder-kit-0.4.1</span>
+            <br><br>
+            <span class="prompt">$</span> arc-builder templates
+            <span class="output">payment-intent-starter    Payment intent agent scaffold</span>
+            <span class="output">x402-agent-starter        x402 paid API boundary</span>
+            <span class="output">job-escrow-starter        ERC-8183 job escrow</span>
+            <span class="output">marketplace               Agent marketplace server</span>
+            <span class="output">treasury                  Treasury dashboard UI</span>
+            <span class="output">x402-verified-api         Verified x402 API</span>
+            <br><br>
+            <span class="prompt">$</span> arc-builder scaffold payment-intent-starter my-agent
+            <span class="output">✓ Scaffolded to ./my-agent</span>
+            <span class="comment"># Next: cd my-agent && python3 server.py</span>
+          </div>
+          <div class="feature-list">
+            <div class="feature-item">
+              <div class="feature-icon">CLI</div>
+              <div>
+                <h4>arc-builder CLI</h4>
+                <p>Templates, scaffold, validate, facts, manifest, release-packet, doctor. All subcommands return non-zero on error for CI fail-closed behavior.</p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">MCP</div>
+              <div>
+                <h4>arc-builder-mcp-server</h4>
+                <p>stdio JSON-RPC 2.0 server with 14 tools: list_templates, scaffold_project, validate_repo, arc_builder_doctor, get_arc_testnet_facts, x402_manifest, generate_release_packet, wallet_status, wallet_balance, wallet_prepare_send, and more.</p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">6</div>
+              <div>
+                <h4>Starter Templates</h4>
+                <p>Static HTML+JS or dependency-free Python servers. Each includes README with safety notes and usage instructions. No wallet or signing required.</p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">✓</div>
+              <div>
+                <h4>Circle Wallet SDK</h4>
+                <p>Optional integration via Circle CLI subprocess. Read-only balance checks, transaction history, gas estimates. Real transfers disabled by default (REAL_TRANSFER=0).</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="stats-banner">
+          <div class="stat-card"><div class="number">14</div><div class="label">MCP Tools</div></div>
+          <div class="stat-card"><div class="number">6</div><div class="label">Starter Templates</div></div>
+          <div class="stat-card"><div class="number">0</div><div class="label">External Dependencies</div></div>
+          <div class="stat-card"><div class="number">100%</div><div class="label">Python Stdlib</div></div>
+        </div>
+        <div class="integration-grid">
+          <div class="integration-card">
+            <h4><span class="mini">PyPI</span> Installation</h4>
+            <p><code>pip install arc-builder-kit</code> — wheel and sdist available. Entry points: <code>arc-builder</code> and <code>arc-builder-mcp-server</code>.</p>
+          </div>
+          <div class="integration-card">
+            <h4><span class="mini">CI</span> GitHub Actions</h4>
+            <p>Python 3.10–3.12 matrix, ruff lint, script tests, package distribution checks, and PyPI trusted publishing via OIDC.</p>
+          </div>
+          <div class="integration-card">
+            <h4><span class="mini">RPC</span> Fallback Chain</h4>
+            <p>Automatic failover across primary Arc Testnet RPC and user-specified endpoints via <code>ARC_RPC_FALLBACKS</code> env var. No single point of failure.</p>
+          </div>
+          <div class="integration-card">
+            <h4><span class="mini">x402</span> HTTP 402 Boundaries</h4>
+            <p>Challenge-only 402 flow with swappable verifier. Local demo verifier accepts deterministic proofs; RpcVerifier checks on-chain USDC Transfer events.</p>
+          </div>
+        </div>
+        <div class="actions" style="margin-top: 20px;">
+          <a class="button blue" href="./docs/view.html#builder-tooling.md">Builder tooling docs</a>
+          <a class="button" href="./docs/view.html#arc-mcp-setup.md">MCP setup guide</a>
+          <a class="button" href="https://pypi.org/project/arc-builder-kit/" target="_blank" rel="noopener noreferrer">PyPI page</a>
+        </div>
       </div>
     </section>
 
@@ -436,20 +656,22 @@ safety: human approval, no custody, no broadcast by default</code></pre>
         <div class="analytics-grid">
           <article class="panel analytics-card">
             <span class="badge">Repository surfaces</span>
-            <div class="big-number">50+</div>
-            <p>Docs, prompts, examples, validation scripts, screenshots, and community files.</p>
+            <div class="big-number">80+</div>
+            <p>Docs, prompts, examples, templates, validation scripts, MCP tools, CI workflows, and community files.</p>
           </article>
           <article class="panel analytics-card">
             <span class="badge">Safety boundaries</span>
-            <div class="big-number">5</div>
-            <p>No custody, no private keys, no app backend/custody calls, no mainnet, no broadcast by default.</p>
+            <div class="big-number">6</div>
+            <p>No custody, no private keys, no app backend/custody calls, no mainnet, no broadcast by default, no secrets in repo.</p>
           </article>
           <article class="panel analytics-card">
             <h3>By builder surface</h3>
             <div class="bar-list">
               <div class="bar-row"><span>Docs</span><span class="bar-track"><span class="bar-fill" style="width: 100%"></span></span><strong>49</strong></div>
               <div class="bar-row"><span>Examples</span><span class="bar-track"><span class="bar-fill" style="width: 92%"></span></span><strong>18</strong></div>
-              <div class="bar-row"><span>Prompts</span><span class="bar-track"><span class="bar-fill" style="width: 64%"></span></span><strong>6</strong></div>
+              <div class="bar-row"><span>Templates</span><span class="bar-track"><span class="bar-fill" style="width: 64%"></span></span><strong>6</strong></div>
+              <div class="bar-row"><span>MCP Tools</span><span class="bar-track"><span class="bar-fill" style="width: 72%"></span></span><strong>14</strong></div>
+              <div class="bar-row"><span>Prompts</span><span class="bar-track"><span class="bar-fill" style="width: 42%"></span></span><strong>6</strong></div>
             </div>
           </article>
         </div>
@@ -478,6 +700,18 @@ safety: human approval, no custody, no broadcast by default</code></pre>
             <p>Prepare a payment request, freeze reviewed fields, preview unsigned calldata, and keep final approval manual.</p>
             <span class="meta"><span class="mini">Commerce</span><span class="mini">Node 20</span><span class="mini">Local-only</span></span>
             <span class="recipe-link">Open playground →</span>
+          </a>
+          <a class="recipe" href="./docs/view.html#builder-tooling.md">
+            <h3>CLI &amp; MCP Server</h3>
+            <p>Dependency-free <code>arc-builder</code> CLI with 8 subcommands and stdio MCP server with 14 tools. Scaffold projects, validate repos, run diagnostics.</p>
+            <span class="meta"><span class="mini">Infrastructure</span><span class="mini">Python stdlib</span><span class="mini">PyPI</span></span>
+            <span class="recipe-link">Read tooling docs →</span>
+          </a>
+          <a class="recipe" href="./docs/view.html#arc-mcp-setup.md">
+            <h3>MCP Setup Guide</h3>
+            <p>Connect AI coding tools to Arc docs through the MCP surface. Verify retrieved context and configure your editor.</p>
+            <span class="meta"><span class="mini">Infrastructure</span><span class="mini">MCP</span><span class="mini">Setup</span></span>
+            <span class="recipe-link">Open setup guide →</span>
           </a>
           <a class="recipe" href="./docs/view.html#x402-mcp-manifest.md">
             <h3>x402 paid API boundary</h3>
@@ -561,10 +795,13 @@ safety: human approval, no custody, no broadcast by default</code></pre>
           <p class="section-copy">No placeholder <code>#</code> links: every public entry routes to the styled docs viewer, local playground, repository, or community file.</p>
         </div>
         <div class="docs-grid">
-          <a class="doc-card" href="./docs/view.html#arc-mcp-setup.md"><h3>MCP setup</h3><p>Connect AI coding tools to Arc docs through the MCP surface and verify retrieved context.</p><span class="recipe-link">Read setup →</span></a>
           <a class="doc-card" href="./docs/view.html#builder-tooling.md"><h3>Builder tooling</h3><p>Unified CLI, stdio MCP server, starter templates, and safe project scaffolding.</p><span class="recipe-link">Read tooling →</span></a>
+          <a class="doc-card" href="./docs/view.html#arc-mcp-setup.md"><h3>MCP setup</h3><p>Connect AI coding tools to Arc docs through the MCP surface and verify retrieved context.</p><span class="recipe-link">Read setup →</span></a>
           <a class="doc-card" href="./docs/view.html#arc-docs-map.md"><h3>Arc docs map</h3><p>Network config, contracts, agent primitives, tutorials, tools, and recommended build path.</p><span class="recipe-link">Open map →</span></a>
           <a class="doc-card" href="./docs/view.html#prompt-library.md"><h3>Prompt library</h3><p>Copy-ready prompts for docs-aware coding, payment intents, agent identity, escrow, and reviews.</p><span class="recipe-link">Use prompts →</span></a>
+          <a class="doc-card" href="./docs/view.html#payment-intent-demo.md"><h3>Payment intent demo</h3><p>Live Circle wallet integration: balance checks, gas estimates, transaction history. Optional real transfers with explicit confirmation.</p><span class="recipe-link">Read demo docs →</span></a>
+          <a class="doc-card" href="./docs/view.html#circle-wallet-integration.md"><h3>Circle wallet lab</h3><p>Bootstrap Circle agent wallet on Arc Testnet: login, faucet, transfer, CCTP bridge.</p><span class="recipe-link">Read lab docs →</span></a>
+          <a class="doc-card" href="./docs/view.html#agent-commerce-live-evidence.md"><h3>Agent commerce live</h3><p>Real on-chain USDC transactions via Circle agent wallet — 6 verified payments with evidence.</p><span class="recipe-link">Read evidence →</span></a>
           <a class="doc-card" href="./docs/view.html#current-readiness-report.md"><h3>Current readiness report</h3><p>Scope verdict, local evidence commands, future-extension boundaries, and safe public wording.</p><span class="recipe-link">Read report →</span></a>
           <a class="doc-card" href="./docs/view.html#completion-contract.md"><h3>Safe-scope completion contract</h3><p>Measurable acceptance criteria, canonical verification, explicit non-goals, and reviewer wording.</p><span class="recipe-link">Review contract →</span></a>
           <a class="doc-card" href="./docs/view.html#arc-testnet-send-readiness-gate.md"><h3>Send readiness gate</h3><p>Evidence contract for the separate disabled-by-default Arc Testnet browser-wallet send lab.</p><span class="recipe-link">Review gate →</span></a>
@@ -593,11 +830,12 @@ safety: human approval, no custody, no broadcast by default</code></pre>
           <p class="section-copy">The static builder kit is complete for sharing. Local-only surfaces stay wallet-free, while the isolated Arc Testnet send lab remains disabled until every explicit review gate passes.</p>
         </div>
         <div class="status-grid">
-          <div class="status-item"><span>Complete</span><p>Landing page, docs viewer, 49 docs, 18 examples, 6 prompt packs, PyPI package, Circle Wallet SDK, RPC fallback chain, and x402 verifier — shipped and green.</p></div>
-          <div class="status-item"><span>Measured</span><p>The safe-scope completion contract and dependency-free completion check keep the readiness claim reproducible.</p></div>
-          <div class="status-item"><span>Safe default</span><p>Local-only demos remain wallet-free. The payment intent demo connects to Circle CLI for real balance/estimate data but stays estimate-only by default.</p></div>
+          <div class="status-item"><span>Complete</span><p>Landing page, docs viewer, 49 docs, 18 examples, 6 prompt packs, PyPI package, Circle Wallet SDK, RPC fallback chain, x402 verifier, CLI with 8 subcommands, MCP server with 14 tools, and 6 starter templates — shipped and green.</p></div>
+          <div class="status-item"><span>Measured</span><p>The safe-scope completion contract and dependency-free completion check keep the readiness claim reproducible. CI runs Python 3.10–3.12 matrix with ruff lint and script tests.</p></div>
+          <div class="status-item"><span>Safe default</span><p>Local-only demos remain wallet-free. The payment intent demo connects to Circle CLI for real balance/estimate data but stays estimate-only by default (REAL_TRANSFER=0).</p></div>
           <div class="status-item"><span>RPC resilient</span><p>Automatic fallback chain: primary Arc Testnet RPC → user-specified endpoints via ARC_RPC_FALLBACKS env var. No single point of failure.</p></div>
           <div class="status-item"><span>Guarded write</span><p>One capped 1.00 USDC Arc Testnet transfer is possible only after explicit enablement, typed confirmation, and final human click.</p></div>
+          <div class="status-item"><span>Developer UX</span><p>PyPI installable with entry points: <code>arc-builder</code> CLI and <code>arc-builder-mcp-server</code>. Zero external dependencies — Python stdlib only.</p></div>
         </div>
       </div>
     </section>
