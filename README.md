@@ -331,13 +331,18 @@ Guarded Arc Testnet wallet-send lab (`examples/arc-testnet-wallet-send-gate/`):
 
 These screenshots are committed so reviewers can quickly see the live-site UX without clicking through every page.
 
-![Landing page screenshot](./assets/screenshots/landing.png)
-
-![Styled security policy viewer screenshot](./assets/screenshots/security-viewer.png)
-
-![Payment intent playground screenshot](./assets/screenshots/payment-intent-playground.png)
-
-![Job escrow simulator screenshot](./assets/screenshots/job-escrow-simulator.png)
+| Section | Screenshot |
+|---------|-----------|
+| Hero & metrics | ![Hero](./screenshots/01-hero.png) |
+| Workflows | ![Workflows](./screenshots/02-workflows.png) |
+| Builder Tooling | ![Tooling](./screenshots/03-tooling.png) |
+| Analytics | ![Analytics](./screenshots/04-analytics.png) |
+| Playbooks | ![Playbooks](./screenshots/05-playbooks.png) |
+| Docs | ![Docs](./screenshots/06-docs.png) |
+| Status | ![Status](./screenshots/07-status.png) |
+| Roadmap | ![Roadmap](./screenshots/08-roadmap.png) |
+| FAQ | ![FAQ](./screenshots/09-faq.png) |
+| Changelog | ![Changelog](./screenshots/10-changelog.png) |
 
 ## Completion status
 
